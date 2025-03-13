@@ -1,248 +1,283 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transfusion Data Visualization Dashboard</title>
+  <title>Transfusion Data Dashboard</title>
+  <!-- React (No JSX/Babel) -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
   
-  <!-- Tailwind CSS (via CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Recharts and dependencies -->
+  <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.1.12/umd/Recharts.min.js"></script>
   
-  <!-- Load Dependencies in correct order -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-  
-  <!-- Load Recharts from cdnjs instead of unpkg -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.min.js"></script>
-  
-  <!-- Load Lodash -->
+  <!-- Other libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-  
-  <!-- Load PapaParse for CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   
-  <!-- Load Babel for JSX -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.0/babel.min.js"></script>
-  
+  <!-- Tailwind-like utility CSS -->
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Base styles */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6;
+    }
+    
+    /* Layout */
+    .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-4 { gap: 1rem; }
+    .m-4 { margin: 1rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .p-4 { padding: 1rem; }
+    
+    /* Components */
+    .card {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+    }
+    .label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #2563eb;
+    }
+    .btn-gray {
+      background-color: #f3f4f6;
+      color: #4b5563;
+    }
+    .btn-gray:hover {
+      background-color: #e5e7eb;
+    }
+    
+    /* Status Messages */
+    .status-msg {
+      padding: 1rem;
+      border-radius: 0.375rem;
+      margin-bottom: 1rem;
+    }
+    .success { background-color: #d1fae5; color: #065f46; }
+    .error { background-color: #fee2e2; color: #b91c1c; }
+    .info { background-color: #dbeafe; color: #1e40af; }
+    .warning { background-color: #fffbeb; color: #92400e; }
+    
+    /* Text utilities */
+    .text-center { text-align: center; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .font-bold { font-weight: 700; }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-700 { color: #374151; }
+    
+    /* Browser warning */
+    .browser-warning {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #fee2e2;
+      color: #b91c1c;
+      padding: 1rem;
+      text-align: center;
+      z-index: 1000;
+    }
+    
+    /* Chart container */
+    .chart-container {
+      height: 400px;
+      width: 100%;
+    }
+    
+    /* Filter pill buttons */
+    .filter-pill {
+      display: inline-flex;
+      padding: 0.25rem 0.75rem;
+      margin: 0.25rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      background-color: #e5e7eb;
+      cursor: pointer;
+    }
+    .filter-pill.active {
+      background-color: #3b82f6;
+      color: white;
     }
   </style>
 </head>
-<body class="bg-gray-100">
-  <!-- Fallback text in case of errors -->
-  <div id="loading-message" style="text-align:center; padding:20px; margin-top:20px;">
+<body>
+  <div id="loading-message" style="text-align:center; padding:20px">
     <h2>Loading Transfusion Dashboard...</h2>
     <p>If this message persists, please check the browser console for errors.</p>
   </div>
   
-  <div id="app"></div>
+  <div id="root"></div>
 
-  <!-- Add library check and fallback -->
   <script>
-    window.addEventListener('DOMContentLoaded', function() {
-      // Check if all required libraries are loaded
-      if (!window.React) {
-        reportError('React library not loaded');
-      }
-      if (!window.ReactDOM) {
-        reportError('ReactDOM library not loaded');
-      }
-      if (!window.Recharts) {
-        reportError('Recharts library not loaded');
-      }
-      if (!window._) {
-        reportError('Lodash library not loaded');
-      }
-      if (!window.Papa) {
-        reportError('PapaParse library not loaded');
-      }
-      
-      function reportError(message) {
-        console.error(message);
-        document.body.innerHTML += `
-          <div style="color:red; padding:20px; margin:20px; border:1px solid red">
-            <h3>Error Loading Dashboard:</h3>
-            <p>${message}</p>
-            <p>Try clearing your browser cache or using a different browser.</p>
-          </div>
-        `;
-      }
-    });
-  </script>
-
-  <script type="text/babel">
-    // Add error handling to show errors on the page
-    window.addEventListener('error', function(e) {
-      document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
-        <h3>Error Loading Dashboard:</h3>
-        <p>${e.message}</p>
-        <p>Line: ${e.lineno}</p>
-        <p>File: ${e.filename}</p>
-      </div>`;
-      console.error("Caught error:", e);
-    });
-    
-    // Check if libraries are loaded correctly
-    if (!window.Recharts) {
-      document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
-        <h3>Recharts Library Not Loaded</h3>
-        <p>The visualization library couldn't be loaded from the CDN.</p>
-        <p>Try refreshing the page or check your internet connection.</p>
-      </div>`;
-    } else {
-      console.log("Recharts loaded successfully");
+    // Utility functions
+    function isChromeBrowser() {
+      return /Chrome/.test(navigator.userAgent) && !/Edge|Edg/.test(navigator.userAgent);
     }
     
-    const { useState, useEffect, useRef, Fragment } = React;
+    // Hide the original loading message
+    document.getElementById('loading-message').style.display = 'none';
     
-    // Get Recharts components with a safer approach
-    let LineChart, Line, AreaChart, Area, XAxis, YAxis, 
-        CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine;
-        
-    // Safely extract Recharts components
-    if (window.Recharts) {
-      ({ 
-        LineChart, Line, AreaChart, Area, XAxis, YAxis, 
-        CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine 
-      } = window.Recharts);
-    }
+    // Use React.createElement instead of JSX
+    const e = React.createElement;
     
-    // Main application component
-    const App = () => {
-      return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <h1 className="text-3xl font-bold text-center mb-8">Transfusion Data Visualization Dashboard</h1>
-          
-          <TransfusionDashboard />
-          
-          <footer className="mt-12 text-center text-sm text-gray-500">
-            <p>© 2025 Transfusion Research Team</p>
-          </footer>
-        </div>
-      );
-    };
+    // Get Recharts components
+    const {
+      LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
+      Legend, ResponsiveContainer, ReferenceLine, Area
+    } = Recharts;
     
-    // Main dashboard component (adapted for GitHub Pages)
-    const TransfusionDashboard = () => {
-      // State variables
-      const [indexData, setIndexData] = useState([]);
-      const [vitalParams, setVitalParams] = useState([]);
-      const [compFactors, setCompFactors] = useState([]);
-      const [selectedVital, setSelectedVital] = useState('');
-      const [selectedCompFactor, setSelectedCompFactor] = useState('');
-      const [chartData, setChartData] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(null);
-      const [showConfidenceInterval, setShowConfidenceInterval] = useState(true);
-      const [showBaseModel, setShowBaseModel] = useState(true);
-      const [timeRange, setTimeRange] = useState([0, 720]);
-      const [comparisonValues, setComparisonValues] = useState([]);
-      const [selectedComparison, setSelectedComparison] = useState([]);
-      const [currentFileName, setCurrentFileName] = useState('');
-      const [metaInfo, setMetaInfo] = useState({
+    // Define main App component
+    function App() {
+      // State declarations
+      const [indexData, setIndexData] = React.useState([]);
+      const [vitalParams, setVitalParams] = React.useState([]);
+      const [compFactors, setCompFactors] = React.useState([]);
+      const [selectedVital, setSelectedVital] = React.useState('');
+      const [selectedCompFactor, setSelectedCompFactor] = React.useState('');
+      const [chartData, setChartData] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [error, setError] = React.useState(null);
+      const [showConfidenceInterval, setShowConfidenceInterval] = React.useState(true);
+      const [showBaseModel, setShowBaseModel] = React.useState(true);
+      const [timeRange, setTimeRange] = React.useState([0, 720]);
+      const [comparisonValues, setComparisonValues] = React.useState([]);
+      const [selectedComparison, setSelectedComparison] = React.useState([]);
+      const [currentFileName, setCurrentFileName] = React.useState('');
+      const [metaInfo, setMetaInfo] = React.useState({
         vitalName: '',
         compName: '',
         yLabel: ''
       });
+      const [fileCase, setFileCase] = React.useState('unknown');
 
-      // Load index data on component mount
-      useEffect(() => {
+      // Load index data on mount
+      React.useEffect(function() {
         loadIndexData();
       }, []);
 
-      const loadIndexData = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          console.log("Loading index data...");
-          
-          // Use fetch API to get the index file from data folder - use both lowercase and uppercase to try
-          let response;
-          let indexFileContent;
-          
-          try {
-            response = await fetch('./data/viz_index.csv');
+      function loadIndexData() {
+        setLoading(true);
+        setError(null);
+        console.log("Loading index data...");
+        
+        // Try lowercase first
+        fetch('./data/viz_index.csv')
+          .then(function(response) {
             if (!response.ok) {
-              throw new Error(`Failed with status: ${response.status}`);
+              throw new Error('Lowercase file not found');
             }
-            indexFileContent = await response.text();
-          } catch (e) {
+            setFileCase('lowercase');
+            return response.text();
+          })
+          .catch(function(err) {
+            // Try uppercase if lowercase fails
             console.log("Trying uppercase version...");
-            response = await fetch('./data/VIZ_INDEX.CSV');
-            if (!response.ok) {
-              throw new Error(`Failed to load index CSV in both lowercase and uppercase: ${e.message}`);
-            }
-            indexFileContent = await response.text();
-          }
-          
-          console.log("Index file loaded, parsing...");
-          console.log("First 100 chars:", indexFileContent.substring(0, 100));
-          
-          Papa.parse(indexFileContent, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-              if (results.errors && results.errors.length > 0) {
-                setError(`Parse error: ${results.errors[0].message}`);
-                setLoading(false);
-                return;
-              }
-              
-              console.log("Column names found:", results.meta.fields);
-              console.log("Row count:", results.data.length);
-              
-              // Trim whitespace from fields
-              const cleanedData = results.data.map(row => {
-                const cleanRow = {};
-                Object.keys(row).forEach(key => {
-                  cleanRow[key] = typeof row[key] === 'string' ? row[key].trim() : row[key];
-                });
-                return cleanRow;
+            return fetch('./data/VIZ_INDEX.CSV')
+              .then(function(response) {
+                if (!response.ok) {
+                  throw new Error('Both lowercase and uppercase files not found');
+                }
+                setFileCase('uppercase');
+                return response.text();
               });
-              
-              setIndexData(cleanedData);
-              
-              // Extract unique values for dropdowns
-              const uniqueVitals = _.uniqBy(cleanedData, 'VitalParam')
-                .map(item => ({ 
-                  value: item.VitalParam, 
-                  label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
-                }));
-              
-              setVitalParams(uniqueVitals);
-              console.log("Vital parameters:", uniqueVitals.length);
-              
-              if (uniqueVitals.length > 0) {
-                setSelectedVital(uniqueVitals[0].value);
+          })
+          .then(function(csvText) {
+            console.log("CSV loaded, parsing...");
+            Papa.parse(csvText, {
+              header: true,
+              skipEmptyLines: true,
+              complete: function(results) {
+                console.log("Parse complete, rows:", results.data.length);
+                
+                // Clean data - trim whitespace
+                const cleanedData = results.data.map(function(row) {
+                  const cleanRow = {};
+                  Object.keys(row).forEach(function(key) {
+                    cleanRow[key] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                  });
+                  return cleanRow;
+                });
+                
+                setIndexData(cleanedData);
+                
+                // Extract vital parameters for dropdown
+                const uniqueVitals = _.uniqBy(cleanedData, 'VitalParam')
+                  .map(function(item) {
+                    return {
+                      value: item.VitalParam, 
+                      label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
+                    };
+                  });
+                
+                setVitalParams(uniqueVitals);
+                
+                if (uniqueVitals.length > 0) {
+                  setSelectedVital(uniqueVitals[0].value);
+                }
+                
+                setLoading(false);
+              },
+              error: function(error) {
+                console.error("CSV parse error:", error);
+                setError("Failed to parse index CSV: " + error.message);
+                setLoading(false);
               }
-              
-              setLoading(false);
-            },
-            error: (error) => {
-              console.error("Parse error:", error);
-              setError("Failed to parse index CSV: " + error.message);
-              setLoading(false);
-            }
+            });
+          })
+          .catch(function(error) {
+            console.error("Load error:", error);
+            setError("Failed to load index CSV: " + error.message);
+            setLoading(false);
           });
-        } catch (error) {
-          console.error("Load error:", error);
-          setError("Failed to load index CSV: " + error.message);
-          setLoading(false);
-        }
-      };
+      }
 
       // Update comparison factors when vital parameter changes
-      useEffect(() => {
+      React.useEffect(function() {
         if (selectedVital && indexData.length > 0) {
-          const relevantFactors = indexData.filter(item => item.VitalParam === selectedVital);
+          const relevantFactors = indexData.filter(function(item) {
+            return item.VitalParam === selectedVital;
+          });
           
-          setCompFactors(relevantFactors.map(item => ({
-            value: item.CompFactor,
-            label: item.CompName || item.CompFactor
-          })));
+          setCompFactors(relevantFactors.map(function(item) {
+            return {
+              value: item.CompFactor,
+              label: item.CompName || item.CompFactor
+            };
+          }));
           
           if (relevantFactors.length > 0) {
             setSelectedCompFactor(relevantFactors[0].CompFactor);
@@ -251,166 +286,149 @@
       }, [selectedVital, indexData]);
 
       // Load visualization data when vital param and comp factor change
-      useEffect(() => {
+      React.useEffect(function() {
         if (selectedVital && selectedCompFactor) {
           loadVisualizationData();
         }
       }, [selectedVital, selectedCompFactor]);
 
-      const loadVisualizationData = async () => {
+      function loadVisualizationData() {
         if (!selectedVital || !selectedCompFactor) return;
         
-        try {
-          setLoading(true);
-          setError(null);
-          
-          // Try both uppercase and original case for robustness
-          const fileNameUpper = `VIZ_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.CSV`;
-          const fileNameLower = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`;
-          
-          setCurrentFileName(fileNameUpper);
-          console.log("Attempting to load visualization file:", fileNameUpper);
-          
-          // Try both uppercase and lowercase paths
-          let response;
-          let fileContent;
-          
-          try {
-            response = await fetch(`./data/${fileNameUpper}`);
-            if (!response.ok) {
-              throw new Error(`Failed with status: ${response.status}`);
-            }
-            fileContent = await response.text();
-          } catch (upperError) {
-            console.log("Trying lowercase version...");
-            try {
-              response = await fetch(`./data/${fileNameLower}`);
-              if (!response.ok) {
-                throw new Error(`Failed to load with lowercase: ${response.status}`);
-              }
-              fileContent = await response.text();
-              setCurrentFileName(fileNameLower);
-            } catch (lowerError) {
-              throw new Error(`Failed to load visualization file in both cases: ${upperError.message}`);
-            }
-          }
-          
-          console.log("Visualization file loaded, parsing...");
-          console.log("First 100 chars:", fileContent.substring(0, 100));
-          
-          Papa.parse(fileContent, {
-            header: true,
-            dynamicTyping: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-              if (results.errors && results.errors.length > 0) {
-                setError(`Parse error: ${results.errors[0].message}`);
-                setLoading(false);
-                return;
-              }
-              
-              if (results.data.length === 0) {
-                setError("No data found in the CSV file");
-                setLoading(false);
-                return;
-              }
-              
-              console.log("CSV column names:", results.meta.fields);
-              console.log("Visualization data parsed successfully, rows:", results.data.length);
-              
-              // Extract metadata
-              const firstRow = results.data[0];
-              setMetaInfo({
-                vitalName: firstRow.VitalName || "Vital Parameter",
-                compName: firstRow.CompName || "Comparison Factor",
-                yLabel: firstRow.YLabel || "Value"
-              });
-              
-              // Determine comparison column name (it varies based on selected comparison factor)
-              const sampleRow = results.data[0];
-              const comparisonColumnName = Object.keys(sampleRow).find(key => 
-                key !== 'TimeFromTransfusion' && 
-                key !== 'PredVal_Base' && 
-                key !== 'StdErrVal_Base' && 
-                key !== 'PredVal_Full' && 
-                key !== 'StdErrVal_Full' && 
-                key !== 'Lower_Full' && 
-                key !== 'Upper_Full' && 
-                key !== 'VitalParam' && 
-                key !== 'CompFactor' && 
-                key !== 'CompName' && 
-                key !== 'VitalName' && 
-                key !== 'YLabel'
-              );
-              
-              if (!comparisonColumnName) {
-                setError("Could not determine comparison column");
-                setLoading(false);
-                return;
-              }
-              
-              console.log("Comparison column identified:", comparisonColumnName);
-              
-              // Get unique comparison values
-              const uniqueCompValues = _.uniqBy(results.data, comparisonColumnName)
-                .map(row => row[comparisonColumnName])
-                .filter(value => value !== null && value !== undefined)
-                .sort((a, b) => a - b);
-              
-              // Add null as a separate option if it exists in the data
-              const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
-              if (hasNullValues) {
-                uniqueCompValues.unshift(null);
-              }
-              
-              setComparisonValues(uniqueCompValues);
-              
-              // Default to selecting all non-null values for better visualization
-              setSelectedComparison(uniqueCompValues.filter(v => v !== null));
-              
-              // Process data for chart
-              setChartData(results.data);
-              setLoading(false);
-            },
-            error: (error) => {
-              console.error("Parse error:", error);
-              setError("Failed to parse visualization CSV: " + error.message);
-              setLoading(false);
-            }
-          });
-        } catch (error) {
-          console.error("Load error:", error);
-          setError(`Failed to load visualization data: ${error.message}`);
-          setLoading(false);
+        setLoading(true);
+        setError(null);
+        
+        // Construct filename based on file case detected earlier
+        let fileName;
+        if (fileCase === 'uppercase') {
+          fileName = `VIZ_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.CSV`;
+        } else {
+          fileName = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`;
         }
-      };
+        
+        setCurrentFileName(fileName);
+        console.log("Loading visualization file:", fileName);
+        
+        fetch(`./data/${fileName}`)
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error(`Failed to load visualization file (${response.status})`);
+            }
+            return response.text();
+          })
+          .then(function(csvText) {
+            console.log("Visualization file loaded, parsing...");
+            
+            Papa.parse(csvText, {
+              header: true,
+              dynamicTyping: true,
+              skipEmptyLines: true,
+              complete: function(results) {
+                if (results.data.length === 0) {
+                  setError("No data found in the CSV file");
+                  setLoading(false);
+                  return;
+                }
+                
+                console.log("Visualization data parsed, rows:", results.data.length);
+                
+                // Extract metadata
+                const firstRow = results.data[0];
+                setMetaInfo({
+                  vitalName: firstRow.VitalName || "Vital Parameter",
+                  compName: firstRow.CompName || "Comparison Factor",
+                  yLabel: firstRow.YLabel || "Value"
+                });
+                
+                // Determine comparison column name
+                const sampleRow = results.data[0];
+                const comparisonColumnName = Object.keys(sampleRow).find(function(key) {
+                  return key !== 'TimeFromTransfusion' && 
+                    key !== 'PredVal_Base' && 
+                    key !== 'StdErrVal_Base' && 
+                    key !== 'PredVal_Full' && 
+                    key !== 'StdErrVal_Full' && 
+                    key !== 'Lower_Full' && 
+                    key !== 'Upper_Full' && 
+                    key !== 'VitalParam' && 
+                    key !== 'CompFactor' && 
+                    key !== 'CompName' && 
+                    key !== 'VitalName' && 
+                    key !== 'YLabel';
+                });
+                
+                if (!comparisonColumnName) {
+                  setError("Could not determine comparison column");
+                  setLoading(false);
+                  return;
+                }
+                
+                console.log("Comparison column:", comparisonColumnName);
+                
+                // Get unique comparison values
+                const uniqueCompValues = _.uniqBy(results.data, comparisonColumnName)
+                  .map(function(row) { return row[comparisonColumnName]; })
+                  .filter(function(value) { return value !== null && value !== undefined; })
+                  .sort(function(a, b) { return a - b; });
+                
+                // Add null as a separate option if it exists in the data
+                const hasNullValues = results.data.some(function(row) { 
+                  return row[comparisonColumnName] === null; 
+                });
+                
+                if (hasNullValues) {
+                  uniqueCompValues.unshift(null);
+                }
+                
+                setComparisonValues(uniqueCompValues);
+                
+                // Default to selecting all non-null values
+                setSelectedComparison(uniqueCompValues.filter(function(v) { return v !== null; }));
+                
+                // Process data for chart
+                setChartData(results.data);
+                setLoading(false);
+              },
+              error: function(error) {
+                console.error("Parse error:", error);
+                setError("Failed to parse visualization CSV: " + error.message);
+                setLoading(false);
+              }
+            });
+          })
+          .catch(function(error) {
+            console.error("Load error:", error);
+            setError(`Failed to load visualization data: ${error.message}`);
+            setLoading(false);
+          });
+      }
 
-      // Get comparison column name based on selected comparison factor
-      const getComparisonColumnName = () => {
+      // Get comparison column name
+      function getComparisonColumnName() {
         if (!chartData || chartData.length === 0) return '';
         
         const sampleRow = chartData[0];
-        return Object.keys(sampleRow).find(key => 
-          key !== 'TimeFromTransfusion' && 
-          key !== 'PredVal_Base' && 
-          key !== 'StdErrVal_Base' && 
-          key !== 'PredVal_Full' && 
-          key !== 'StdErrVal_Full' && 
-          key !== 'Lower_Full' && 
-          key !== 'Upper_Full' && 
-          key !== 'VitalParam' && 
-          key !== 'CompFactor' && 
-          key !== 'CompName' && 
-          key !== 'VitalName' && 
-          key !== 'YLabel'
-        ) || '';
-      };
+        return Object.keys(sampleRow).find(function(key) {
+          return key !== 'TimeFromTransfusion' && 
+            key !== 'PredVal_Base' && 
+            key !== 'StdErrVal_Base' && 
+            key !== 'PredVal_Full' && 
+            key !== 'StdErrVal_Full' && 
+            key !== 'Lower_Full' && 
+            key !== 'Upper_Full' && 
+            key !== 'VitalParam' && 
+            key !== 'CompFactor' && 
+            key !== 'CompName' && 
+            key !== 'VitalName' && 
+            key !== 'YLabel';
+        }) || '';
+      }
 
-      // Get simplified legend label for comparison values
-      const getLegendLabel = (compFactor, value, modelType) => {
+      // Get legend label
+      function getLegendLabel(compFactor, value, modelType) {
         if (value === null) return 'Reference';
         
-        // Remove any trailing spaces
+        // Remove trailing spaces
         const factor = compFactor.trim();
         let categoryLabel = '';
         
@@ -450,11 +468,10 @@
         }
         
         return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
-      };
+      }
 
-      // Process data to fix percentage formatting
-      const processDataPoint = (point) => {
-        // Check if we need to multiply by 100 (if values are in 0-1 range)
+      // Process data for percentage formatting
+      function processDataPoint(point) {
         const needsMultiplication = 
           point.predBase !== null && point.predBase < 1 &&
           point.predFull !== null && point.predFull < 1;
@@ -466,85 +483,74 @@
           lower: needsMultiplication ? point.lower * 100 : point.lower,
           upper: needsMultiplication ? point.upper * 100 : point.upper
         };
-      };
+      }
 
-      // Calculate appropriate Y-axis domain based on data
-      const getYAxisDomain = (chartData, vitalType) => {
-        // Get all series data
-        const allData = chartData.flatMap(series => 
-          series.data.flatMap(point => [
-            point.predBase, 
-            point.predFull,
-            point.lower,
-            point.upper
-          ])
-        ).filter(value => value !== null && value !== undefined && !isNaN(value));
+      // Calculate Y-axis domain
+      function getYAxisDomain(chartData, vitalType) {
+        const allData = chartData.flatMap(function(series) {
+          return series.data.flatMap(function(point) {
+            return [point.predBase, point.predFull, point.lower, point.upper];
+          });
+        }).filter(function(value) { 
+          return value !== null && value !== undefined && !isNaN(value); 
+        });
         
         if (allData.length === 0) return [0, 100];
         
-        // Find min and max values
-        let minValue = Math.min(...allData);
-        let maxValue = Math.max(...allData);
+        let minValue = Math.min.apply(null, allData);
+        let maxValue = Math.max.apply(null, allData);
         
-        // Add padding (10% of range)
         const range = maxValue - minValue;
-        const padding = Math.max(range * 0.1, 0.5); // At least 0.5 units of padding
+        const padding = Math.max(range * 0.1, 0.5);
         
-        minValue = Math.max(0, minValue - padding); // Don't go below 0
+        minValue = Math.max(0, minValue - padding);
         maxValue = maxValue + padding;
         
-        // For SpO2, cap at 100% if close
         if (vitalType && vitalType.trim() === 'SpO2' && maxValue > 99) {
           maxValue = 100;
         }
         
-        // Ensure we have at least some range to avoid flat lines
         if (maxValue - minValue < 5) {
           minValue = Math.max(0, minValue - 2.5);
           maxValue = maxValue + 2.5;
         }
         
         return [minValue, maxValue];
-      };
+      }
 
-      // Get colors for lines based on comparison value
-      const getLineColor = (compValue, values) => {
-        // Use more distinct colors with higher contrast
+      // Get line colors
+      function getLineColor(compValue, values) {
         const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2'];
         
-        // Special case for null values (reference)
         if (compValue === null) {
-          return '#000000'; // Black for reference/null values
+          return '#000000';
         }
         
-        // Get the index of this value in the values array
         const index = values.indexOf(compValue);
         
-        // Ensure we're returning a valid color even if the index is problematic
         if (index === -1 || index >= colors.length) {
-          // Fallback color based on the numeric value itself to ensure different values get different colors
           return colors[compValue % colors.length] || colors[0];
         }
         
         return colors[index % colors.length];
-      };
+      }
 
-      // Filter data based on selected comparison values and time range
-      const getFilteredData = () => {
+      // Filter data based on selections
+      function getFilteredData() {
         if (!chartData || chartData.length === 0) return [];
         
         const compColumn = getComparisonColumnName();
         if (!compColumn) return [];
         
-        return chartData.filter(row => 
-          selectedComparison.includes(row[compColumn]) && 
-          row.TimeFromTransfusion >= timeRange[0] && 
-          row.TimeFromTransfusion <= timeRange[1]
-        );
-      };
+        return chartData.filter(function(row) {
+          return selectedComparison.includes(row[compColumn]) && 
+            row.TimeFromTransfusion >= timeRange[0] && 
+            row.TimeFromTransfusion <= timeRange[1];
+        });
+      }
 
-      // Group data by comparison value and time for chart
-      const getChartData = () => {
+      // Group data for chart
+      function getChartData() {
         const filteredData = getFilteredData();
         const compColumn = getComparisonColumnName();
         
@@ -553,477 +559,381 @@
         // Group by comparison value
         const groupedByComp = _.groupBy(filteredData, compColumn);
         
-        // Process entries in ascending order of values
+        // Process entries in ascending order
         const entries = Object.entries(groupedByComp);
-        entries.sort((a, b) => {
-          // Handle null values (reference) - put them first
+        entries.sort(function(a, b) {
           if (a[0] === "null") return -1;
           if (b[0] === "null") return 1;
           return parseFloat(a[0]) - parseFloat(b[0]);
         });
         
-        // For each comparison value, create a series
         const series = [];
         
-        // First create all full model series
-        entries.forEach(([compValue, rows]) => {
-          // Sort by time
+        // Create full model series
+        entries.forEach(function([compValue, rows]) {
           const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
           const parsedValue = compValue === "null" ? null : parseFloat(compValue);
           const categoryLabel = getLegendLabel(selectedCompFactor, parsedValue);
           
           series.push({
             name: `Fully Adjusted: ${categoryLabel}`,
-            categoryLabel,
+            categoryLabel: categoryLabel,
             modelType: 'Fully Adjusted Model',
             compValue: parsedValue,
             color: getLineColor(parsedValue, comparisonValues),
-            data: sortedRows.map(row => processDataPoint({
-              time: row.TimeFromTransfusion,
-              predBase: row.PredVal_Base,
-              predFull: row.PredVal_Full,
-              lower: row.Lower_Full,
-              upper: row.Upper_Full
-            }))
+            data: sortedRows.map(function(row) {
+              return processDataPoint({
+                time: row.TimeFromTransfusion,
+                predBase: row.PredVal_Base,
+                predFull: row.PredVal_Full,
+                lower: row.Lower_Full,
+                upper: row.Upper_Full
+              });
+            })
           });
         });
         
-        // Then add base model series if enabled
+        // Add base model series if enabled
         if (showBaseModel) {
-          entries.forEach(([compValue, rows]) => {
-            // Sort by time
+          entries.forEach(function([compValue, rows]) {
             const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
             const parsedValue = compValue === "null" ? null : parseFloat(compValue);
             const categoryLabel = getLegendLabel(selectedCompFactor, parsedValue);
             
             series.push({
               name: `Base: ${categoryLabel}`,
-              categoryLabel,
+              categoryLabel: categoryLabel,
               modelType: 'Base Model',
               compValue: parsedValue,
               color: getLineColor(parsedValue, comparisonValues),
               isBase: true,
-              data: sortedRows.map(row => processDataPoint({
-                time: row.TimeFromTransfusion,
-                predBase: row.PredVal_Base,
-                predFull: row.PredVal_Full,
-                lower: row.Lower_Full,
-                upper: row.Upper_Full
-              }))
+              data: sortedRows.map(function(row) {
+                return processDataPoint({
+                  time: row.TimeFromTransfusion,
+                  predBase: row.PredVal_Base,
+                  predFull: row.PredVal_Full,
+                  lower: row.Lower_Full,
+                  upper: row.Upper_Full
+                });
+              })
             });
           });
         }
         
         return series;
-      };
+      }
 
-      // Handle vital parameter change
-      const handleVitalChange = (e) => {
-        setSelectedVital(e.target.value);
+      // Event handlers
+      function handleVitalChange(event) {
+        setSelectedVital(event.target.value);
         setChartData([]);
         setError(null);
-      };
+      }
 
-      // Handle comparison factor change
-      const handleCompFactorChange = (e) => {
-        setSelectedCompFactor(e.target.value);
+      function handleCompFactorChange(event) {
+        setSelectedCompFactor(event.target.value);
         setChartData([]);
         setError(null);
-      };
+      }
 
-      // Handle comparison value selection
-      const handleComparisonSelection = (value) => {
+      function handleComparisonSelection(value) {
         if (selectedComparison.includes(value)) {
-          setSelectedComparison(selectedComparison.filter(v => v !== value));
+          setSelectedComparison(selectedComparison.filter(function(v) { return v !== value; }));
         } else {
           setSelectedComparison([...selectedComparison, value]);
         }
-      };
-
-      // Handle time range change
-      const handleTimeRangeChange = (e, index) => {
-        const newRange = [...timeRange];
-        newRange[index] = parseInt(e.target.value);
-        setTimeRange(newRange);
-      };
-
-      // Add a debug section to help troubleshoot
-      const renderDebugSection = () => {
-        if (!error) return null;
-        
-        return (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <h3 className="text-lg font-medium text-red-800">Debug Information</h3>
-            <div className="mt-2 space-y-2 text-sm text-red-700">
-              <p><strong>Error:</strong> {error}</p>
-              <p><strong>Current File:</strong> {currentFileName}</p>
-              <p><strong>Vital Parameter:</strong> {selectedVital}</p>
-              <p><strong>Comparison Factor:</strong> {selectedCompFactor}</p>
-              <p><strong>Recharts Available:</strong> {window.Recharts ? 'Yes' : 'No'}</p>
-              <p><strong>Lodash Available:</strong> {window._ ? 'Yes' : 'No'}</p>
-              <p><strong>Papa Parse Available:</strong> {window.Papa ? 'Yes' : 'No'}</p>
-            </div>
-          </div>
-        );
-      };
-
-      return (
-        <div className="flex flex-col h-full w-full max-w-6xl mx-auto p-4 space-y-4 bg-white rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-center">Transfusion Data Visualization Dashboard</h1>
-          <p className="text-center text-sm text-gray-600">Displaying time-series data after blood transfusion</p>
-          
-          {/* Debug information if there are errors */}
-          {renderDebugSection()}
-          
-          {/* Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Vital Parameter:</label>
-              <select 
-                value={selectedVital} 
-                onChange={handleVitalChange}
-                className="w-full p-2 border rounded"
-                disabled={loading}
-              >
-                {vitalParams.map(vital => (
-                  <option key={vital.value} value={vital.value}>
-                    {vital.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Comparison Factor:</label>
-              <select 
-                value={selectedCompFactor} 
-                onChange={handleCompFactorChange}
-                className="w-full p-2 border rounded"
-                disabled={loading}
-              >
-                {compFactors.map(factor => (
-                  <option key={factor.value} value={factor.value}>
-                    {factor.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-medium">Time Range (minutes):</label>
-              <div className="flex items-center space-x-2">
-                <input 
-                  type="number" 
-                  value={timeRange[0]} 
-                  onChange={e => handleTimeRangeChange(e, 0)}
-                  className="w-24 p-2 border rounded"
-                  min="0"
-                  max={timeRange[1]}
-                />
-                <span>to</span>
-                <input 
-                  type="number" 
-                  value={timeRange[1]} 
-                  onChange={e => handleTimeRangeChange(e, 1)}
-                  className="w-24 p-2 border rounded"
-                  min={timeRange[0]}
-                  max="720"
-                />
-                <button 
-                  onClick={() => setTimeRange([0, 720])}
-                  className="px-2 py-1 bg-gray-200 rounded text-sm"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Display Options:</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showConfidenceInterval}
-                    onChange={() => setShowConfidenceInterval(!showConfidenceInterval)}
-                    className="mr-2"
-                  />
-                  Show Confidence Interval
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showBaseModel}
-                    onChange={() => setShowBaseModel(!showBaseModel)}
-                    className="mr-2"
-                  />
-                  Show Base Model
-                </label>
-              </div>
-            </div>
-            
-            <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-medium">Comparison Values:</label>
-              <div className="flex flex-wrap gap-2">
-                {comparisonValues.map(value => (
-                  <button
-                    key={value === null ? 'null' : value}
-                    onClick={() => handleComparisonSelection(value)}
-                    className={`px-3 py-1 rounded text-sm ${
-                      selectedComparison.includes(value)
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200'
-                    }`}
-                    style={{
-                      borderLeft: selectedComparison.includes(value) 
-                        ? `4px solid ${getLineColor(value, comparisonValues)}` 
-                        : '4px solid transparent'
-                    }}
-                  >
-                    {getLegendLabel(selectedCompFactor, value)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          {/* Visualization */}
-          <div className="flex-1 bg-white border rounded-lg p-4 min-h-96">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <p>Loading visualization data...</p>
-              </div>
-            ) : error ? (
-              <div className="flex items-center justify-center h-full text-red-500">
-                <p>{error}</p>
-              </div>
-            ) : chartData.length > 0 ? (
-              <div className="space-y-4 h-full">
-                <h2 className="text-lg font-semibold text-center">
-                  {metaInfo.vitalName} by {metaInfo.compName}
-                </h2>
-                <div className="flex justify-center space-x-4 mb-2">
-                  <div className="px-3 py-1 bg-blue-100 rounded text-sm border-l-4 border-blue-500">
-                    <span className="font-medium">Base Model:</span> Adjusts for time, age, ICU time, RBC count, sex, and ward
-                  </div>
-                  <div className="px-3 py-1 bg-blue-100 rounded text-sm border-l-4 border-blue-500">
-                    <span className="font-medium">Fully Adjusted Model:</span> Base model + fluids, vasopressors, and sedatives
-                  </div>
-                </div>
-                <div className="h-96">
-                  {LineChart && XAxis && YAxis ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="time" 
-                          type="number" 
-                          domain={[timeRange[0], timeRange[1]]}
-                          label={{ 
-                            value: 'Time From Transfusion (minutes)', 
-                            position: 'insideBottom', 
-                            offset: -5 
-                          }}
-                        />
-                        <YAxis 
-                          domain={getYAxisDomain(getChartData(), selectedVital)}
-                          tickFormatter={(value) => Math.round(value)}
-                          label={{ 
-                            value: metaInfo.yLabel, 
-                            angle: -90, 
-                            position: 'insideLeft',
-                          }}
-                        />
-                        <Tooltip 
-                          formatter={(value, name) => [value.toFixed(1), name]}
-                          labelFormatter={(label) => `Time: ${label} min`}
-                        />
-                        <Legend 
-                          content={props => {
-                            const { payload } = props;
-                            if (!payload || !payload.length) return null;
-                            
-                            // Group by model type, safely checking for valid string values
-                            const baseModels = payload.filter(entry => 
-                              entry && entry.value && typeof entry.value === 'string' && 
-                              entry.value.includes('Base:')
-                            );
-                            
-                            const fullyAdjustedModels = payload.filter(entry => 
-                              entry && entry.value && typeof entry.value === 'string' && 
-                              entry.value.includes('Fully Adjusted:')
-                            );
-                            
-                            // Sort by category (indicated by numeric value if possible)
-                            const sortEntries = (entries) => {
-                              return [...entries].sort((a, b) => {
-                                // Extract category for sorting
-                                const categoryA = a.value.split(': ')[1] || '';
-                                const categoryB = b.value.split(': ')[1] || '';
-                                
-                                // Try to extract numeric values for comparison
-                                const numA = parseFloat(categoryA.match(/\d+(\.\d+)?/)?.[0] || '0');
-                                const numB = parseFloat(categoryB.match(/\d+(\.\d+)?/)?.[0] || '0');
-                                
-                                if (!isNaN(numA) && !isNaN(numB)) {
-                                  return numA - numB;
-                                }
-                                
-                                // Fallback to alphabetical sort
-                                return categoryA.localeCompare(categoryB);
-                              });
-                            };
-                            
-                            const sortedBaseModels = sortEntries(baseModels);
-                            const sortedFullyAdjustedModels = sortEntries(fullyAdjustedModels);
-                            
-                            return (
-                              <div className="custom-legend" style={{ width: '100%', display: 'flex', justifyContent: 'space-around', marginTop: '10px' }}>
-                                {/* Base Model Column */}
-                                <div style={{ flex: 1, maxWidth: '45%' }}>
-                                  <h4 className="font-medium text-gray-700 mb-1">Base Model</h4>
-                                  <ul className="pl-0 mt-0">
-                                    {sortedBaseModels.map((entry, index) => {
-                                      const category = (entry.value && entry.value.split(': ')[1]) || entry.value || '';
-                                      return (
-                                        <li key={`base-${index}`} className="flex items-center mb-1">
-                                          <span
-                                            style={{
-                                              display: 'inline-block',
-                                              width: '14px',
-                                              height: '14px',
-                                              backgroundColor: entry.color,
-                                              marginRight: '8px',
-                                              border: '1px solid #eee'
-                                            }}
-                                          ></span>
-                                          <span className="text-sm">{category}</span>
-                                        </li>
-                                      );
-                                    })}
-                                  </ul>
-                                </div>
-                                
-                                {/* Fully Adjusted Model Column */}
-                                <div style={{ flex: 1, maxWidth: '45%' }}>
-                                  <h4 className="font-medium text-gray-700 mb-1">Fully Adjusted Model</h4>
-                                  <ul className="pl-0 mt-0">
-                                    {sortedFullyAdjustedModels.map((entry, index) => {
-                                      const category = (entry.value && entry.value.split(': ')[1]) || entry.value || '';
-                                      return (
-                                        <li key={`full-${index}`} className="flex items-center mb-1">
-                                          <span
-                                            style={{
-                                              display: 'inline-block',
-                                              width: '14px',
-                                              height: '14px',
-                                              backgroundColor: entry.color,
-                                              marginRight: '8px',
-                                              border: '1px solid #eee'
-                                            }}
-                                          ></span>
-                                          <span className="text-sm">{category}</span>
-                                        </li>
-                                      );
-                                    })}
-                                  </ul>
-                                </div>
-                              </div>
-                            );
-                          }}
-                        />
-                        <ReferenceLine y={0} stroke="#000" />
-                        
-                        {getChartData().map(series => (
-                          <Fragment key={`${series.modelType}-${series.compValue === null ? 'null' : series.compValue}`}>
-                            {/* Series Line */}
-                            <Line
-                              name={series.name}
-                              data={series.data}
-                              dataKey={series.isBase ? "predBase" : "predFull"}
-                              stroke={series.color}
-                              strokeWidth={series.isBase ? 1.5 : 2}
-                              strokeDasharray={series.isBase ? "5 5" : undefined}
-                              dot={false}
-                              activeDot={series.isBase ? false : { r: 6 }}
-                            />
-                            
-                            {/* Confidence Interval (if enabled and not base model) */}
-                            {showConfidenceInterval && !series.isBase && (
-                              <Area
-                                name={`${series.categoryLabel} (CI)`}
-                                data={series.data}
-                                dataKey="lower"
-                                stroke="none"
-                                fill={series.color}
-                                fillOpacity={0.1}
-                                legendType="none"
-                              />
-                            )}
-                            {showConfidenceInterval && !series.isBase && (
-                              <Area
-                                data={series.data}
-                                dataKey="upper"
-                                stroke="none"
-                                fill={series.color}
-                                fillOpacity={0.1}
-                                legendType="none"
-                              />
-                            )}
-                          </Fragment>
-                        ))}
-                      </LineChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-red-500">Recharts components not available. Please check console for errors.</p>
-                    </div>
-                  )}
-                </div>
-                <div className="text-center text-sm text-gray-500">
-                  <p>File: {currentFileName}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p>Select parameters to visualize data</p>
-              </div>
-            )}
-          </div>
-          
-          {/* Info Footer */}
-          <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded">
-            <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood storage factors affect patient outcomes.</p>
-            <p className="mt-1">
-              <strong>Data Categories:</strong><br/>
-              <span className="font-medium">DonorHb_Cat:</span> Donor hemoglobin levels (g/L)<br/>
-              <span className="font-medium">Storage_Cat:</span> Blood storage duration (days)<br/>
-              <span className="font-medium">DonorSex:</span> Biological sex of donor<br/>
-              <span className="font-medium">DonorParity:</span> Whether donor has given birth (Parous) or not (Nulliparous)<br/>
-              <span className="font-medium">wdy_donation:</span> Day of the week when donation occurred
-            </p>
-          </div>
-        </div>
-      );
-    };
-    
-    // Render the app with error handling
-    document.addEventListener('DOMContentLoaded', function() {
-      try {
-        ReactDOM.render(<App />, document.getElementById('app'));
-        // Hide loading message once app is rendered
-        const loadingMessage = document.getElementById('loading-message');
-        if (loadingMessage) {
-          loadingMessage.style.display = 'none';
-        }
-      } catch (e) {
-        console.error("Error rendering app:", e);
-        document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
-          <h3>App Rendering Error:</h3>
-          <p>${e.message}</p>
-        </div>`;
       }
-    });
+
+      function handleTimeRangeChange(index, value) {
+        const newRange = [...timeRange];
+        newRange[index] = parseInt(value);
+        setTimeRange(newRange);
+      }
+      
+      function renderChart() {
+        const chartSeries = getChartData();
+        const yDomain = getYAxisDomain(chartSeries, selectedVital);
+        
+        // Create line elements
+        const lineElements = [];
+        const areaElements = [];
+        
+        chartSeries.forEach(function(series, index) {
+          // Add line
+          lineElements.push(
+            e(Line, {
+              key: `line-${index}`,
+              name: series.name,
+              data: series.data,
+              dataKey: series.isBase ? "predBase" : "predFull",
+              stroke: series.color,
+              strokeWidth: series.isBase ? 1.5 : 2,
+              strokeDasharray: series.isBase ? "5 5" : undefined,
+              dot: false,
+              activeDot: series.isBase ? false : { r: 6 }
+            })
+          );
+          
+          // Add confidence interval areas
+          if (showConfidenceInterval && !series.isBase) {
+            areaElements.push(
+              e(Area, {
+                key: `area-lower-${index}`,
+                name: `${series.categoryLabel} (CI)`,
+                data: series.data,
+                dataKey: "lower",
+                stroke: "none",
+                fill: series.color,
+                fillOpacity: 0.1,
+                legendType: "none"
+              })
+            );
+            
+            areaElements.push(
+              e(Area, {
+                key: `area-upper-${index}`,
+                data: series.data,
+                dataKey: "upper",
+                stroke: "none",
+                fill: series.color,
+                fillOpacity: 0.1,
+                legendType: "none"
+              })
+            );
+          }
+        });
+        
+        // Create the chart
+        return e(ResponsiveContainer, { width: "100%", height: 400 },
+          e(LineChart, { margin: { top: 20, right: 30, left: 20, bottom: 10 } },
+            e(CartesianGrid, { strokeDasharray: "3 3" }),
+            e(XAxis, {
+              dataKey: "time",
+              type: "number",
+              domain: [timeRange[0], timeRange[1]],
+              label: {
+                value: 'Time From Transfusion (minutes)',
+                position: 'insideBottom',
+                offset: -5
+              }
+            }),
+            e(YAxis, {
+              domain: yDomain,
+              tickFormatter: function(value) { return Math.round(value); },
+              label: {
+                value: metaInfo.yLabel,
+                angle: -90,
+                position: 'insideLeft'
+              }
+            }),
+            e(Tooltip, {
+              formatter: function(value, name) { return [value.toFixed(1), name]; },
+              labelFormatter: function(label) { return `Time: ${label} min`; }
+            }),
+            e(Legend, {
+              align: 'center',
+              verticalAlign: 'bottom'
+            }),
+            e(ReferenceLine, { y: 0, stroke: "#000" }),
+            ...areaElements,
+            ...lineElements
+          )
+        );
+      }
+      
+      // Render browser warning if using Chrome
+      const browserWarning = isChromeBrowser() ? 
+        e('div', { className: 'browser-warning' },
+          'This dashboard may not work correctly in Chrome. Please try Microsoft Edge or Firefox for best results.'
+        ) : null;
+      
+      // Main render
+      return e('div', { className: 'container' },
+        browserWarning,
+        
+        e('h1', { className: 'text-2xl font-bold text-center mb-4' }, 
+          'Transfusion Data Visualization Dashboard'
+        ),
+        
+        e('p', { className: 'text-center text-gray-500 mb-4' },
+          'Displaying time-series data after blood transfusion'
+        ),
+        
+        // Controls
+        e('div', { className: 'card' },
+          e('div', { className: 'flex flex-col md:flex-row gap-4' },
+            // Vital parameter selector
+            e('div', { className: 'flex-1' },
+              e('label', { className: 'label' }, 'Vital Parameter:'),
+              e('select', {
+                value: selectedVital,
+                onChange: handleVitalChange,
+                className: 'select',
+                disabled: loading
+              }, vitalParams.map(function(vital) {
+                return e('option', { key: vital.value, value: vital.value }, vital.label);
+              }))
+            ),
+            
+            // Comparison factor selector
+            e('div', { className: 'flex-1' },
+              e('label', { className: 'label' }, 'Comparison Factor:'),
+              e('select', {
+                value: selectedCompFactor,
+                onChange: handleCompFactorChange,
+                className: 'select',
+                disabled: loading
+              }, compFactors.map(function(factor) {
+                return e('option', { key: factor.value, value: factor.value }, factor.label);
+              }))
+            )
+          ),
+          
+          // Time range controls
+          e('div', { className: 'mt-4' },
+            e('label', { className: 'label' }, 'Time Range (minutes):'),
+            e('div', { className: 'flex items-center gap-4' },
+              e('input', {
+                type: 'number',
+                value: timeRange[0],
+                onChange: function(e) { handleTimeRangeChange(0, e.target.value); },
+                className: 'select',
+                style: { maxWidth: '100px' },
+                min: 0,
+                max: timeRange[1]
+              }),
+              e('span', null, 'to'),
+              e('input', {
+                type: 'number',
+                value: timeRange[1],
+                onChange: function(e) { handleTimeRangeChange(1, e.target.value); },
+                className: 'select',
+                style: { maxWidth: '100px' },
+                min: timeRange[0],
+                max: 720
+              }),
+              e('button', {
+                onClick: function() { setTimeRange([0, 720]); },
+                className: 'btn btn-gray'
+              }, 'Reset')
+            )
+          ),
+          
+          // Display options
+          e('div', { className: 'mt-4' },
+            e('label', { className: 'label' }, 'Display Options:'),
+            e('div', { className: 'flex gap-4' },
+              e('label', { className: 'flex items-center' },
+                e('input', {
+                  type: 'checkbox',
+                  checked: showConfidenceInterval,
+                  onChange: function() { setShowConfidenceInterval(!showConfidenceInterval); },
+                  style: { marginRight: '8px' }
+                }),
+                'Show Confidence Interval'
+              ),
+              e('label', { className: 'flex items-center' },
+                e('input', {
+                  type: 'checkbox',
+                  checked: showBaseModel,
+                  onChange: function() { setShowBaseModel(!showBaseModel); },
+                  style: { marginRight: '8px' }
+                }),
+                'Show Base Model'
+              )
+            )
+          ),
+          
+          // Comparison values selection
+          e('div', { className: 'mt-4' },
+            e('label', { className: 'label' }, 'Comparison Values:'),
+            e('div', { className: 'flex flex-wrap gap-2' },
+              comparisonValues.map(function(value) {
+                return e('button', {
+                  key: value === null ? 'null' : value,
+                  onClick: function() { handleComparisonSelection(value); },
+                  className: selectedComparison.includes(value) ? 'filter-pill active' : 'filter-pill',
+                  style: {
+                    borderLeft: selectedComparison.includes(value)
+                      ? `4px solid ${getLineColor(value, comparisonValues)}`
+                      : '4px solid transparent'
+                  }
+                }, getLegendLabel(selectedCompFactor, value));
+              })
+            )
+          )
+        ),
+        
+        // Visualization area
+        e('div', { className: 'card' },
+          loading ? 
+            e('div', { className: 'flex items-center justify-center', style: { height: '400px' } },
+              e('p', null, 'Loading visualization data...')
+            ) :
+            error ?
+              e('div', { className: 'status-msg error' },
+                e('p', null, error)
+              ) :
+              chartData.length > 0 ?
+                e('div', null,
+                  e('h2', { className: 'text-xl font-bold text-center mb-4' },
+                    `${metaInfo.vitalName} by ${metaInfo.compName}`
+                  ),
+                  
+                  e('div', { className: 'flex justify-center gap-4 mb-4' },
+                    e('div', { className: 'p-2 bg-blue-100 rounded text-sm', style: { borderLeft: '4px solid #3b82f6' } },
+                      e('span', { className: 'font-bold' }, 'Base Model: '),
+                      'Adjusts for time, age, ICU time, RBC count, sex, and ward'
+                    ),
+                    e('div', { className: 'p-2 bg-blue-100 rounded text-sm', style: { borderLeft: '4px solid #3b82f6' } },
+                      e('span', { className: 'font-bold' }, 'Fully Adjusted Model: '),
+                      'Base model + fluids, vasopressors, and sedatives'
+                    )
+                  ),
+                  
+                  // Chart
+                  renderChart(),
+                  
+                  e('div', { className: 'text-center text-sm text-gray-500 mt-2' },
+                    e('p', null, `File: ${currentFileName}`)
+                  )
+                ) :
+                e('div', { className: 'flex items-center justify-center', style: { height: '400px' } },
+                  e('p', null, 'Select parameters to visualize data')
+                )
+        ),
+        
+        // Info footer
+        e('div', { className: 'card' },
+          e('p', { className: 'text-sm text-gray-700' },
+            'This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood storage factors affect patient outcomes.'
+          ),
+          e('p', { className: 'text-sm text-gray-700 mt-2' },
+            e('strong', null, 'Data Categories:'), e('br'),
+            e('span', { className: 'font-medium' }, 'DonorHb_Cat: '), 'Donor hemoglobin levels (g/L)', e('br'),
+            e('span', { className: 'font-medium' }, 'Storage_Cat: '), 'Blood storage duration (days)', e('br'),
+            e('span', { className: 'font-medium' }, 'DonorSex: '), 'Biological sex of donor', e('br'),
+            e('span', { className: 'font-medium' }, 'DonorParity: '), 'Whether donor has given birth (Parous) or not (Nulliparous)', e('br'),
+            e('span', { className: 'font-medium' }, 'wdy_donation: '), 'Day of the week when donation occurred'
+          )
+        )
+      );
+    }
+    
+    // Render app with error handling
+    try {
+      ReactDOM.render(e(App), document.getElementById('root'));
+      console.log("App rendered successfully");
+    } catch (err) {
+      console.error("Fatal error rendering app:", err);
+      document.getElementById('root').innerHTML = `
+        <div class="status-msg error" style="margin:20px">
+          <h3>Error Rendering Dashboard:</h3>
+          <p>${err.message}</p>
+          <p>Try using Edge or Firefox instead of Chrome.</p>
+        </div>
+      `;
+    }
   </script>
 </body>
 </html>
