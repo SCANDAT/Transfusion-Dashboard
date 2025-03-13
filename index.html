@@ -236,14 +236,14 @@
         const infoCard = document.createElement('div');
         infoCard.className = 'card';
         infoCard.innerHTML = `
-          <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood storage factors affect patient outcomes.</p>
-          <p><strong>Data Categories:</strong></p>
+          <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood component factors affect vital parameter trajectories in ICU patients.</p>
+          <p><strong>Component Factors:</strong></p>
           <ul>
-            <li><strong>DonorHb_Cat:</strong> Donor hemoglobin levels (g/L)</li>
-            <li><strong>Storage_Cat:</strong> Blood storage duration (days)</li>
-            <li><strong>DonorSex:</strong> Biological sex of donor</li>
-            <li><strong>DonorParity:</strong> Whether donor has given birth (Parous) or not (Nulliparous)</li>
-            <li><strong>wdy_donation:</strong> Day of the week when donation occurred</li>
+            <li><strong>Donor hemoglobin levels (g/L)</li>
+            <li><strong>RBC component storage time (days)</li>
+            <li><strong>Biological sex of donor (M/F)</li>
+            <li><strong>Whether donor has given birth (Parous) or not (Nulliparous)</li>
+            <li><strong>Day of the week when donation occurred</li>
           </ul>
         `;
         this.container.appendChild(infoCard);
