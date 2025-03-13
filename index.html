@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!<!DOCTYPE html>
 <html>
 <head>
   <title>Transfusion Data Dashboard</title>
@@ -117,11 +117,8 @@
         this.comparisonValues = [];   
         this.selectedComparisons = [];
         this.timeRange = [0, 720];    
-
-        // *** CHANGED BELOW: default to false so they are unchecked on initial load
         this.showConfidenceInterval = false; 
         this.showBaseModel = false; 
-
         this.metaInfo = {             
           vitalName: '',
           compName: '',
@@ -175,7 +172,8 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label class="form-label">Comparison Factor:</label>
+                <!-- CHANGED #2: rename label from "Comparison Factor" to "RBC Component Factor" -->
+                <label class="form-label">RBC Component Factor:</label>
                 <select id="factor-select" class="form-select"></select>
               </div>
             </div>
@@ -224,10 +222,13 @@
         chartCard.className = 'card';
         chartCard.innerHTML = `
           <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
-          <div id="chart-legend" class="info"></div>
+          <!-- We'll move the legend below the chart, so remove it here and place after the canvas -->
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
           </div>
+          <!-- Moved legend below the chart -->
+          <div id="chart-legend" class="info" style="margin-top: 10px;"></div>
+
           <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
         `;
         this.container.appendChild(chartCard);
@@ -311,7 +312,7 @@
           }
         });
         
-        // *** CHANGED BELOW: reflect initial unchecked state in the actual checkboxes
+        // Reflect initial unchecked state in the actual checkboxes
         document.getElementById('show-ci').checked = false;
         document.getElementById('show-base').checked = false;
       }
@@ -323,7 +324,6 @@
           console.log("Loading index data...");
           this.logDebug("Attempting to load index data...");
           
-          // Try lowercase and uppercase with better error handling
           const indexFileOptions = [
             { case: 'lowercase', path: './data/viz_index.csv' },
             { case: 'uppercase', path: './data/VIZ_INDEX.CSV' }
@@ -353,13 +353,11 @@
             throw new Error("Could not load index file in either uppercase or lowercase format");
           }
           
-          // Parse CSV
           this.logDebug("Parsing index CSV...");
           Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true,
             complete: (results) => {
-              // Check for any parse errors
               if (results.errors && results.errors.length > 0) {
                 this.logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
                 if (results.errors.some(e => e.code === "MissingHeader")) {
@@ -372,7 +370,6 @@
                 this.logDebug(`Sample row: ${JSON.stringify(results.data[0])}`);
               }
               
-              // Clean data
               this.indexData = results.data.map(row => {
                 const cleanRow = {};
                 Object.keys(row).forEach(key => {
@@ -381,7 +378,6 @@
                 return cleanRow;
               });
               
-              // Extract vital parameters
               this.vitalParams = _.uniqBy(this.indexData, 'VitalParam')
                 .map(item => ({
                   value: item.VitalParam,
@@ -390,7 +386,7 @@
               
               this.logDebug(`Found ${this.vitalParams.length} unique vital parameters`);
               
-              // *** CHANGED BELOW: default vital to Mean Arterial Pressure (mmHg)
+              // Default to Mean Arterial Pressure (mmHg)
               if (this.vitalParams.length > 0) {
                 const desiredVital = this.vitalParams.find(v => v.label === 'Mean Arterial Pressure (mmHg)');
                 if (desiredVital) {
@@ -435,12 +431,13 @@
         
         this.updateCompFactorSelect();
         
-        // *** CHANGED BELOW: default comp factor to Donor Hemoglobin
+        // Force the default to Donor Hemoglobin if it exists
         if (this.compFactors.length > 0) {
           const desiredComp = this.compFactors.find(f => f.label === 'Donor Hemoglobin');
           if (desiredComp) {
             this.selectedCompFactor = desiredComp.value;
           } else {
+            // fallback to the first if we don't find "Donor Hemoglobin"
             this.selectedCompFactor = this.compFactors[0].value;
           }
           this.logDebug(`Selected initial comparison factor: ${this.selectedCompFactor}`);
@@ -478,15 +475,14 @@
           select.appendChild(option);
         });
         
+        // Ensure the dropdown is populated with the selected factor
         select.value = this.selectedCompFactor;
       }
       
-      // Improved safe fetch with multiple case options
+      // Safe fetch with multiple case options
       async safeFetch(baseName) {
-        // Try multiple variants of the filename
         const fileOptions = [];
         
-        // Add variants based on determined file case
         if (this.fileCase === 'uppercase') {
           fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
           fileOptions.push(`./data/${baseName.toUpperCase()}.csv`);
@@ -495,7 +491,7 @@
           fileOptions.push(`./data/${baseName}.CSV`);
         }
         
-        // Always try both cases as fallback
+        // Always try both cases
         fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
         fileOptions.push(`./data/${baseName}.csv`);
         
@@ -507,7 +503,6 @@
           try {
             this.logDebug(`Trying path: ${path}`);
             const response = await fetch(path);
-            
             if (response.ok) {
               this.logDebug(`Successfully loaded file from: ${path}`);
               return { 
@@ -534,18 +529,13 @@
         try {
           this.showLoading();
           
-          // Construct the base filename (without extension)
           const baseFileName = `VIZ_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}`;
           this.logDebug(`Base visualization filename: ${baseFileName}`);
           
-          // Use the improved safeFetch method
           const { text: csvText, path: loadedPath } = await this.safeFetch(baseFileName);
-          
-          // Update the displayed filename
           this.currentFileName = loadedPath.split('/').pop();
           this.logDebug(`Using file: ${this.currentFileName}`);
           
-          // Parse CSV
           this.logDebug("Parsing visualization CSV...");
           Papa.parse(csvText, {
             header: true,
@@ -565,7 +555,6 @@
                 this.logDebug(`Sample visualization data row: ${JSON.stringify(results.data[0])}`);
               }
               
-              // Extract metadata
               const firstRow = results.data[0];
               this.metaInfo = {
                 vitalName: firstRow.VitalName || "Vital Parameter",
@@ -575,15 +564,13 @@
               
               this.logDebug(`Metadata: ${JSON.stringify(this.metaInfo)}`);
               
-              // Update chart title
               document.getElementById('chart-title').innerHTML = `
                 <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
               `;
               
-              // Update file info
               document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
               
-              // Update chart legend
+              // The legend is now below the chart
               document.getElementById('chart-legend').innerHTML = `
                 <div style="display: flex; justify-content: center; gap: 20px;">
                   <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
@@ -597,7 +584,6 @@
               
               this.logDebug(`Columns in visualization data: ${results.meta.fields.join(', ')}`);
               
-              // Determine comparison column name
               const sampleRow = results.data[0];
               const comparisonColumnName = Object.keys(sampleRow).find(key => 
                 key !== 'TimeFromTransfusion' && 
@@ -621,7 +607,6 @@
               
               this.logDebug(`Determined comparison column: ${comparisonColumnName}`);
               
-              // Get unique comparison values
               this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
                 .map(row => row[comparisonColumnName])
                 .filter(value => value !== null && value !== undefined)
@@ -629,31 +614,25 @@
               
               this.logDebug(`Found ${this.comparisonValues.length} unique comparison values: ${this.comparisonValues.join(', ')}`);
               
-              // Add null as a separate option if it exists
               const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
               if (hasNullValues) {
                 this.comparisonValues.unshift(null);
                 this.logDebug("Added null reference value");
               }
               
-              // Default to all non-null values
               this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
               this.logDebug(`Selected comparison values: ${this.selectedComparisons.join(', ')}`);
               
-              // Update comparison tags
               this.updateComparisonTags(comparisonColumnName);
               
-              // Store chart data with comparison column name
               this.chartData = {
                 data: results.data,
                 comparisonColumn: comparisonColumnName
               };
               
-              // Update time inputs
               document.getElementById('time-min').value = this.timeRange[0];
               document.getElementById('time-max').value = this.timeRange[1];
               
-              // Update chart
               this.updateChart();
               
               this.hideLoading();
@@ -671,7 +650,6 @@
         }
       }
       
-      // Update comparison value tags
       updateComparisonTags(comparisonColumnName) {
         const container = document.getElementById('comparison-tags');
         container.innerHTML = '';
@@ -693,7 +671,6 @@
         });
       }
       
-      // Get human-readable label for comparison value
       getLegendLabel(value, modelType = null) {
         if (value === null) return 'Reference';
         
@@ -738,16 +715,15 @@
         return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
       }
       
-      // Get line color for a value
       getLineColor(value, index = 0) {
         const colors = [
-          {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},  // blue
-          {line: 'rgb(255, 127, 14)', area: 'rgba(255, 127, 14, 0.2)'},  // orange
-          {line: 'rgb(44, 160, 44)', area: 'rgba(44, 160, 44, 0.2)'},    // green
-          {line: 'rgb(214, 39, 40)', area: 'rgba(214, 39, 40, 0.2)'},    // red
-          {line: 'rgb(148, 103, 189)', area: 'rgba(148, 103, 189, 0.2)'}, // purple
-          {line: 'rgb(140, 86, 75)', area: 'rgba(140, 86, 75, 0.2)'},    // brown
-          {line: 'rgb(227, 119, 194)', area: 'rgba(227, 119, 194, 0.2)'}, // pink
+          {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},
+          {line: 'rgb(255, 127, 14)', area: 'rgba(255, 127, 14, 0.2)'},
+          {line: 'rgb(44, 160, 44)', area: 'rgba(44, 160, 44, 0.2)'},
+          {line: 'rgb(214, 39, 40)', area: 'rgba(214, 39, 40, 0.2)'},
+          {line: 'rgb(148, 103, 189)', area: 'rgba(148, 103, 189, 0.2)'},
+          {line: 'rgb(140, 86, 75)', area: 'rgba(140, 86, 75, 0.2)'},
+          {line: 'rgb(227, 119, 194)', area: 'rgba(227, 119, 194, 0.2)'}
         ];
         
         if (value === null) {
@@ -762,7 +738,6 @@
         return colors[valueIndex % colors.length];
       }
       
-      // Process data for percentage formatting (unused in the current logic, but left as is)
       processDataPoint(point) {
         const needsMultiplication = 
           point.predBase !== null && point.predBase < 1 &&
@@ -781,13 +756,11 @@
         return point;
       }
       
-      // Get data for Chart.js
       prepareChartData() {
         if (!this.chartData.data || this.chartData.data.length === 0) return null;
         
         const compColumn = this.chartData.comparisonColumn;
         
-        // Filter data
         const filteredData = this.chartData.data.filter(row => 
           this.selectedComparisons.includes(row[compColumn]) && 
           row.TimeFromTransfusion >= this.timeRange[0] && 
@@ -796,7 +769,6 @@
         
         if (filteredData.length === 0) return null;
         
-        // Group data by comparison value
         const groupedByComp = _.groupBy(filteredData, compColumn);
         
         const datasets = [];
@@ -804,7 +776,6 @@
         
         Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
           const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
-          
           sortedRows.forEach(row => {
             if (!allTimes.includes(row.TimeFromTransfusion)) {
               allTimes.push(row.TimeFromTransfusion);
@@ -831,7 +802,7 @@
             pointHoverRadius: 4
           });
           
-          // Confidence Interval
+          // CI
           if (this.showConfidenceInterval) {
             datasets.push({
               label: `${categoryLabel} (CI)`,
@@ -888,7 +859,6 @@
         };
       }
       
-      // Update chart
       updateChart() {
         const chartData = this.prepareChartData();
         
@@ -962,11 +932,13 @@
               }
             },
             plugins: {
+              // CHANGED #3: move legend "below" by setting position to bottom
               legend: {
                 display: true,
-                position: 'top',
+                position: 'bottom',
                 labels: {
                   filter: function(legendItem) {
+                    // Hide CI Upper
                     return !legendItem.text.includes('CI Upper');
                   }
                 }
@@ -983,7 +955,6 @@
         });
       }
       
-      // Clear chart
       clearChart() {
         if (this.chart) {
           this.chart.destroy();
@@ -991,19 +962,15 @@
         }
       }
       
-      // Log debug information
       logDebug(message) {
         if (!this.debugMode) return;
-        
         const debugOutput = document.getElementById('debug-output');
         const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
         debugOutput.textContent += `[${timestamp}] ${message}\n`;
         debugOutput.scrollTop = debugOutput.scrollHeight;
-        
         console.log(`[DEBUG] ${message}`);
       }
       
-      // Show loading indicator
       showLoading() {
         if (!this.loadingElement) {
           this.loadingElement = document.createElement('div');
@@ -1013,7 +980,6 @@
         }
       }
       
-      // Hide loading indicator
       hideLoading() {
         if (this.loadingElement) {
           this.loadingElement.remove();
@@ -1021,7 +987,6 @@
         }
       }
       
-      // Show error message
       showError(message) {
         const errorElement = document.createElement('div');
         errorElement.className = 'error';
