@@ -1,89 +1,1029 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Ultra Minimal Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transfusion Data Visualization Dashboard</title>
+  
+  <!-- Tailwind CSS (via CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Load Dependencies in correct order -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+  
+  <!-- Load Recharts from cdnjs instead of unpkg -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.min.js"></script>
+  
+  <!-- Load Lodash -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  
+  <!-- Load PapaParse for CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
+  <!-- Load Babel for JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.0/babel.min.js"></script>
+  
   <style>
-    .box {
-      margin: 20px;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-    .success { background-color: #d4edda; }
-    .error { background-color: #f8d7da; }
   </style>
 </head>
-<body>
-  <h1>GitHub Pages Test</h1>
-  
-  <div id="test1" class="box">
-    Test 1: If this changes to green, basic JS works
+<body class="bg-gray-100">
+  <!-- Fallback text in case of errors -->
+  <div id="loading-message" style="text-align:center; padding:20px; margin-top:20px;">
+    <h2>Loading Transfusion Dashboard...</h2>
+    <p>If this message persists, please check the browser console for errors.</p>
   </div>
   
-  <div id="react-check" class="box">
-    Test 2: Checking if React is loaded
-  </div>
-  
-  <div id="react-root" class="box">
-    Test 3: React component should render here
-  </div>
+  <div id="app"></div>
 
-  <!-- No external libraries yet - just test basic JS -->
+  <!-- Add library check and fallback -->
   <script>
-    // Test 1: Basic JavaScript
-    document.getElementById('test1').textContent = 'Basic JavaScript works!';
-    document.getElementById('test1').className = 'box success';
+    window.addEventListener('DOMContentLoaded', function() {
+      // Check if all required libraries are loaded
+      if (!window.React) {
+        reportError('React library not loaded');
+      }
+      if (!window.ReactDOM) {
+        reportError('ReactDOM library not loaded');
+      }
+      if (!window.Recharts) {
+        reportError('Recharts library not loaded');
+      }
+      if (!window._) {
+        reportError('Lodash library not loaded');
+      }
+      if (!window.Papa) {
+        reportError('PapaParse library not loaded');
+      }
+      
+      function reportError(message) {
+        console.error(message);
+        document.body.innerHTML += `
+          <div style="color:red; padding:20px; margin:20px; border:1px solid red">
+            <h3>Error Loading Dashboard:</h3>
+            <p>${message}</p>
+            <p>Try clearing your browser cache or using a different browser.</p>
+          </div>
+        `;
+      }
+    });
+  </script>
+
+  <script type="text/babel">
+    // Add error handling to show errors on the page
+    window.addEventListener('error', function(e) {
+      document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
+        <h3>Error Loading Dashboard:</h3>
+        <p>${e.message}</p>
+        <p>Line: ${e.lineno}</p>
+        <p>File: ${e.filename}</p>
+      </div>`;
+      console.error("Caught error:", e);
+    });
     
-    // Display library status when page loads
-    window.onload = function() {
-      const reactDiv = document.getElementById('react-check');
-      
-      // Now load React manually
-      const reactScript = document.createElement('script');
-      reactScript.src = 'https://unpkg.com/react@17/umd/react.development.js';
-      
-      reactScript.onload = function() {
-        const reactDomScript = document.createElement('script');
-        reactDomScript.src = 'https://unpkg.com/react-dom@17/umd/react-dom.development.js';
+    // Check if libraries are loaded correctly
+    if (!window.Recharts) {
+      document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
+        <h3>Recharts Library Not Loaded</h3>
+        <p>The visualization library couldn't be loaded from the CDN.</p>
+        <p>Try refreshing the page or check your internet connection.</p>
+      </div>`;
+    } else {
+      console.log("Recharts loaded successfully");
+    }
+    
+    const { useState, useEffect, useRef, Fragment } = React;
+    
+    // Get Recharts components with a safer approach
+    let LineChart, Line, AreaChart, Area, XAxis, YAxis, 
+        CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine;
         
-        reactDomScript.onload = function() {
-          reactDiv.textContent = 'React and ReactDOM loaded successfully!';
-          reactDiv.className = 'box success';
+    // Safely extract Recharts components
+    if (window.Recharts) {
+      ({ 
+        LineChart, Line, AreaChart, Area, XAxis, YAxis, 
+        CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine 
+      } = window.Recharts);
+    }
+    
+    // Main application component
+    const App = () => {
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <h1 className="text-3xl font-bold text-center mb-8">Transfusion Data Visualization Dashboard</h1>
           
-          // Now that React is definitely loaded, try direct DOM manipulation
-          const root = document.getElementById('react-root');
-          root.textContent = '';
+          <TransfusionDashboard />
           
-          const heading = document.createElement('h3');
-          heading.textContent = 'React Component Placeholder';
-          root.appendChild(heading);
-          
-          const paragraph = document.createElement('p');
-          paragraph.textContent = 'React DOM manipulation works!';
-          root.appendChild(paragraph);
-          root.className = 'box success';
-          
-          // Try pure JS version of what React would do
-          const div = document.createElement('div');
-          div.textContent = 'If you see this, React DOM API is accessible';
-          root.appendChild(div);
-        };
-        
-        reactDomScript.onerror = function() {
-          reactDiv.textContent = 'Failed to load ReactDOM! Check console for details.';
-          reactDiv.className = 'box error';
-        };
-        
-        document.head.appendChild(reactDomScript);
-      };
-      
-      reactScript.onerror = function() {
-        reactDiv.textContent = 'Failed to load React! Check console for details.';
-        reactDiv.className = 'box error';
-      };
-      
-      document.head.appendChild(reactScript);
+          <footer className="mt-12 text-center text-sm text-gray-500">
+            <p>© 2025 Transfusion Research Team</p>
+          </footer>
+        </div>
+      );
     };
+    
+    // Main dashboard component (adapted for GitHub Pages)
+    const TransfusionDashboard = () => {
+      // State variables
+      const [indexData, setIndexData] = useState([]);
+      const [vitalParams, setVitalParams] = useState([]);
+      const [compFactors, setCompFactors] = useState([]);
+      const [selectedVital, setSelectedVital] = useState('');
+      const [selectedCompFactor, setSelectedCompFactor] = useState('');
+      const [chartData, setChartData] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [showConfidenceInterval, setShowConfidenceInterval] = useState(true);
+      const [showBaseModel, setShowBaseModel] = useState(true);
+      const [timeRange, setTimeRange] = useState([0, 720]);
+      const [comparisonValues, setComparisonValues] = useState([]);
+      const [selectedComparison, setSelectedComparison] = useState([]);
+      const [currentFileName, setCurrentFileName] = useState('');
+      const [metaInfo, setMetaInfo] = useState({
+        vitalName: '',
+        compName: '',
+        yLabel: ''
+      });
+
+      // Load index data on component mount
+      useEffect(() => {
+        loadIndexData();
+      }, []);
+
+      const loadIndexData = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          console.log("Loading index data...");
+          
+          // Use fetch API to get the index file from data folder - use both lowercase and uppercase to try
+          let response;
+          let indexFileContent;
+          
+          try {
+            response = await fetch('./data/viz_index.csv');
+            if (!response.ok) {
+              throw new Error(`Failed with status: ${response.status}`);
+            }
+            indexFileContent = await response.text();
+          } catch (e) {
+            console.log("Trying uppercase version...");
+            response = await fetch('./data/VIZ_INDEX.CSV');
+            if (!response.ok) {
+              throw new Error(`Failed to load index CSV in both lowercase and uppercase: ${e.message}`);
+            }
+            indexFileContent = await response.text();
+          }
+          
+          console.log("Index file loaded, parsing...");
+          console.log("First 100 chars:", indexFileContent.substring(0, 100));
+          
+          Papa.parse(indexFileContent, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                setError(`Parse error: ${results.errors[0].message}`);
+                setLoading(false);
+                return;
+              }
+              
+              console.log("Column names found:", results.meta.fields);
+              console.log("Row count:", results.data.length);
+              
+              // Trim whitespace from fields
+              const cleanedData = results.data.map(row => {
+                const cleanRow = {};
+                Object.keys(row).forEach(key => {
+                  cleanRow[key] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                });
+                return cleanRow;
+              });
+              
+              setIndexData(cleanedData);
+              
+              // Extract unique values for dropdowns
+              const uniqueVitals = _.uniqBy(cleanedData, 'VitalParam')
+                .map(item => ({ 
+                  value: item.VitalParam, 
+                  label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
+                }));
+              
+              setVitalParams(uniqueVitals);
+              console.log("Vital parameters:", uniqueVitals.length);
+              
+              if (uniqueVitals.length > 0) {
+                setSelectedVital(uniqueVitals[0].value);
+              }
+              
+              setLoading(false);
+            },
+            error: (error) => {
+              console.error("Parse error:", error);
+              setError("Failed to parse index CSV: " + error.message);
+              setLoading(false);
+            }
+          });
+        } catch (error) {
+          console.error("Load error:", error);
+          setError("Failed to load index CSV: " + error.message);
+          setLoading(false);
+        }
+      };
+
+      // Update comparison factors when vital parameter changes
+      useEffect(() => {
+        if (selectedVital && indexData.length > 0) {
+          const relevantFactors = indexData.filter(item => item.VitalParam === selectedVital);
+          
+          setCompFactors(relevantFactors.map(item => ({
+            value: item.CompFactor,
+            label: item.CompName || item.CompFactor
+          })));
+          
+          if (relevantFactors.length > 0) {
+            setSelectedCompFactor(relevantFactors[0].CompFactor);
+          }
+        }
+      }, [selectedVital, indexData]);
+
+      // Load visualization data when vital param and comp factor change
+      useEffect(() => {
+        if (selectedVital && selectedCompFactor) {
+          loadVisualizationData();
+        }
+      }, [selectedVital, selectedCompFactor]);
+
+      const loadVisualizationData = async () => {
+        if (!selectedVital || !selectedCompFactor) return;
+        
+        try {
+          setLoading(true);
+          setError(null);
+          
+          // Try both uppercase and original case for robustness
+          const fileNameUpper = `VIZ_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.CSV`;
+          const fileNameLower = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`;
+          
+          setCurrentFileName(fileNameUpper);
+          console.log("Attempting to load visualization file:", fileNameUpper);
+          
+          // Try both uppercase and lowercase paths
+          let response;
+          let fileContent;
+          
+          try {
+            response = await fetch(`./data/${fileNameUpper}`);
+            if (!response.ok) {
+              throw new Error(`Failed with status: ${response.status}`);
+            }
+            fileContent = await response.text();
+          } catch (upperError) {
+            console.log("Trying lowercase version...");
+            try {
+              response = await fetch(`./data/${fileNameLower}`);
+              if (!response.ok) {
+                throw new Error(`Failed to load with lowercase: ${response.status}`);
+              }
+              fileContent = await response.text();
+              setCurrentFileName(fileNameLower);
+            } catch (lowerError) {
+              throw new Error(`Failed to load visualization file in both cases: ${upperError.message}`);
+            }
+          }
+          
+          console.log("Visualization file loaded, parsing...");
+          console.log("First 100 chars:", fileContent.substring(0, 100));
+          
+          Papa.parse(fileContent, {
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                setError(`Parse error: ${results.errors[0].message}`);
+                setLoading(false);
+                return;
+              }
+              
+              if (results.data.length === 0) {
+                setError("No data found in the CSV file");
+                setLoading(false);
+                return;
+              }
+              
+              console.log("CSV column names:", results.meta.fields);
+              console.log("Visualization data parsed successfully, rows:", results.data.length);
+              
+              // Extract metadata
+              const firstRow = results.data[0];
+              setMetaInfo({
+                vitalName: firstRow.VitalName || "Vital Parameter",
+                compName: firstRow.CompName || "Comparison Factor",
+                yLabel: firstRow.YLabel || "Value"
+              });
+              
+              // Determine comparison column name (it varies based on selected comparison factor)
+              const sampleRow = results.data[0];
+              const comparisonColumnName = Object.keys(sampleRow).find(key => 
+                key !== 'TimeFromTransfusion' && 
+                key !== 'PredVal_Base' && 
+                key !== 'StdErrVal_Base' && 
+                key !== 'PredVal_Full' && 
+                key !== 'StdErrVal_Full' && 
+                key !== 'Lower_Full' && 
+                key !== 'Upper_Full' && 
+                key !== 'VitalParam' && 
+                key !== 'CompFactor' && 
+                key !== 'CompName' && 
+                key !== 'VitalName' && 
+                key !== 'YLabel'
+              );
+              
+              if (!comparisonColumnName) {
+                setError("Could not determine comparison column");
+                setLoading(false);
+                return;
+              }
+              
+              console.log("Comparison column identified:", comparisonColumnName);
+              
+              // Get unique comparison values
+              const uniqueCompValues = _.uniqBy(results.data, comparisonColumnName)
+                .map(row => row[comparisonColumnName])
+                .filter(value => value !== null && value !== undefined)
+                .sort((a, b) => a - b);
+              
+              // Add null as a separate option if it exists in the data
+              const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
+              if (hasNullValues) {
+                uniqueCompValues.unshift(null);
+              }
+              
+              setComparisonValues(uniqueCompValues);
+              
+              // Default to selecting all non-null values for better visualization
+              setSelectedComparison(uniqueCompValues.filter(v => v !== null));
+              
+              // Process data for chart
+              setChartData(results.data);
+              setLoading(false);
+            },
+            error: (error) => {
+              console.error("Parse error:", error);
+              setError("Failed to parse visualization CSV: " + error.message);
+              setLoading(false);
+            }
+          });
+        } catch (error) {
+          console.error("Load error:", error);
+          setError(`Failed to load visualization data: ${error.message}`);
+          setLoading(false);
+        }
+      };
+
+      // Get comparison column name based on selected comparison factor
+      const getComparisonColumnName = () => {
+        if (!chartData || chartData.length === 0) return '';
+        
+        const sampleRow = chartData[0];
+        return Object.keys(sampleRow).find(key => 
+          key !== 'TimeFromTransfusion' && 
+          key !== 'PredVal_Base' && 
+          key !== 'StdErrVal_Base' && 
+          key !== 'PredVal_Full' && 
+          key !== 'StdErrVal_Full' && 
+          key !== 'Lower_Full' && 
+          key !== 'Upper_Full' && 
+          key !== 'VitalParam' && 
+          key !== 'CompFactor' && 
+          key !== 'CompName' && 
+          key !== 'VitalName' && 
+          key !== 'YLabel'
+        ) || '';
+      };
+
+      // Get simplified legend label for comparison values
+      const getLegendLabel = (compFactor, value, modelType) => {
+        if (value === null) return 'Reference';
+        
+        // Remove any trailing spaces
+        const factor = compFactor.trim();
+        let categoryLabel = '';
+        
+        switch (factor) {
+          case 'DonorHb_Cat':
+            switch (value) {
+              case 1: categoryLabel = 'Donor Hb < 125 g/L'; break;
+              case 2: categoryLabel = 'Donor Hb 125-139 g/L'; break;
+              case 3: categoryLabel = 'Donor Hb 140-154 g/L'; break;
+              case 4: categoryLabel = 'Donor Hb 155-169 g/L'; break;
+              case 5: categoryLabel = 'Donor Hb ≥ 170 g/L'; break;
+              default: categoryLabel = `Donor Hb Category ${value}`;
+            }
+            break;
+          case 'Storage_Cat':
+            switch (value) {
+              case 1: categoryLabel = 'Storage < 10 days'; break;
+              case 2: categoryLabel = 'Storage 10-19 days'; break;
+              case 3: categoryLabel = 'Storage 20-29 days'; break;
+              case 4: categoryLabel = 'Storage 30-39 days'; break;
+              case 5: categoryLabel = 'Storage ≥ 40 days'; break;
+              default: categoryLabel = `Storage Category ${value}`;
+            }
+            break;
+          case 'DonorSex':
+            categoryLabel = value === 1 ? 'Male Donor' : value === 2 ? 'Female Donor' : `Donor Sex ${value}`;
+            break;
+          case 'DonorParity':
+            categoryLabel = value === 0 ? 'Nulliparous Donor' : value === 1 ? 'Parous Donor' : `Donor Parity ${value}`;
+            break;
+          case 'wdy_donation':
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            categoryLabel = days[value-1] || `Day ${value}`;
+            break;
+          default:
+            categoryLabel = `${value}`;
+        }
+        
+        return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
+      };
+
+      // Process data to fix percentage formatting
+      const processDataPoint = (point) => {
+        // Check if we need to multiply by 100 (if values are in 0-1 range)
+        const needsMultiplication = 
+          point.predBase !== null && point.predBase < 1 &&
+          point.predFull !== null && point.predFull < 1;
+        
+        return {
+          time: point.time,
+          predBase: needsMultiplication ? point.predBase * 100 : point.predBase,
+          predFull: needsMultiplication ? point.predFull * 100 : point.predFull,
+          lower: needsMultiplication ? point.lower * 100 : point.lower,
+          upper: needsMultiplication ? point.upper * 100 : point.upper
+        };
+      };
+
+      // Calculate appropriate Y-axis domain based on data
+      const getYAxisDomain = (chartData, vitalType) => {
+        // Get all series data
+        const allData = chartData.flatMap(series => 
+          series.data.flatMap(point => [
+            point.predBase, 
+            point.predFull,
+            point.lower,
+            point.upper
+          ])
+        ).filter(value => value !== null && value !== undefined && !isNaN(value));
+        
+        if (allData.length === 0) return [0, 100];
+        
+        // Find min and max values
+        let minValue = Math.min(...allData);
+        let maxValue = Math.max(...allData);
+        
+        // Add padding (10% of range)
+        const range = maxValue - minValue;
+        const padding = Math.max(range * 0.1, 0.5); // At least 0.5 units of padding
+        
+        minValue = Math.max(0, minValue - padding); // Don't go below 0
+        maxValue = maxValue + padding;
+        
+        // For SpO2, cap at 100% if close
+        if (vitalType && vitalType.trim() === 'SpO2' && maxValue > 99) {
+          maxValue = 100;
+        }
+        
+        // Ensure we have at least some range to avoid flat lines
+        if (maxValue - minValue < 5) {
+          minValue = Math.max(0, minValue - 2.5);
+          maxValue = maxValue + 2.5;
+        }
+        
+        return [minValue, maxValue];
+      };
+
+      // Get colors for lines based on comparison value
+      const getLineColor = (compValue, values) => {
+        // Use more distinct colors with higher contrast
+        const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2'];
+        
+        // Special case for null values (reference)
+        if (compValue === null) {
+          return '#000000'; // Black for reference/null values
+        }
+        
+        // Get the index of this value in the values array
+        const index = values.indexOf(compValue);
+        
+        // Ensure we're returning a valid color even if the index is problematic
+        if (index === -1 || index >= colors.length) {
+          // Fallback color based on the numeric value itself to ensure different values get different colors
+          return colors[compValue % colors.length] || colors[0];
+        }
+        
+        return colors[index % colors.length];
+      };
+
+      // Filter data based on selected comparison values and time range
+      const getFilteredData = () => {
+        if (!chartData || chartData.length === 0) return [];
+        
+        const compColumn = getComparisonColumnName();
+        if (!compColumn) return [];
+        
+        return chartData.filter(row => 
+          selectedComparison.includes(row[compColumn]) && 
+          row.TimeFromTransfusion >= timeRange[0] && 
+          row.TimeFromTransfusion <= timeRange[1]
+        );
+      };
+
+      // Group data by comparison value and time for chart
+      const getChartData = () => {
+        const filteredData = getFilteredData();
+        const compColumn = getComparisonColumnName();
+        
+        if (filteredData.length === 0 || !compColumn) return [];
+        
+        // Group by comparison value
+        const groupedByComp = _.groupBy(filteredData, compColumn);
+        
+        // Process entries in ascending order of values
+        const entries = Object.entries(groupedByComp);
+        entries.sort((a, b) => {
+          // Handle null values (reference) - put them first
+          if (a[0] === "null") return -1;
+          if (b[0] === "null") return 1;
+          return parseFloat(a[0]) - parseFloat(b[0]);
+        });
+        
+        // For each comparison value, create a series
+        const series = [];
+        
+        // First create all full model series
+        entries.forEach(([compValue, rows]) => {
+          // Sort by time
+          const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
+          const parsedValue = compValue === "null" ? null : parseFloat(compValue);
+          const categoryLabel = getLegendLabel(selectedCompFactor, parsedValue);
+          
+          series.push({
+            name: `Fully Adjusted: ${categoryLabel}`,
+            categoryLabel,
+            modelType: 'Fully Adjusted Model',
+            compValue: parsedValue,
+            color: getLineColor(parsedValue, comparisonValues),
+            data: sortedRows.map(row => processDataPoint({
+              time: row.TimeFromTransfusion,
+              predBase: row.PredVal_Base,
+              predFull: row.PredVal_Full,
+              lower: row.Lower_Full,
+              upper: row.Upper_Full
+            }))
+          });
+        });
+        
+        // Then add base model series if enabled
+        if (showBaseModel) {
+          entries.forEach(([compValue, rows]) => {
+            // Sort by time
+            const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
+            const parsedValue = compValue === "null" ? null : parseFloat(compValue);
+            const categoryLabel = getLegendLabel(selectedCompFactor, parsedValue);
+            
+            series.push({
+              name: `Base: ${categoryLabel}`,
+              categoryLabel,
+              modelType: 'Base Model',
+              compValue: parsedValue,
+              color: getLineColor(parsedValue, comparisonValues),
+              isBase: true,
+              data: sortedRows.map(row => processDataPoint({
+                time: row.TimeFromTransfusion,
+                predBase: row.PredVal_Base,
+                predFull: row.PredVal_Full,
+                lower: row.Lower_Full,
+                upper: row.Upper_Full
+              }))
+            });
+          });
+        }
+        
+        return series;
+      };
+
+      // Handle vital parameter change
+      const handleVitalChange = (e) => {
+        setSelectedVital(e.target.value);
+        setChartData([]);
+        setError(null);
+      };
+
+      // Handle comparison factor change
+      const handleCompFactorChange = (e) => {
+        setSelectedCompFactor(e.target.value);
+        setChartData([]);
+        setError(null);
+      };
+
+      // Handle comparison value selection
+      const handleComparisonSelection = (value) => {
+        if (selectedComparison.includes(value)) {
+          setSelectedComparison(selectedComparison.filter(v => v !== value));
+        } else {
+          setSelectedComparison([...selectedComparison, value]);
+        }
+      };
+
+      // Handle time range change
+      const handleTimeRangeChange = (e, index) => {
+        const newRange = [...timeRange];
+        newRange[index] = parseInt(e.target.value);
+        setTimeRange(newRange);
+      };
+
+      // Add a debug section to help troubleshoot
+      const renderDebugSection = () => {
+        if (!error) return null;
+        
+        return (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h3 className="text-lg font-medium text-red-800">Debug Information</h3>
+            <div className="mt-2 space-y-2 text-sm text-red-700">
+              <p><strong>Error:</strong> {error}</p>
+              <p><strong>Current File:</strong> {currentFileName}</p>
+              <p><strong>Vital Parameter:</strong> {selectedVital}</p>
+              <p><strong>Comparison Factor:</strong> {selectedCompFactor}</p>
+              <p><strong>Recharts Available:</strong> {window.Recharts ? 'Yes' : 'No'}</p>
+              <p><strong>Lodash Available:</strong> {window._ ? 'Yes' : 'No'}</p>
+              <p><strong>Papa Parse Available:</strong> {window.Papa ? 'Yes' : 'No'}</p>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="flex flex-col h-full w-full max-w-6xl mx-auto p-4 space-y-4 bg-white rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-center">Transfusion Data Visualization Dashboard</h1>
+          <p className="text-center text-sm text-gray-600">Displaying time-series data after blood transfusion</p>
+          
+          {/* Debug information if there are errors */}
+          {renderDebugSection()}
+          
+          {/* Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Vital Parameter:</label>
+              <select 
+                value={selectedVital} 
+                onChange={handleVitalChange}
+                className="w-full p-2 border rounded"
+                disabled={loading}
+              >
+                {vitalParams.map(vital => (
+                  <option key={vital.value} value={vital.value}>
+                    {vital.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Comparison Factor:</label>
+              <select 
+                value={selectedCompFactor} 
+                onChange={handleCompFactorChange}
+                className="w-full p-2 border rounded"
+                disabled={loading}
+              >
+                {compFactors.map(factor => (
+                  <option key={factor.value} value={factor.value}>
+                    {factor.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <label className="block text-sm font-medium">Time Range (minutes):</label>
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="number" 
+                  value={timeRange[0]} 
+                  onChange={e => handleTimeRangeChange(e, 0)}
+                  className="w-24 p-2 border rounded"
+                  min="0"
+                  max={timeRange[1]}
+                />
+                <span>to</span>
+                <input 
+                  type="number" 
+                  value={timeRange[1]} 
+                  onChange={e => handleTimeRangeChange(e, 1)}
+                  className="w-24 p-2 border rounded"
+                  min={timeRange[0]}
+                  max="720"
+                />
+                <button 
+                  onClick={() => setTimeRange([0, 720])}
+                  className="px-2 py-1 bg-gray-200 rounded text-sm"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Display Options:</label>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={showConfidenceInterval}
+                    onChange={() => setShowConfidenceInterval(!showConfidenceInterval)}
+                    className="mr-2"
+                  />
+                  Show Confidence Interval
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={showBaseModel}
+                    onChange={() => setShowBaseModel(!showBaseModel)}
+                    className="mr-2"
+                  />
+                  Show Base Model
+                </label>
+              </div>
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <label className="block text-sm font-medium">Comparison Values:</label>
+              <div className="flex flex-wrap gap-2">
+                {comparisonValues.map(value => (
+                  <button
+                    key={value === null ? 'null' : value}
+                    onClick={() => handleComparisonSelection(value)}
+                    className={`px-3 py-1 rounded text-sm ${
+                      selectedComparison.includes(value)
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200'
+                    }`}
+                    style={{
+                      borderLeft: selectedComparison.includes(value) 
+                        ? `4px solid ${getLineColor(value, comparisonValues)}` 
+                        : '4px solid transparent'
+                    }}
+                  >
+                    {getLegendLabel(selectedCompFactor, value)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Visualization */}
+          <div className="flex-1 bg-white border rounded-lg p-4 min-h-96">
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <p>Loading visualization data...</p>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-full text-red-500">
+                <p>{error}</p>
+              </div>
+            ) : chartData.length > 0 ? (
+              <div className="space-y-4 h-full">
+                <h2 className="text-lg font-semibold text-center">
+                  {metaInfo.vitalName} by {metaInfo.compName}
+                </h2>
+                <div className="flex justify-center space-x-4 mb-2">
+                  <div className="px-3 py-1 bg-blue-100 rounded text-sm border-l-4 border-blue-500">
+                    <span className="font-medium">Base Model:</span> Adjusts for time, age, ICU time, RBC count, sex, and ward
+                  </div>
+                  <div className="px-3 py-1 bg-blue-100 rounded text-sm border-l-4 border-blue-500">
+                    <span className="font-medium">Fully Adjusted Model:</span> Base model + fluids, vasopressors, and sedatives
+                  </div>
+                </div>
+                <div className="h-96">
+                  {LineChart && XAxis && YAxis ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="time" 
+                          type="number" 
+                          domain={[timeRange[0], timeRange[1]]}
+                          label={{ 
+                            value: 'Time From Transfusion (minutes)', 
+                            position: 'insideBottom', 
+                            offset: -5 
+                          }}
+                        />
+                        <YAxis 
+                          domain={getYAxisDomain(getChartData(), selectedVital)}
+                          tickFormatter={(value) => Math.round(value)}
+                          label={{ 
+                            value: metaInfo.yLabel, 
+                            angle: -90, 
+                            position: 'insideLeft',
+                          }}
+                        />
+                        <Tooltip 
+                          formatter={(value, name) => [value.toFixed(1), name]}
+                          labelFormatter={(label) => `Time: ${label} min`}
+                        />
+                        <Legend 
+                          content={props => {
+                            const { payload } = props;
+                            if (!payload || !payload.length) return null;
+                            
+                            // Group by model type, safely checking for valid string values
+                            const baseModels = payload.filter(entry => 
+                              entry && entry.value && typeof entry.value === 'string' && 
+                              entry.value.includes('Base:')
+                            );
+                            
+                            const fullyAdjustedModels = payload.filter(entry => 
+                              entry && entry.value && typeof entry.value === 'string' && 
+                              entry.value.includes('Fully Adjusted:')
+                            );
+                            
+                            // Sort by category (indicated by numeric value if possible)
+                            const sortEntries = (entries) => {
+                              return [...entries].sort((a, b) => {
+                                // Extract category for sorting
+                                const categoryA = a.value.split(': ')[1] || '';
+                                const categoryB = b.value.split(': ')[1] || '';
+                                
+                                // Try to extract numeric values for comparison
+                                const numA = parseFloat(categoryA.match(/\d+(\.\d+)?/)?.[0] || '0');
+                                const numB = parseFloat(categoryB.match(/\d+(\.\d+)?/)?.[0] || '0');
+                                
+                                if (!isNaN(numA) && !isNaN(numB)) {
+                                  return numA - numB;
+                                }
+                                
+                                // Fallback to alphabetical sort
+                                return categoryA.localeCompare(categoryB);
+                              });
+                            };
+                            
+                            const sortedBaseModels = sortEntries(baseModels);
+                            const sortedFullyAdjustedModels = sortEntries(fullyAdjustedModels);
+                            
+                            return (
+                              <div className="custom-legend" style={{ width: '100%', display: 'flex', justifyContent: 'space-around', marginTop: '10px' }}>
+                                {/* Base Model Column */}
+                                <div style={{ flex: 1, maxWidth: '45%' }}>
+                                  <h4 className="font-medium text-gray-700 mb-1">Base Model</h4>
+                                  <ul className="pl-0 mt-0">
+                                    {sortedBaseModels.map((entry, index) => {
+                                      const category = (entry.value && entry.value.split(': ')[1]) || entry.value || '';
+                                      return (
+                                        <li key={`base-${index}`} className="flex items-center mb-1">
+                                          <span
+                                            style={{
+                                              display: 'inline-block',
+                                              width: '14px',
+                                              height: '14px',
+                                              backgroundColor: entry.color,
+                                              marginRight: '8px',
+                                              border: '1px solid #eee'
+                                            }}
+                                          ></span>
+                                          <span className="text-sm">{category}</span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                                
+                                {/* Fully Adjusted Model Column */}
+                                <div style={{ flex: 1, maxWidth: '45%' }}>
+                                  <h4 className="font-medium text-gray-700 mb-1">Fully Adjusted Model</h4>
+                                  <ul className="pl-0 mt-0">
+                                    {sortedFullyAdjustedModels.map((entry, index) => {
+                                      const category = (entry.value && entry.value.split(': ')[1]) || entry.value || '';
+                                      return (
+                                        <li key={`full-${index}`} className="flex items-center mb-1">
+                                          <span
+                                            style={{
+                                              display: 'inline-block',
+                                              width: '14px',
+                                              height: '14px',
+                                              backgroundColor: entry.color,
+                                              marginRight: '8px',
+                                              border: '1px solid #eee'
+                                            }}
+                                          ></span>
+                                          <span className="text-sm">{category}</span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                              </div>
+                            );
+                          }}
+                        />
+                        <ReferenceLine y={0} stroke="#000" />
+                        
+                        {getChartData().map(series => (
+                          <Fragment key={`${series.modelType}-${series.compValue === null ? 'null' : series.compValue}`}>
+                            {/* Series Line */}
+                            <Line
+                              name={series.name}
+                              data={series.data}
+                              dataKey={series.isBase ? "predBase" : "predFull"}
+                              stroke={series.color}
+                              strokeWidth={series.isBase ? 1.5 : 2}
+                              strokeDasharray={series.isBase ? "5 5" : undefined}
+                              dot={false}
+                              activeDot={series.isBase ? false : { r: 6 }}
+                            />
+                            
+                            {/* Confidence Interval (if enabled and not base model) */}
+                            {showConfidenceInterval && !series.isBase && (
+                              <Area
+                                name={`${series.categoryLabel} (CI)`}
+                                data={series.data}
+                                dataKey="lower"
+                                stroke="none"
+                                fill={series.color}
+                                fillOpacity={0.1}
+                                legendType="none"
+                              />
+                            )}
+                            {showConfidenceInterval && !series.isBase && (
+                              <Area
+                                data={series.data}
+                                dataKey="upper"
+                                stroke="none"
+                                fill={series.color}
+                                fillOpacity={0.1}
+                                legendType="none"
+                              />
+                            )}
+                          </Fragment>
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-red-500">Recharts components not available. Please check console for errors.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="text-center text-sm text-gray-500">
+                  <p>File: {currentFileName}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p>Select parameters to visualize data</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Info Footer */}
+          <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded">
+            <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood storage factors affect patient outcomes.</p>
+            <p className="mt-1">
+              <strong>Data Categories:</strong><br/>
+              <span className="font-medium">DonorHb_Cat:</span> Donor hemoglobin levels (g/L)<br/>
+              <span className="font-medium">Storage_Cat:</span> Blood storage duration (days)<br/>
+              <span className="font-medium">DonorSex:</span> Biological sex of donor<br/>
+              <span className="font-medium">DonorParity:</span> Whether donor has given birth (Parous) or not (Nulliparous)<br/>
+              <span className="font-medium">wdy_donation:</span> Day of the week when donation occurred
+            </p>
+          </div>
+        </div>
+      );
+    };
+    
+    // Render the app with error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        ReactDOM.render(<App />, document.getElementById('app'));
+        // Hide loading message once app is rendered
+        const loadingMessage = document.getElementById('loading-message');
+        if (loadingMessage) {
+          loadingMessage.style.display = 'none';
+        }
+      } catch (e) {
+        console.error("Error rendering app:", e);
+        document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
+          <h3>App Rendering Error:</h3>
+          <p>${e.message}</p>
+        </div>`;
+      }
+    });
   </script>
 </body>
 </html>
