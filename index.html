@@ -226,24 +226,40 @@
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
           </div>
-          <!-- The chart.js legend is still at the bottom of the chart area -->
+          <!-- The chart.js legend is displayed at the bottom of the plot area -->
           <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
         `;
         this.container.appendChild(chartCard);
         
-        // Create info card
+        // Create info card for Vital Parameters on the left, RBC factors on the right
         const infoCard = document.createElement('div');
         infoCard.className = 'card';
         infoCard.innerHTML = `
           <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood component factors affect vital parameter trajectories in ICU patients.</p>
-          <p><strong>RBC Component Factors:</strong></p>
-          <ul>
-            <li>Donor hemoglobin levels (g/L)</li>
-            <li>RBC component storage time (days)</li>
-            <li>Biological sex of donor (M/F)</li>
-            <li>Whether donor has given birth (Parous) or not (Nulliparous)</li>
-            <li>Day of the week when donation occurred</li>
-          </ul>
+          <div class="row">
+            <div class="col">
+              <p><strong>Vital Parameters:</strong></p>
+              <ul>
+                <li>Mean Arterial Pressure (mmHg)</li>
+                <li>Diastolic Blood Pressure (mmHg)</li>
+                <li>Systolic Blood Pressure (mmHg)</li>
+                <li>Fraction of Inspired Oxygen (%)</li>
+                <li>SpO2 (%)</li>
+                <li>Heart Rate (beats/min)</li>
+                <!-- etc. You can add or remove as needed -->
+              </ul>
+            </div>
+            <div class="col">
+              <p><strong>RBC Component Factors:</strong></p>
+              <ul>
+                <li>Donor hemoglobin levels (g/L)</li>
+                <li>RBC component storage time (days)</li>
+                <li>Biological sex of donor (M/F)</li>
+                <li>Whether donor has given birth (Parous) or not (Nulliparous)</li>
+                <li>Day of the week when donation occurred</li>
+              </ul>
+            </div>
+          </div>
         `;
         this.container.appendChild(infoCard);
         
@@ -927,15 +943,12 @@
                 },
                 min: minY,
                 max: maxY,
-                // 1) Remove decimals from the first & last label
                 ticks: {
                   callback: (value, index, values) => {
-                    // If it's the first (index=0) or the last label (index = values.length - 1)
+                    // Remove decimals for first & last label
                     if (index === 0 || index === values.length - 1) {
-                      // Convert to integer (remove decimal)
                       return parseInt(value);
                     }
-                    // Otherwise, just show the default (which typically won't have decimals anyway)
                     return value;
                   }
                 }
@@ -944,7 +957,7 @@
             plugins: {
               legend: {
                 display: true,
-                position: 'bottom', // keep the chart.js line color legend at the bottom
+                position: 'bottom', // keep the chart.js legend at the bottom
                 labels: {
                   filter: function(legendItem) {
                     // Hide CI Upper from legend
@@ -1015,3 +1028,4 @@
   </script>
 </body>
 </html>
+
