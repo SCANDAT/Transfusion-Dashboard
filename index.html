@@ -3,235 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transfusion Data Visualization Dashboard</title>
+  <title>Minimal Test</title>
   
-  <!-- Tailwind CSS (via CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Load React from cdnjs for better reliability -->
+  <!-- Just React and ReactDOM -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-  
-  <!-- Load dependency libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  
-  <!-- Load Babel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.18.13/babel.min.js"></script>
+  
+  <style>
+    .status { padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+  </style>
 </head>
-<body class="bg-gray-100">
-  <div id="loading-message" class="text-center p-6 mt-4">
-    <h2 class="text-xl font-bold">Loading Transfusion Dashboard...</h2>
-    <p class="text-gray-600 mt-2">If this message persists, check the browser console for errors.</p>
+<body>
+  <h1>React Mounting Test</h1>
+  
+  <div id="vanilla-test" class="status">
+    If you see this text change to "Vanilla JS works", standard JavaScript is working
   </div>
   
-  <div id="debug-info" class="m-4 p-4 bg-yellow-50 border border-yellow-300 rounded hidden"></div>
-  <div id="app"></div>
+  <div id="react-root"></div>
 
-  <!-- Initialization Check -->
   <script>
-    // Check all required libraries immediately
-    window.addEventListener('DOMContentLoaded', function() {
-      const debugInfo = document.getElementById('debug-info');
-      debugInfo.classList.remove('hidden');
-      
-      // Check libraries and report status
-      const libraries = [
-        { name: 'React', obj: window.React },
-        { name: 'ReactDOM', obj: window.ReactDOM },
-        { name: 'Recharts', obj: window.Recharts },
-        { name: 'Lodash', obj: window._ },
-        { name: 'PapaParse', obj: window.Papa },
-        { name: 'Babel', obj: window.Babel }
-      ];
-      
-      let allLoaded = true;
-      let statusHTML = '<h3 class="font-bold text-lg">Library Status:</h3><ul class="mt-2 space-y-1">';
-      
-      libraries.forEach(lib => {
-        const isLoaded = !!lib.obj;
-        if (!isLoaded) allLoaded = false;
-        statusHTML += `<li class="${isLoaded ? 'text-green-700' : 'text-red-700 font-bold'}">
-          ${lib.name}: ${isLoaded ? '✓ Loaded' : '✗ Not Loaded'}
-        </li>`;
-      });
-      
-      statusHTML += '</ul>';
-      
-      if (!allLoaded) {
-        statusHTML += '<p class="mt-3 text-red-700 font-bold">Some libraries failed to load. The dashboard may not work correctly.</p>';
-      } else {
-        statusHTML += '<p class="mt-3 text-green-700">All libraries loaded successfully!</p>';
-      }
-      
-      debugInfo.innerHTML = statusHTML;
-    });
+    // Test 1: Vanilla JavaScript execution
+    document.getElementById('vanilla-test').innerHTML = '<div class="success">Vanilla JS works</div>';
+    console.log("Vanilla JS executed");
   </script>
 
   <script type="text/babel">
-    // Global error handler
-    window.addEventListener('error', function(e) {
-      console.error("Caught error:", e);
-      document.getElementById('debug-info').innerHTML += `
-        <div class="mt-4 p-3 bg-red-100 border border-red-400 rounded">
-          <h3 class="font-bold">Error:</h3>
-          <p>${e.message}</p>
-          <p>Line: ${e.lineno}, File: ${e.filename}</p>
-        </div>
-      `;
-      document.getElementById('debug-info').classList.remove('hidden');
-    });
+    // Test 2: React mounting
+    console.log("Babel script executing");
     
-    // Basic app components
-    const { useState, useEffect } = React;
-    
-    // Minimal App component - start simple
-    const App = () => {
-      const [appState, setAppState] = useState('initializing');
-      const [errorMsg, setErrorMsg] = useState(null);
-      
-      useEffect(() => {
-        try {
-          console.log("App mounted successfully");
-          setAppState('ready');
-          
-          // Hide loading message
-          const loadingMsg = document.getElementById('loading-message');
-          if (loadingMsg) loadingMsg.style.display = 'none';
-          
-        } catch (err) {
-          console.error("Error in App initialization:", err);
-          setErrorMsg(err.message);
-          setAppState('error');
-        }
-      }, []);
-      
-      // Simple UI to verify React is working
-      return (
-        <div className="container mx-auto p-4">
-          <h1 className="text-2xl font-bold text-center mb-6">
-            Transfusion Data Visualization Dashboard
-          </h1>
-          
-          {appState === 'error' && (
-            <div className="p-4 bg-red-100 border border-red-400 rounded mb-4">
-              <h2 className="font-bold">Error initializing app:</h2>
-              <p>{errorMsg}</p>
-            </div>
-          )}
-          
-          {appState === 'ready' && (
-            <div className="bg-white p-6 rounded shadow-md">
-              <p className="text-center text-green-600 font-medium">
-                React component loaded successfully!
-              </p>
-              
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4">Test Data Load</h2>
-                <TestDataLoader />
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    };
-    
-    // Component to test data loading
-    const TestDataLoader = () => {
-      const [dataStatus, setDataStatus] = useState('pending');
-      const [dataResult, setDataResult] = useState(null);
-      
-      useEffect(() => {
-        const testDataLoad = async () => {
-          try {
-            setDataStatus('loading');
-            
-            // Try to load the index file (both lowercase and uppercase versions)
-            let response;
-            let fileName;
-            
-            try {
-              fileName = './data/viz_index.csv';
-              response = await fetch(fileName);
-              if (!response.ok) throw new Error(`Status: ${response.status}`);
-            } catch (e) {
-              console.log("Trying uppercase version...");
-              fileName = './data/VIZ_INDEX.CSV';
-              response = await fetch(fileName);
-              if (!response.ok) throw new Error(`Failed to load both lowercase and uppercase index files`);
-            }
-            
-            const text = await response.text();
-            
-            setDataResult({
-              fileName,
-              firstChars: text.substring(0, 100),
-              status: response.status
-            });
-            
-            setDataStatus('success');
-          } catch (err) {
-            console.error("Data loading error:", err);
-            setDataResult({ error: err.message });
-            setDataStatus('error');
-          }
-        };
-        
-        testDataLoad();
-      }, []);
-      
-      return (
-        <div className="border p-4 rounded bg-gray-50">
-          <h3 className="font-medium mb-2">Data Load Test:</h3>
-          
-          {dataStatus === 'pending' && <p>Preparing to test data load...</p>}
-          {dataStatus === 'loading' && <p>Attempting to load data...</p>}
-          
-          {dataStatus === 'error' && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded">
-              <p className="text-red-700">Error loading data: {dataResult?.error}</p>
-              <p className="mt-2 text-sm">
-                Check that your data folder exists and contains the necessary CSV files.
-              </p>
-            </div>
-          )}
-          
-          {dataStatus === 'success' && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded">
-              <p className="text-green-700">Successfully loaded data!</p>
-              <p className="mt-2"><strong>File:</strong> {dataResult.fileName}</p>
-              <p className="mt-1"><strong>First 100 characters:</strong></p>
-              <pre className="bg-gray-100 p-2 rounded text-xs mt-1 overflow-x-auto">
-                {dataResult.firstChars}
-              </pre>
-            </div>
-          )}
-        </div>
-      );
-    };
-    
-    // Render with extensive error handling
     try {
-      console.log("Attempting to render React app...");
+      const App = () => {
+        console.log("React component rendering");
+        return (
+          <div class="status success">
+            React is working! The component mounted successfully.
+          </div>
+        );
+      };
       
-      ReactDOM.render(
-        <App />,
-        document.getElementById('app')
-      );
-      
-      console.log("React rendering complete");
-    } catch (err) {
-      console.error("Fatal error rendering app:", err);
-      document.getElementById('debug-info').innerHTML += `
-        <div class="mt-4 p-3 bg-red-500 text-white border border-red-700 rounded">
-          <h3 class="font-bold">Fatal Rendering Error:</h3>
-          <p>${err.message}</p>
-          <p class="mt-2">Check that all libraries are loaded properly and that your React code is valid.</p>
-        </div>
-      `;
-      document.getElementById('debug-info').classList.remove('hidden');
+      ReactDOM.render(<App />, document.getElementById('react-root'));
+      console.log("ReactDOM.render called");
+    } catch(e) {
+      console.error("React error:", e);
+      document.getElementById('react-root').innerHTML = 
+        `<div class="status error">React error: ${e.message}</div>`;
     }
   </script>
 </body>
