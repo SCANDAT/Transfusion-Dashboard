@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transfusion Data Dashboard</title>
+  <meta charset="UTF-8">
+  
+  <!-- Chart.js - more reliable on CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  
+  <style>
+    body { 
+      font-family: system-ui, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: #f5f5f5; 
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .card { 
+      background: white; 
+      border-radius: 8px; 
+      padding: 20px; 
+      margin-bottom: 20px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    }
+    .header { text-align: center; margin-bottom: 20px; }
+    .controls { margin-bottom: 20px; }
+    .row { display: flex; gap: 20px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 300px; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 500; }
+    .form-select, .form-input { 
+      width: 100%; 
+      padding: 8px; 
+      border-radius: 4px; 
+      border: 1px solid #ddd; 
+    }
+    .btn { 
+      background: #3b82f6; 
+      color: white; 
+      border: none; 
+      padding: 8px 16px; 
+      border-radius: 4px; 
+      cursor: pointer; 
+    }
+    .btn:hover { background: #2563eb; }
+    .btn-sm { padding: 4px 8px; font-size: 0.9em; }
+    .chart-container { position: relative; height: 400px; width: 100%; }
+    .tag { 
+      display: inline-block; 
+      padding: 4px 8px; 
+      border-radius: 16px; 
+      margin-right: 5px; 
+      margin-bottom: 5px; 
+      cursor: pointer; 
+    }
+    .tag.active { background: #3b82f6; color: white; }
+    .tag:not(.active) { background: #e5e7eb; }
+    .info { 
+      padding: 10px; 
+      background: #f0f9ff; 
+      border-radius: 4px; 
+      margin-bottom: 10px; 
+    }
+    .loading { 
+      text-align: center; 
+      padding: 50px; 
+      font-size: 18px; 
+      color: #666; 
+    }
+    .error { 
+      background: #fee2e2; 
+      color: #b91c1c; 
+      padding: 15px; 
+      border-radius: 6px; 
+      margin-bottom: 20px; 
+    }
+    .debug-info { 
+      font-family: monospace; 
+      font-size: 12px; 
+      background: #f8fafc; 
+      padding: 10px; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 4px; 
+      margin-top: 10px; 
+      white-space: pre-wrap; 
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">Loading Transfusion Dashboard...</div>
+  <div id="app-container" class="container" style="display: none;"></div>
+
+  <script>
+    // Hide loading message when page is ready
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+      }, 500); 
+    });
+
+    // Main dashboard class
+    class TransfusionDashboard {
+      constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        
+        // State variables
+        this.fileCase = 'unknown';    
+        this.indexData = [];          
+        this.vitalParams = [];        
+        this.compFactors = [];        
+        this.chartData = [];          
+        this.selectedVital = '';      
+        this.selectedCompFactor = ''; 
+        this.comparisonValues = [];   
+        this.selectedComparisons = [];
+        this.timeRange = [0, 720];    
+        this.showConfidenceInterval = false; 
+        this.showBaseModel = false; 
+        this.metaInfo = {             
+          vitalName: '',
+          compName: '',
+          yLabel: ''
+        };
+        this.currentFileName = '';    
+        this.chart = null;            
+        this.isInitialLoad = true;    
+        this.debugMode = false;       
+        
+        // Initialize dashboard
+        this.initialize();
+      }
+      
+      // Initialize dashboard
+      async initialize() {
+        try {
+          // Create UI structure
+          this.createUI();
+          
+          // Load index data
+          await this.loadIndexData();
+          
+        } catch (error) {
+          console.error('Initialization error:', error);
+          this.showError(`Failed to initialize dashboard: ${error.message}`);
+        }
+      }
+      
+      // Create UI elements
+      createUI() {
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'header';
+        header.innerHTML = `
+          <h1>Transfusion Data Visualization Dashboard</h1>
+          <p>Displaying time-series data after blood transfusion</p>
+        `;
+        this.container.appendChild(header);
+        
+        // Create controls
+        const controls = document.createElement('div');
+        controls.className = 'card controls';
+        controls.innerHTML = `
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label class="form-label">Vital Parameter:</label>
+                <select id="vital-select" class="form-select"></select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label class="form-label">RBC Component Factor:</label>
+                <select id="factor-select" class="form-select"></select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Time Range (minutes):</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="number" id="time-min" class="form-input" min="0" max="720" style="width: 80px;" value="0">
+              <span>to</span>
+              <input type="number" id="time-max" class="form-input" min="0" max="720" style="width: 80px;" value="720">
+              <button id="time-reset" class="btn btn-sm">Reset</button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Display Options:</label>
+            <div style="display: flex; gap: 20px;">
+              <label>
+                <input type="checkbox" id="show-ci"> Show Confidence Interval
+              </label>
+              <label>
+                <input type="checkbox" id="show-base"> Show Base Model
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Comparison Values:</label>
+            <div id="comparison-tags"></div>
+          </div>
+          
+          <div id="debug-container" style="display: none;">
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="debug-mode"> Enable Debug Mode
+              </label>
+            </div>
+            <div id="debug-output" class="debug-info" style="display: none;"></div>
+          </div>
+        `;
+        this.container.appendChild(controls);
+        
+        // Create chart area
+        const chartCard = document.createElement('div');
+        chartCard.className = 'card';
+        chartCard.innerHTML = `
+          <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
+          <!-- Moved the model descriptions panel here, above the chart -->
+          <div id="model-descriptions" class="info" style="margin-bottom: 10px;"></div>
+          <div id="chart-container" class="chart-container">
+            <canvas id="chart-canvas"></canvas>
+          </div>
+          <!-- The chart.js legend is displayed at the bottom of the plot area -->
+          <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
+        `;
+        this.container.appendChild(chartCard);
+        
+        // Create info card for Vital Parameters on the left, RBC factors on the right
+        const infoCard = document.createElement('div');
+        infoCard.className = 'card';
+        infoCard.innerHTML = `
+          <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood component factors affect vital parameter trajectories in ICU patients.</p>
+          <div class="row">
+            <div class="col">
+              <p><strong>Vital Parameters:</strong></p>
+              <ul>
+                <li>Diastolic Blood Pressure (mmHg)</li>
+                <li>Mean Arterial Pressure (mmHg)</li>
+                <li>Systolic Blood Pressure (mmHg)</li>
+                <li>Fraction of Inspired Oxygen (%)</li>
+                <li>Heart Rate (bpm)</li>
+                <li>Peripheral Capillary Oxygen Saturation</li>
+                <li>Minute Ventilation (L/min)</li>
+                <!-- Add or remove as needed -->
+              </ul>
+            </div>
+            <div class="col">
+              <p><strong>RBC Component Factors:</strong></p>
+              <ul>
+                <li>Donor Hemoglobin (g/L)</li>
+                <li>Donor Parity (parous or nulliparous)</li>
+                <li>Donor Sex (male or female)</li>
+                <li>RBC Component Storage Time (days)</li>
+                <li>Weekday of Donation</li>
+              </ul>
+            </div>
+          </div>
+        `;
+        this.container.appendChild(infoCard);
+        
+        // Event listeners
+        document.getElementById('vital-select').addEventListener('change', (e) => {
+          this.selectedVital = e.target.value;
+          this.updateCompFactors();
+        });
+        
+        document.getElementById('factor-select').addEventListener('change', (e) => {
+          this.selectedCompFactor = e.target.value;
+          this.loadVisualizationData();
+        });
+        
+        document.getElementById('time-min').addEventListener('change', (e) => {
+          this.timeRange[0] = parseInt(e.target.value);
+          this.updateChart();
+        });
+        
+        document.getElementById('time-max').addEventListener('change', (e) => {
+          this.timeRange[1] = parseInt(e.target.value);
+          this.updateChart();
+        });
+        
+        document.getElementById('time-reset').addEventListener('click', () => {
+          this.timeRange = [0, 720];
+          document.getElementById('time-min').value = 0;
+          document.getElementById('time-max').value = 720;
+          this.updateChart();
+        });
+        
+        document.getElementById('show-ci').addEventListener('change', (e) => {
+          this.showConfidenceInterval = e.target.checked;
+          this.updateChart();
+        });
+        
+        document.getElementById('show-base').addEventListener('change', (e) => {
+          this.showBaseModel = e.target.checked;
+          this.updateChart();
+        });
+        
+        // Debug mode
+        document.getElementById('debug-mode').addEventListener('change', (e) => {
+          this.debugMode = e.target.checked;
+          document.getElementById('debug-output').style.display = this.debugMode ? 'block' : 'none';
+          if (this.debugMode) {
+            this.logDebug('Debug mode enabled');
+          }
+        });
+        
+        // Check URL for debug flag
+        if (window.location.search.includes('debug=true')) {
+          document.getElementById('debug-container').style.display = 'block';
+          document.getElementById('debug-mode').checked = true;
+          this.debugMode = true;
+          document.getElementById('debug-output').style.display = 'block';
+          this.logDebug('Debug mode enabled via URL parameter');
+        }
+        
+        // Shortcut to enable debug mode
+        document.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+            document.getElementById('debug-container').style.display = 'block';
+          }
+        });
+        
+        // Reflect initial unchecked state
+        document.getElementById('show-ci').checked = false;
+        document.getElementById('show-base').checked = false;
+      }
+      
+      // Load index data
+      async loadIndexData() {
+        try {
+          this.showLoading();
+          this.logDebug("Attempting to load index data...");
+          
+          const indexFileOptions = [
+            { case: 'lowercase', path: './data/viz_index.csv' },
+            { case: 'uppercase', path: './data/VIZ_INDEX.CSV' }
+          ];
+          
+          let csvText = null;
+          
+          for (const option of indexFileOptions) {
+            try {
+              this.logDebug(`Trying ${option.case} index file: ${option.path}`);
+              const response = await fetch(option.path);
+              
+              if (response.ok) {
+                csvText = await response.text();
+                this.fileCase = option.case;
+                this.logDebug(`Successfully loaded ${option.case} index file`);
+                break;
+              } else {
+                this.logDebug(`${option.case} index file returned status: ${response.status}`);
+              }
+            } catch (err) {
+              this.logDebug(`Error loading ${option.case} index file: ${err.message}`);
+            }
+          }
+          
+          if (!csvText) {
+            throw new Error("Could not load index file in either uppercase or lowercase format");
+          }
+          
+          this.logDebug("Parsing index CSV...");
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                this.logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
+              }
+              
+              this.logDebug(`CSV parsed successfully, found ${results.data.length} rows`);
+              
+              this.indexData = results.data.map(row => {
+                const cleanRow = {};
+                Object.keys(row).forEach(key => {
+                  cleanRow[key] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                });
+                return cleanRow;
+              });
+              
+              // Gather unique vital parameters
+              this.vitalParams = _.uniqBy(this.indexData, 'VitalParam')
+                .map(item => ({
+                  value: item.VitalParam,
+                  label: item.VitalName 
+                    ? item.VitalName.replace('Vital Parameter Trajectory: ', '') 
+                    : item.VitalParam
+                }));
+              
+              this.logDebug(`Found ${this.vitalParams.length} unique vital parameters`);
+              
+              // Default vital param: Mean Arterial Pressure (mmHg)
+              if (this.vitalParams.length > 0) {
+                const desiredVital = this.vitalParams.find(v => v.label === 'Mean Arterial Pressure (mmHg)');
+                if (desiredVital) {
+                  this.selectedVital = desiredVital.value;
+                } else {
+                  this.selectedVital = this.vitalParams[0].value;
+                }
+                this.logDebug(`Selected initial vital parameter: ${this.selectedVital}`);
+                
+                // Populate dropdown, then factor
+                this.updateVitalSelect();
+                this.updateCompFactors();
+              } else {
+                this.logDebug("No vital parameters found in index data");
+                this.showError("No vital parameters found in index data. Check CSV format.");
+              }
+              
+              this.hideLoading();
+            },
+            error: (error) => {
+              this.logDebug(`CSV parse error: ${error.message}`);
+              throw new Error(`CSV parse error: ${error.message}`);
+            }
+          });
+        } catch (error) {
+          this.logDebug(`Failed to load index data: ${error.message}`);
+          this.hideLoading();
+          this.showError(`Failed to load index data: ${error.message}`);
+        }
+      }
+      
+      // Update RBC component factors
+      updateCompFactors() {
+        if (!this.selectedVital || this.indexData.length === 0) return;
+        
+        const relevantFactors = this.indexData.filter(item => item.VitalParam === this.selectedVital);
+        this.logDebug(`Found ${relevantFactors.length} comparison factors for vital ${this.selectedVital}`);
+        
+        this.compFactors = relevantFactors.map(item => ({
+          value: item.CompFactor,
+          label: item.CompName || item.CompFactor
+        }));
+        
+        // Update the RBC factor dropdown
+        this.updateCompFactorSelect();
+        
+        // Check if the user’s current RBC factor is still valid
+        const isUserFactorValid = this.compFactors.some(f => f.value === this.selectedCompFactor);
+        
+        // If it's not valid (or user never had one selected), pick "Donor Hemoglobin" if it exists,
+        // otherwise default to the first factor
+        if (!isUserFactorValid) {
+          const donorHb = this.compFactors.find(f => f.label === 'Donor Hemoglobin');
+          if (donorHb) {
+            this.selectedCompFactor = donorHb.value;
+          } else if (this.compFactors.length > 0) {
+            this.selectedCompFactor = this.compFactors[0].value;
+          } else {
+            this.logDebug("No comparison factors found for selected vital parameter");
+            this.showError(`No comparison factors found for ${this.selectedVital}`);
+            return;
+          }
+        }
+        
+        this.logDebug(`Final RBC factor selection: ${this.selectedCompFactor}`);
+        
+        // Make sure the dropdown reflects the final selection
+        const select = document.getElementById('factor-select');
+        if (select) {
+          select.value = this.selectedCompFactor;
+        }
+        
+        // Load new data with the final factor
+        this.loadVisualizationData();
+      }
+      
+      // Populate Vital Parameter dropdown
+      updateVitalSelect() {
+        const select = document.getElementById('vital-select');
+        select.innerHTML = '';
+        
+        this.vitalParams.forEach(vital => {
+          const option = document.createElement('option');
+          option.value = vital.value;
+          option.textContent = vital.label;
+          select.appendChild(option);
+        });
+        
+        select.value = this.selectedVital;
+      }
+      
+      // Populate RBC factor dropdown
+      updateCompFactorSelect() {
+        const select = document.getElementById('factor-select');
+        select.innerHTML = '';
+        
+        this.compFactors.forEach(factor => {
+          const option = document.createElement('option');
+          option.value = factor.value;
+          option.textContent = factor.label;
+          select.appendChild(option);
+        });
+      }
+      
+      // Fetch file with fallback to uppercase/lowercase
+      async safeFetch(baseName) {
+        const fileOptions = [];
+        
+        if (this.fileCase === 'uppercase') {
+          fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
+          fileOptions.push(`./data/${baseName.toUpperCase()}.csv`);
+        } else {
+          fileOptions.push(`./data/${baseName}.csv`);
+          fileOptions.push(`./data/${baseName}.CSV`);
+        }
+        
+        // Also always try both cases
+        fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
+        fileOptions.push(`./data/${baseName}.csv`);
+        
+        this.logDebug(`Attempting to fetch file with base name: ${baseName}`);
+        this.logDebug(`Will try paths: ${fileOptions.join(', ')}`);
+        
+        let lastError = null;
+        for (const path of fileOptions) {
+          try {
+            this.logDebug(`Trying path: ${path}`);
+            const response = await fetch(path);
+            if (response.ok) {
+              this.logDebug(`Successfully loaded file from: ${path}`);
+              return { 
+                text: await response.text(),
+                path: path
+              };
+            } else {
+              this.logDebug(`Path ${path} returned status: ${response.status}`);
+              lastError = new Error(`HTTP status ${response.status} for ${path}`);
+            }
+          } catch (err) {
+            this.logDebug(`Error fetching ${path}: ${err.message}`);
+            lastError = err;
+          }
+        }
+        
+        throw lastError || new Error("Failed to load file with all attempted paths");
+      }
+      
+      // Load the data for the current Vital + RBC factor combination
+      async loadVisualizationData() {
+        if (!this.selectedVital || !this.selectedCompFactor) return;
+        
+        try {
+          this.showLoading();
+          
+          const baseFileName = `VIZ_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}`;
+          this.logDebug(`Base visualization filename: ${baseFileName}`);
+          
+          const { text: csvText, path: loadedPath } = await this.safeFetch(baseFileName);
+          this.currentFileName = loadedPath.split('/').pop();
+          this.logDebug(`Using file: ${this.currentFileName}`);
+          
+          this.logDebug("Parsing visualization CSV...");
+          Papa.parse(csvText, {
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                this.logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
+              }
+              
+              if (results.data.length === 0) {
+                throw new Error("No data found in the CSV file");
+              }
+              
+              this.logDebug(`Parsed ${results.data.length} rows of visualization data`);
+              
+              const firstRow = results.data[0];
+              this.metaInfo = {
+                vitalName: firstRow.VitalName || "Vital Parameter",
+                compName: firstRow.CompName || "Comparison Factor",
+                yLabel: firstRow.YLabel || "Value"
+              };
+              
+              this.logDebug(`Metadata: ${JSON.stringify(this.metaInfo)}`);
+              
+              // Set chart title
+              document.getElementById('chart-title').innerHTML = `
+                <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
+              `;
+              
+              // Move the model descriptions (base model, fully adjusted) to #model-descriptions
+              document.getElementById('model-descriptions').innerHTML = `
+                <div style="display: flex; justify-content: center; gap: 20px;">
+                  <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
+                    <span style="font-weight: bold;">Base Model:</span> Adjusts for time, age, ICU time, RBC count, sex, and ward
+                  </div>
+                  <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
+                    <span style="font-weight: bold;">Fully Adjusted Model:</span> Base model + fluids, vasopressors, and sedatives
+                  </div>
+                </div>
+              `;
+              
+              // File info
+              document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
+              
+              this.logDebug(`Columns in visualization data: ${results.meta.fields.join(', ')}`);
+              
+              const sampleRow = results.data[0];
+              const comparisonColumnName = Object.keys(sampleRow).find(key => 
+                key !== 'TimeFromTransfusion' && 
+                key !== 'PredVal_Base' && 
+                key !== 'StdErrVal_Base' && 
+                key !== 'PredVal_Full' && 
+                key !== 'StdErrVal_Full' && 
+                key !== 'Lower_Full' && 
+                key !== 'Upper_Full' && 
+                key !== 'VitalParam' && 
+                key !== 'CompFactor' && 
+                key !== 'CompName' && 
+                key !== 'VitalName' && 
+                key !== 'YLabel'
+              );
+              
+              if (!comparisonColumnName) {
+                this.logDebug(`Could not determine comparison column. Available columns: ${Object.keys(sampleRow).join(', ')}`);
+                throw new Error("Could not determine comparison column");
+              }
+              
+              this.logDebug(`Determined comparison column: ${comparisonColumnName}`);
+              
+              // Gather unique comparison values
+              this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
+                .map(row => row[comparisonColumnName])
+                .filter(value => value !== null && value !== undefined)
+                .sort((a, b) => a - b);
+              
+              const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
+              if (hasNullValues) {
+                this.comparisonValues.unshift(null);
+                this.logDebug("Added null reference value");
+              }
+              
+              // Default to all non-null
+              this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
+              this.logDebug(`Selected comparison values: ${this.selectedComparisons.join(', ')}`);
+              
+              // Render the tags
+              this.chartData = {
+                data: results.data,
+                comparisonColumn: comparisonColumnName
+              };
+              
+              this.updateComparisonTags(comparisonColumnName);
+              
+              // Ensure time range inputs match our state
+              document.getElementById('time-min').value = this.timeRange[0];
+              document.getElementById('time-max').value = this.timeRange[1];
+              
+              // Now update the chart
+              this.updateChart();
+              
+              this.hideLoading();
+            },
+            error: (error) => {
+              this.logDebug(`CSV parse error: ${error.message}`);
+              throw new Error(`CSV parse error: ${error.message}`);
+            }
+          });
+        } catch (error) {
+          this.logDebug(`Failed to load visualization data: ${error.message}`);
+          this.hideLoading();
+          this.showError(`Failed to load visualization data: ${error.message}`);
+        }
+      }
+      
+      // Create clickable tags for each RBC factor category
+      updateComparisonTags(comparisonColumnName) {
+        const container = document.getElementById('comparison-tags');
+        container.innerHTML = '';
+        
+        this.comparisonValues.forEach(value => {
+          const tag = document.createElement('span');
+          tag.className = this.selectedComparisons.includes(value) ? 'tag active' : 'tag';
+          tag.textContent = this.getLegendLabel(value);
+          
+          tag.addEventListener('click', () => {
+            if (this.selectedComparisons.includes(value)) {
+              this.selectedComparisons = this.selectedComparisons.filter(v => v !== value);
+            } else {
+              this.selectedComparisons.push(value);
+            }
+            tag.className = this.selectedComparisons.includes(value) ? 'tag active' : 'tag';
+            this.updateChart();
+          });
+          
+          container.appendChild(tag);
+        });
+      }
+      
+      // Convert factor value into a human-readable legend label
+      getLegendLabel(value, modelType = null) {
+        if (value === null) return 'Reference';
+        
+        const factor = this.selectedCompFactor.trim();
+        let categoryLabel = '';
+        
+        switch (factor) {
+          case 'DonorHb_Cat':
+            switch (value) {
+              case 1: categoryLabel = 'Donor Hb < 125 g/L'; break;
+              case 2: categoryLabel = 'Donor Hb 125-139 g/L'; break;
+              case 3: categoryLabel = 'Donor Hb 140-154 g/L'; break;
+              case 4: categoryLabel = 'Donor Hb 155-169 g/L'; break;
+              case 5: categoryLabel = 'Donor Hb ≥ 170 g/L'; break;
+              default: categoryLabel = `Donor Hb Category ${value}`;
+            }
+            break;
+          case 'Storage_Cat':
+            switch (value) {
+              case 1: categoryLabel = 'Storage < 10 days'; break;
+              case 2: categoryLabel = 'Storage 10-19 days'; break;
+              case 3: categoryLabel = 'Storage 20-29 days'; break;
+              case 4: categoryLabel = 'Storage 30-39 days'; break;
+              case 5: categoryLabel = 'Storage ≥ 40 days'; break;
+              default: categoryLabel = `Storage Category ${value}`;
+            }
+            break;
+          case 'DonorSex':
+            categoryLabel = value === 1 ? 'Male Donor' : value === 2 ? 'Female Donor' : `Donor Sex ${value}`;
+            break;
+          case 'DonorParity':
+            categoryLabel = value === 0 ? 'Nulliparous Donor' : value === 1 ? 'Parous Donor' : `Donor Parity ${value}`;
+            break;
+          case 'wdy_donation':
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            categoryLabel = days[value-1] || `Day ${value}`;
+            break;
+          default:
+            categoryLabel = `${value}`;
+        }
+        
+        // If we want to differentiate base vs full model in the label
+        return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
+      }
+      
+      // Return color sets for each factor
+      getLineColor(value, index = 0) {
+        const colors = [
+          {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},
+          {line: 'rgb(255, 127, 14)', area: 'rgba(255, 127, 14, 0.2)'},
+          {line: 'rgb(44, 160, 44)', area: 'rgba(44, 160, 44, 0.2)'},
+          {line: 'rgb(214, 39, 40)', area: 'rgba(214, 39, 40, 0.2)'},
+          {line: 'rgb(148, 103, 189)', area: 'rgba(148, 103, 189, 0.2)'},
+          {line: 'rgb(140, 86, 75)', area: 'rgba(140, 86, 75, 0.2)'},
+          {line: 'rgb(227, 119, 194)', area: 'rgba(227, 119, 194, 0.2)'}
+        ];
+        
+        if (value === null) {
+          return {line: 'rgb(0, 0, 0)', area: 'rgba(0, 0, 0, 0.1)'};
+        }
+        
+        const valueIndex = this.comparisonValues.indexOf(value);
+        if (valueIndex === -1) {
+          return colors[index % colors.length];
+        }
+        
+        return colors[valueIndex % colors.length];
+      }
+      
+      // Prepare data for chart
+      prepareChartData() {
+        if (!this.chartData.data || this.chartData.data.length === 0) return null;
+        
+        const compColumn = this.chartData.comparisonColumn;
+        
+        const filteredData = this.chartData.data.filter(row => 
+          this.selectedComparisons.includes(row[compColumn]) && 
+          row.TimeFromTransfusion >= this.timeRange[0] && 
+          row.TimeFromTransfusion <= this.timeRange[1]
+        );
+        
+        if (filteredData.length === 0) return null;
+        
+        const groupedByComp = _.groupBy(filteredData, compColumn);
+        
+        const datasets = [];
+        const allTimes = [];
+        
+        Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
+          const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
+          
+          sortedRows.forEach(row => {
+            if (!allTimes.includes(row.TimeFromTransfusion)) {
+              allTimes.push(row.TimeFromTransfusion);
+            }
+          });
+          
+          const parsedValue = compValue === "null" ? null : parseFloat(compValue);
+          const color = this.getLineColor(parsedValue, index);
+          const categoryLabel = this.getLegendLabel(parsedValue);
+          
+          // Full model line
+          datasets.push({
+            label: `${categoryLabel} (Full)`,
+            data: sortedRows.map(row => ({
+              x: row.TimeFromTransfusion,
+              y: row.PredVal_Full
+            })),
+            borderColor: color.line,
+            backgroundColor: color.line,
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          });
+          
+          // Confidence Interval
+          if (this.showConfidenceInterval) {
+            datasets.push({
+              label: `${categoryLabel} (CI)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.Lower_Full
+              })),
+              borderColor: 'transparent',
+              backgroundColor: color.area,
+              pointRadius: 0,
+              fill: '+1',
+              tension: 0.3
+            });
+            
+            datasets.push({
+              label: `${categoryLabel} (CI Upper)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.Upper_Full
+              })),
+              borderColor: 'transparent',
+              pointRadius: 0,
+              fill: false,
+              tension: 0.3,
+              hidden: true
+            });
+          }
+          
+          // Base model line
+          if (this.showBaseModel) {
+            datasets.push({
+              label: `${categoryLabel} (Base)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.PredVal_Base
+              })),
+              borderColor: color.line,
+              backgroundColor: color.line,
+              borderWidth: 1.5,
+              borderDash: [5, 5],
+              tension: 0.3,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 2
+            });
+          }
+        });
+        
+        allTimes.sort((a, b) => a - b);
+        
+        return {
+          datasets: datasets,
+          allTimes: allTimes
+        };
+      }
+      
+      // Render chart
+      updateChart() {
+        const chartData = this.prepareChartData();
+        
+        if (!chartData) {
+          this.clearChart();
+          return;
+        }
+        
+        const ctx = document.getElementById('chart-canvas').getContext('2d');
+        
+        let minY = Infinity;
+        let maxY = -Infinity;
+        
+        chartData.datasets.forEach(dataset => {
+          dataset.data.forEach(point => {
+            if (point.y !== null && !isNaN(point.y)) {
+              minY = Math.min(minY, point.y);
+              maxY = Math.max(maxY, point.y);
+            }
+          });
+        });
+        
+        const range = maxY - minY;
+        const padding = Math.max(range * 0.1, 0.5);
+        minY = Math.max(0, minY - padding);
+        maxY = maxY + padding;
+        
+        // Cap at 100% if vital param is SpO2
+        if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
+          maxY = 100;
+        }
+        
+        if (maxY - minY < 5) {
+          minY = Math.max(0, minY - 2.5);
+          maxY = maxY + 2.5;
+        }
+        
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        
+        this.chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            datasets: chartData.datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'nearest',
+              intersect: false
+            },
+            scales: {
+              x: {
+                type: 'linear',
+                title: {
+                  display: true,
+                  text: 'Time From Transfusion (minutes)'
+                },
+                min: this.timeRange[0],
+                max: this.timeRange[1]
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: this.metaInfo.yLabel
+                },
+                min: minY,
+                max: maxY,
+                ticks: {
+                  callback: (value, index, values) => {
+                    // Remove decimals for first & last label
+                    if (index === 0 || index === values.length - 1) {
+                      return parseInt(value);
+                    }
+                    return value;
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom', // keep the chart.js legend at the bottom
+                labels: {
+                  filter: function(legendItem) {
+                    // Hide CI Upper from legend
+                    return !legendItem.text.includes('CI Upper');
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      clearChart() {
+        if (this.chart) {
+          this.chart.destroy();
+          this.chart = null;
+        }
+      }
+      
+      logDebug(message) {
+        if (!this.debugMode) return;
+        const debugOutput = document.getElementById('debug-output');
+        const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+        debugOutput.textContent += `[${timestamp}] ${message}\n`;
+        debugOutput.scrollTop = debugOutput.scrollHeight;
+        console.log(`[DEBUG] ${message}`);
+      }
+      
+      showLoading() {
+        if (!this.loadingElement) {
+          this.loadingElement = document.createElement('div');
+          this.loadingElement.className = 'loading';
+          this.loadingElement.textContent = 'Loading data...';
+          this.container.appendChild(this.loadingElement);
+        }
+      }
+      
+      hideLoading() {
+        if (this.loadingElement) {
+          this.loadingElement.remove();
+          this.loadingElement = null;
+        }
+      }
+      
+      showError(message) {
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error';
+        errorElement.textContent = message;
+        this.container.insertBefore(errorElement, this.container.firstChild);
+        
+        setTimeout(() => {
+          errorElement.remove();
+        }, 10000);
+      }
+    }
+    
+    // Initialize dashboard when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      new TransfusionDashboard('app-container');
+    });
+  </script>
+</body>
+</html>
+
