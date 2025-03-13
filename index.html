@@ -1,365 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Transfusion Data Dashboard</title>
-  
-  <!-- React (No JSX/Babel) -->
-  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  
-  <!-- Load Lodash -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-  
-  <!-- Load PapaParse for CSV -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  
-  <!-- Basic styling -->
+  <title>Recharts Test</title>
   <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-      margin: 0;
-      background-color: #f5f5f5;
-    }
-    .container { 
-      max-width: 1100px; 
-      margin: 0 auto; 
-      padding: 20px; 
-    }
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      font-size: 18px;
-      color: #666;
-    }
-    .error {
-      background-color: #fee2e2;
-      color: #b91c1c;
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-    }
-    .success {
-      background-color: #d1fae5;
-      color: #065f46;
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-    }
-    .select-control {
-      width: 100%;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #d1d5db;
-      margin-bottom: 15px;
-    }
-    .label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 5px;
-    }
-    .btn {
-      background-color: #3b82f6;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background-color: #2563eb;
-    }
-    .chart-container {
-      height: 400px;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      padding: 10px;
-      background-color: white;
-    }
-    pre {
-      background-color: #f3f4f6;
-      padding: 10px;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
+    .status { padding: 20px; margin: 20px; border-radius: 8px; }
+    .success { background: #d1fae5; color: #065f46; }
+    .error { background: #fee2e2; color: #b91c1c; }
   </style>
 </head>
 <body>
-  <!-- Initial loading message -->
-  <div id="loading-message" style="text-align:center; padding:40px;">
-    <h2>Loading Transfusion Dashboard...</h2>
-    <p>If this message persists, please check the browser console for errors.</p>
-  </div>
+  <h1>Recharts Loading Test</h1>
+  <div id="status" class="status">Checking Recharts loading...</div>
   
-  <div id="root"></div>
-
+  <!-- React first -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+  
+  <!-- Script to check for Recharts -->
   <script>
-    // Hide the original loading message once our script starts
-    document.getElementById('loading-message').style.display = 'none';
-    
-    // Use React.createElement instead of JSX
-    const e = React.createElement;
-    
-    // Create a simple diagnostic app first
-    const DiagnosticApp = () => {
-      const [diagnosticState, setDiagnosticState] = React.useState({
-        recharts: { loading: true, loaded: false, error: null },
-        dataAccess: { loading: false, tested: false, result: null }
-      });
-      
-      // Test Recharts loading by dynamically adding the script
-      React.useEffect(() => {
-        console.log("Testing Recharts loading...");
-        
-        const loadRecharts = () => {
-          // First try to load dependecies
-          const propTypesScript = document.createElement('script');
-          propTypesScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js';
-          
-          propTypesScript.onload = () => {
-            console.log("PropTypes loaded");
-            
-            // Then try to load Recharts itself
-            const rechartsScript = document.createElement('script');
-            rechartsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.js';
-            
-            rechartsScript.onload = () => {
-              console.log("Recharts loaded successfully!");
-              
-              // Check if Recharts is defined on the window
-              if (window.Recharts) {
-                setDiagnosticState(prev => ({
-                  ...prev,
-                  recharts: { loading: false, loaded: true, error: null }
-                }));
-              } else {
-                setDiagnosticState(prev => ({
-                  ...prev,
-                  recharts: { 
-                    loading: false, 
-                    loaded: false, 
-                    error: "Script loaded but Recharts object not found on window" 
-                  }
-                }));
-              }
-            };
-            
-            rechartsScript.onerror = (e) => {
-              console.error("Failed to load Recharts:", e);
-              setDiagnosticState(prev => ({
-                ...prev,
-                recharts: { 
-                  loading: false, 
-                  loaded: false, 
-                  error: "Failed to load Recharts script" 
-                }
-              }));
-            };
-            
-            document.head.appendChild(rechartsScript);
-          };
-          
-          propTypesScript.onerror = (e) => {
-            console.error("Failed to load PropTypes:", e);
-            setDiagnosticState(prev => ({
-              ...prev,
-              recharts: { 
-                loading: false, 
-                loaded: false, 
-                error: "Failed to load PropTypes dependency" 
-              }
-            }));
-          };
-          
-          document.head.appendChild(propTypesScript);
-        };
-        
-        loadRecharts();
-      }, []);
-      
-      // Test data access
-      const testDataAccess = () => {
-        setDiagnosticState(prev => ({
-          ...prev,
-          dataAccess: { loading: true, tested: true, result: null }
-        }));
-        
-        // Try to load index file (try both lowercase and uppercase)
-        fetch('./data/viz_index.csv')
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Status: ${response.status}`);
-            }
-            return response.text();
-          })
-          .then(csvText => {
-            setDiagnosticState(prev => ({
-              ...prev,
-              dataAccess: {
-                loading: false,
-                tested: true,
-                result: {
-                  success: true,
-                  fileCase: 'lowercase',
-                  preview: csvText.substring(0, 200)
-                }
-              }
-            }));
-          })
-          .catch(err => {
-            console.log("Lowercase failed, trying uppercase...");
-            
-            fetch('./data/VIZ_INDEX.CSV')
-              .then(response => {
-                if (!response.ok) {
-                  throw new Error(`Status: ${response.status}`);
-                }
-                return response.text();
-              })
-              .then(csvText => {
-                setDiagnosticState(prev => ({
-                  ...prev,
-                  dataAccess: {
-                    loading: false,
-                    tested: true,
-                    result: {
-                      success: true,
-                      fileCase: 'uppercase',
-                      preview: csvText.substring(0, 200)
-                    }
-                  }
-                }));
-              })
-              .catch(dataErr => {
-                setDiagnosticState(prev => ({
-                  ...prev,
-                  dataAccess: {
-                    loading: false,
-                    tested: true,
-                    result: {
-                      success: false,
-                      error: `${err.message}, then ${dataErr.message}`
-                    }
-                  }
-                }));
-              });
-          });
-      };
-      
-      return e('div', { className: 'container' },
-        e('div', { className: 'header' },
-          e('h1', null, 'Transfusion Dashboard Diagnostics')
-        ),
-        
-        // Recharts Status
-        e('div', { className: 'card' },
-          e('h2', null, 'Recharts Library Status'),
-          
-          diagnosticState.recharts.loading ?
-            e('p', null, 'Testing Recharts loading...') :
-            diagnosticState.recharts.loaded ?
-              e('div', { className: 'success' },
-                e('p', null, 'Recharts library loaded successfully! ✅'),
-                e('p', null, 'The dashboard should be able to display visualizations.')
-              ) :
-              e('div', { className: 'error' },
-                e('p', null, `Error: ${diagnosticState.recharts.error} ❌`),
-                e('p', null, 'The dashboard needs Recharts to display visualizations.'),
-                e('p', null, 'Possible solutions:'),
-                e('ul', null,
-                  e('li', null, 'Try a different browser (Edge, Firefox)'),
-                  e('li', null, 'Check for content blockers or security settings'),
-                  e('li', null, 'Try using a different CDN for Recharts')
-                )
-              )
-        ),
-        
-        // Data Access Status
-        e('div', { className: 'card' },
-          e('h2', null, 'Data File Access'),
-          
-          !diagnosticState.dataAccess.tested ?
-            e('div', null,
-              e('p', null, 'Test if your CSV data files are accessible:'),
-              e('button', { 
-                className: 'btn', 
-                onClick: testDataAccess 
-              }, 'Test Data Access')
-            ) :
-            
-            diagnosticState.dataAccess.loading ?
-              e('p', null, 'Testing data access...') :
-              
-              diagnosticState.dataAccess.result.success ?
-                e('div', { className: 'success' },
-                  e('p', null, `Success! Found index file (${diagnosticState.dataAccess.result.fileCase} case) ✅`),
-                  e('p', null, 'First 200 characters:'),
-                  e('pre', null, diagnosticState.dataAccess.result.preview)
-                ) :
-                e('div', { className: 'error' },
-                  e('p', null, `Error accessing data files: ${diagnosticState.dataAccess.result.error} ❌`),
-                  e('p', null, 'Check that:'),
-                  e('ul', null,
-                    e('li', null, 'Your /data/ folder exists in the repository'),
-                    e('li', null, 'It contains the viz_index.csv or VIZ_INDEX.CSV file'),
-                    e('li', null, 'The files have been properly committed and pushed to GitHub')
-                  )
-                )
-        ),
-        
-        // Next steps
-        e('div', { className: 'card' },
-          e('h2', null, 'Next Steps'),
-          e('p', null, 'Based on these diagnostics, here\'s what to do:'),
-          
-          e('ul', null,
-            diagnosticState.recharts.loaded ? 
-              e('li', null, '✅ Recharts is working correctly') : 
-              e('li', null, '❌ Fix Recharts loading issue before proceeding'),
-              
-            diagnosticState.dataAccess.result && diagnosticState.dataAccess.result.success ? 
-              e('li', null, '✅ Data files are accessible') : 
-              e('li', null, '❌ Fix data access issues before proceeding')
-          ),
-          
-          (diagnosticState.recharts.loaded && 
-           diagnosticState.dataAccess.result && 
-           diagnosticState.dataAccess.result.success) ?
-            e('div', { className: 'success', style: { marginTop: '15px' } },
-              e('p', null, 'All systems are go! You can now implement the full dashboard.')
-            ) :
-            e('div', { className: 'error', style: { marginTop: '15px' } },
-              e('p', null, 'Some issues need to be resolved before the full dashboard can work.')
-            )
-        )
-      );
-    };
-    
-    // Render the diagnostic app
-    try {
-      ReactDOM.render(e(DiagnosticApp), document.getElementById('root'));
-      console.log("Diagnostic app rendered successfully");
-    } catch (err) {
-      console.error("Error rendering diagnostic app:", err);
-      document.getElementById('root').innerHTML = `
-        <div class="container">
-          <div class="error" style="margin-top: 30px">
-            <h3>Error Rendering Diagnostic App:</h3>
-            <p>${err.message}</p>
-          </div>
-        </div>
-      `;
+    function updateStatus(message, isSuccess) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = message;
+      statusDiv.className = isSuccess ? 'status success' : 'status error';
     }
+    
+    // Check if Recharts is already defined
+    if (window.Recharts) {
+      updateStatus('✅ Recharts is already defined! (Library loaded successfully)', true);
+    } else {
+      updateStatus('⚠️ Recharts not loaded yet. Attempting to load it now...', false);
+    }
+  </script>
+  
+  <!-- Try loading the dependencies and Recharts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.min.js"></script>
+  
+  <!-- Final check -->
+  <script>
+    // Check again after scripts have loaded
+    setTimeout(function() {
+      console.log("Checking Recharts availability...");
+      
+      if (window.Recharts) {
+        updateStatus(`
+          ✅ SUCCESS: Recharts loaded successfully!<br>
+          Available components: ${Object.keys(window.Recharts).join(', ')}
+        `, true);
+      } else {
+        updateStatus(`
+          ❌ ERROR: Recharts is still not defined after loading scripts.<br>
+          <br>
+          Try this alternative approach:<br>
+          <ol>
+            <li>Create a simple HTML file without React</li>
+            <li>Use pre-generated SVG charts instead of dynamic Recharts</li>
+            <li>Or use a different visualization library like Chart.js</li>
+          </ol>
+        `, false);
+      }
+    }, 1000); // Give scripts a second to load
   </script>
 </body>
 </html>
