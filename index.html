@@ -114,8 +114,11 @@
         this.chartData = [];          
         this.selectedVital = '';      
         this.selectedCompFactor = ''; 
+        // All possible categories for the current dataset
         this.comparisonValues = [];   
+        // Which categories are currently active
         this.selectedComparisons = [];
+
         this.timeRange = [0, 720];    
         this.showConfidenceInterval = false; 
         this.showBaseModel = false; 
@@ -128,6 +131,11 @@
         this.chart = null;            
         this.isInitialLoad = true;    
         this.debugMode = false;       
+
+        // We'll track the last known RBC factor and Vital Param
+        // so we can detect changes
+        this.lastSelectedCompFactor = null;
+        this.lastSelectedVital = null;
         
         // Initialize dashboard
         this.initialize();
@@ -221,7 +229,7 @@
         chartCard.className = 'card';
         chartCard.innerHTML = `
           <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
-          <!-- Moved the model descriptions panel here, above the chart -->
+          <!-- Model descriptions panel above the chart -->
           <div id="model-descriptions" class="info" style="margin-bottom: 10px;"></div>
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
@@ -231,7 +239,7 @@
         `;
         this.container.appendChild(chartCard);
         
-        // Create info card for Vital Parameters on the left, RBC factors on the right
+        // Info card for Vital Parameters and RBC factors
         const infoCard = document.createElement('div');
         infoCard.className = 'card';
         infoCard.innerHTML = `
@@ -247,7 +255,6 @@
                 <li>Heart Rate (bpm)</li>
                 <li>Peripheral Capillary Oxygen Saturation</li>
                 <li>Minute Ventilation (L/min)</li>
-                <!-- Add or remove as needed -->
               </ul>
             </div>
             <div class="col">
@@ -552,6 +559,17 @@
         try {
           this.showLoading();
           
+          // Detect if RBC factor changed or vital changed
+          const oldFactor = this.lastSelectedCompFactor;
+          const oldVital = this.lastSelectedVital;
+          
+          // Update stored values for next time
+          this.lastSelectedCompFactor = this.selectedCompFactor;
+          this.lastSelectedVital = this.selectedVital;
+
+          const factorChanged = (oldFactor !== null && oldFactor !== this.selectedCompFactor);
+          const vitalChanged = (oldVital !== null && oldVital !== this.selectedVital);
+
           const baseFileName = `VIZ_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}`;
           this.logDebug(`Base visualization filename: ${baseFileName}`);
           
@@ -589,7 +607,7 @@
                 <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
               `;
               
-              // Move the model descriptions (base model, fully adjusted) to #model-descriptions
+              // Model descriptions
               document.getElementById('model-descriptions').innerHTML = `
                 <div style="display: flex; justify-content: center; gap: 20px;">
                   <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
@@ -629,28 +647,53 @@
               
               this.logDebug(`Determined comparison column: ${comparisonColumnName}`);
               
+              // Grab the old selection before we overwrite
+              const oldSelection = [...this.selectedComparisons];
+              
               // Gather unique comparison values
               this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
                 .map(row => row[comparisonColumnName])
-                .filter(value => value !== null && value !== undefined)
-                .sort((a, b) => a - b);
+                .filter(value => value !== undefined)
+                .sort((a, b) => {
+                  // Place null at front if it exists, but we handle that below
+                  if (a === null) return -1;
+                  if (b === null) return 1;
+                  return a - b;
+                });
               
               const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
-              if (hasNullValues) {
+              if (hasNullValues && this.comparisonValues[0] !== null) {
                 this.comparisonValues.unshift(null);
                 this.logDebug("Added null reference value");
               }
               
-              // Default to all non-null
-              this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
-              this.logDebug(`Selected comparison values: ${this.selectedComparisons.join(', ')}`);
+              // Decide how to set selectedComparisons:
+              // 1) On first load or if RBC factor changed => all categories
+              // 2) If only vital changed => keep the user's old selection (intersect with new possible categories)
               
-              // Render the tags
+              if (this.isInitialLoad) {
+                this.logDebug("Initial load => show all categories by default (excluding null).");
+                this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
+                this.isInitialLoad = false;
+              } else if (factorChanged) {
+                this.logDebug("RBC factor changed => show all categories by default (excluding null).");
+                this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
+              } else {
+                // If vital changed (or we just reloaded with same factor & vital):
+                // keep whatever the user had, but only if it's still valid
+                this.logDebug("Vital changed or same => preserve old selection (intersection).");
+                this.selectedComparisons = oldSelection.filter(v => this.comparisonValues.includes(v));
+              }
+              
+              this.logDebug(`Final selected comparisons: ${this.selectedComparisons.join(', ')}`);
+              
+              // Store chart data
               this.chartData = {
                 data: results.data,
                 comparisonColumn: comparisonColumnName
               };
               
+              // Update the tags
               this.updateComparisonTags(comparisonColumnName);
               
               // Ensure time range inputs match our state
@@ -958,7 +1001,7 @@
             plugins: {
               legend: {
                 display: true,
-                position: 'bottom', // keep the chart.js legend at the bottom
+                position: 'bottom',
                 labels: {
                   filter: function(legendItem) {
                     // Hide CI Upper from legend
