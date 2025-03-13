@@ -12,17 +12,18 @@
   <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
   
-  <!-- Load Babel for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- Load Recharts -->
-  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <!-- Load Recharts properly with all dependencies -->
+  <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.1.12/umd/Recharts.min.js"></script>
   
   <!-- Load Lodash -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
   
   <!-- Load PapaParse for CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
+  <!-- Load Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
   <style>
     body {
@@ -31,9 +32,37 @@
   </style>
 </head>
 <body class="bg-gray-100">
+  <!-- Fallback text in case of errors -->
+  <div id="loading-message" style="text-align:center; padding:20px; margin-top:20px;">
+    <h2>Loading Transfusion Dashboard...</h2>
+    <p>If this message persists, please check the browser console for errors.</p>
+  </div>
+  
   <div id="app"></div>
 
   <script type="text/babel">
+    // Add error handling to show errors on the page
+    window.addEventListener('error', function(e) {
+      document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
+        <h3>Error Loading Dashboard:</h3>
+        <p>${e.message}</p>
+        <p>Line: ${e.lineno}</p>
+        <p>File: ${e.filename}</p>
+      </div>`;
+      console.error("Caught error:", e);
+    });
+    
+    // Check if Recharts is loaded correctly
+    if (!window.Recharts) {
+      document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
+        <h3>Recharts Library Not Loaded</h3>
+        <p>The visualization library couldn't be loaded from the CDN.</p>
+        <p>Try refreshing the page or check your internet connection.</p>
+      </div>`;
+    } else {
+      console.log("Recharts loaded successfully");
+    }
+    
     const { useState, useEffect, useRef, Fragment } = React;
     const {
       LineChart, Line, AreaChart, Area, XAxis, YAxis, 
@@ -87,6 +116,7 @@
         try {
           setLoading(true);
           setError(null);
+          console.log("Loading index data...");
           
           // Use fetch API to get the index file from data folder
           const response = await fetch('./data/viz_index.csv');
@@ -95,6 +125,7 @@
           }
           
           const indexFileContent = await response.text();
+          console.log("Index file loaded, parsing...");
           
           Papa.parse(indexFileContent, {
             header: true,
@@ -105,6 +136,8 @@
                 setLoading(false);
                 return;
               }
+              
+              console.log("Index data parsed successfully");
               
               // Trim whitespace from fields
               const cleanedData = results.data.map(row => {
@@ -125,6 +158,7 @@
                 }));
               
               setVitalParams(uniqueVitals);
+              console.log("Vital parameters:", uniqueVitals.length);
               
               if (uniqueVitals.length > 0) {
                 setSelectedVital(uniqueVitals[0].value);
@@ -133,11 +167,13 @@
               setLoading(false);
             },
             error: (error) => {
+              console.error("Parse error:", error);
               setError("Failed to parse index CSV: " + error.message);
               setLoading(false);
             }
           });
         } catch (error) {
+          console.error("Load error:", error);
           setError("Failed to load index CSV: " + error.message);
           setLoading(false);
         }
@@ -177,6 +213,7 @@
           // Convert to uppercase to match actual file naming pattern
           const fileName = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`;
           setCurrentFileName(fileName);
+          console.log("Loading visualization file:", fileName.toLowerCase());
           
           // Use fetch API to load the visualization file from data folder
           const response = await fetch(`./data/${fileName.toLowerCase()}`);
@@ -185,6 +222,7 @@
           }
           
           const fileContent = await response.text();
+          console.log("Visualization file loaded, parsing...");
           
           Papa.parse(fileContent, {
             header: true,
@@ -202,6 +240,8 @@
                 setLoading(false);
                 return;
               }
+              
+              console.log("Visualization data parsed successfully, rows:", results.data.length);
               
               // Extract metadata
               const firstRow = results.data[0];
@@ -256,11 +296,13 @@
               setLoading(false);
             },
             error: (error) => {
+              console.error("Parse error:", error);
               setError("Failed to parse visualization CSV: " + error.message);
               setLoading(false);
             }
           });
         } catch (error) {
+          console.error("Load error:", error);
           setError(`Failed to load visualization data: ${error.message}`);
           setLoading(false);
         }
@@ -860,7 +902,19 @@
     };
     
     // Render the app
-    ReactDOM.render(<App />, document.getElementById('app'));
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        ReactDOM.render(<App />, document.getElementById('app'));
+        // Hide loading message once app is rendered
+        document.getElementById('loading-message').style.display = 'none';
+      } catch (e) {
+        console.error("Error rendering app:", e);
+        document.body.innerHTML += `<div style="color:red;padding:20px;margin:20px;border:1px solid red">
+          <h3>App Rendering Error:</h3>
+          <p>${e.message}</p>
+        </div>`;
+      }
+    });
   </script>
 </body>
 </html>
