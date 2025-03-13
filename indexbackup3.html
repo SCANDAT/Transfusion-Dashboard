@@ -172,6 +172,7 @@
             </div>
             <div class="col">
               <div class="form-group">
+                <!-- RBC Component Factor Label -->
                 <label class="form-label">RBC Component Factor:</label>
                 <select id="factor-select" class="form-select"></select>
               </div>
@@ -221,12 +222,11 @@
         chartCard.className = 'card';
         chartCard.innerHTML = `
           <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
-          <!-- Moved the model descriptions panel here, above the chart -->
-          <div id="model-descriptions" class="info" style="margin-bottom: 10px;"></div>
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
           </div>
-          <!-- The chart.js legend is still at the bottom of the chart area -->
+          <!-- Legend below chart -->
+          <div id="chart-legend" class="info" style="margin-top: 10px;"></div>
           <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
         `;
         this.container.appendChild(chartCard);
@@ -572,8 +572,11 @@
                 <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
               `;
               
-              // Move the model descriptions (base model, fully adjusted) to #model-descriptions
-              document.getElementById('model-descriptions').innerHTML = `
+              // File info
+              document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
+              
+              // Legend below the chart
+              document.getElementById('chart-legend').innerHTML = `
                 <div style="display: flex; justify-content: center; gap: 20px;">
                   <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
                     <span style="font-weight: bold;">Base Model:</span> Adjusts for time, age, ICU time, RBC count, sex, and ward
@@ -583,9 +586,6 @@
                   </div>
                 </div>
               `;
-              
-              // File info
-              document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
               
               this.logDebug(`Columns in visualization data: ${results.meta.fields.join(', ')}`);
               
@@ -629,12 +629,12 @@
               this.logDebug(`Selected comparison values: ${this.selectedComparisons.join(', ')}`);
               
               // Render the tags
+              this.updateComparisonTags(comparisonColumnName);
+              
               this.chartData = {
                 data: results.data,
                 comparisonColumn: comparisonColumnName
               };
-              
-              this.updateComparisonTags(comparisonColumnName);
               
               // Ensure time range inputs match our state
               document.getElementById('time-min').value = this.timeRange[0];
@@ -926,25 +926,13 @@
                   text: this.metaInfo.yLabel
                 },
                 min: minY,
-                max: maxY,
-                // 1) Remove decimals from the first & last label
-                ticks: {
-                  callback: (value, index, values) => {
-                    // If it's the first (index=0) or the last label (index = values.length - 1)
-                    if (index === 0 || index === values.length - 1) {
-                      // Convert to integer (remove decimal)
-                      return parseInt(value);
-                    }
-                    // Otherwise, just show the default (which typically won't have decimals anyway)
-                    return value;
-                  }
-                }
+                max: maxY
               }
             },
             plugins: {
               legend: {
                 display: true,
-                position: 'bottom', // keep the chart.js line color legend at the bottom
+                position: 'bottom', // Legend below the chart
                 labels: {
                   filter: function(legendItem) {
                     // Hide CI Upper from legend
