@@ -28,30 +28,6 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-    
-    .file-upload {
-      border: 2px dashed #ccc;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      border-radius: 8px;
-    }
-    
-    .file-upload.highlight {
-      border-color: #4299e1;
-      background-color: #ebf8ff;
-    }
-    
-    .visuallyhidden {
-      border: 0;
-      clip: rect(0 0 0 0);
-      height: 1px;
-      margin: -1px;
-      overflow: hidden;
-      padding: 0;
-      position: absolute;
-      width: 1px;
-    }
   </style>
 </head>
 <body class="bg-gray-100">
@@ -66,23 +42,11 @@
     
     // Main application component
     const App = () => {
-      const [files, setFiles] = useState({});
-      const [fileUploadStep, setFileUploadStep] = useState(true);
-      
-      const handleFilesUploaded = (uploadedFiles) => {
-        setFiles(uploadedFiles);
-        setFileUploadStep(false);
-      };
-      
       return (
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <h1 className="text-3xl font-bold text-center mb-8">Transfusion Data Visualization Dashboard</h1>
           
-          {fileUploadStep ? (
-            <FileUploader onFilesUploaded={handleFilesUploaded} />
-          ) : (
-            <TransfusionDashboard files={files} />
-          )}
+          <TransfusionDashboard />
           
           <footer className="mt-12 text-center text-sm text-gray-500">
             <p>© 2025 Transfusion Research Team</p>
@@ -91,159 +55,8 @@
       );
     };
     
-    // File uploader component
-    const FileUploader = ({ onFilesUploaded }) => {
-      const [isLoading, setIsLoading] = useState(false);
-      const [isDragging, setIsDragging] = useState(false);
-      const [uploadProgress, setUploadProgress] = useState(0);
-      const [filesUploaded, setFilesUploaded] = useState(0);
-      const fileInputRef = useRef(null);
-      
-      const handleFileSelection = async (event) => {
-        const selectedFiles = event.target.files;
-        if (!selectedFiles.length) return;
-        
-        await processFiles(selectedFiles);
-      };
-      
-      const handleDragOver = (e) => {
-        e.preventDefault();
-        setIsDragging(true);
-      };
-      
-      const handleDragLeave = () => {
-        setIsDragging(false);
-      };
-      
-      const handleDrop = async (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-        
-        const droppedFiles = e.dataTransfer.files;
-        if (!droppedFiles.length) return;
-        
-        await processFiles(droppedFiles);
-      };
-      
-      const processFiles = async (fileList) => {
-        setIsLoading(true);
-        
-        try {
-          const processedFiles = {};
-          let indexFile = null;
-          
-          // First identify the index file
-          for (let i = 0; i < fileList.length; i++) {
-            const file = fileList[i];
-            if (file.name.toLowerCase().includes('index') || file.name.toLowerCase().includes('viz_index')) {
-              indexFile = file;
-              break;
-            }
-          }
-          
-          // Error if no index file found
-          if (!indexFile) {
-            alert('Please include a viz_index.csv file in your upload.');
-            setIsLoading(false);
-            return;
-          }
-          
-          // Process all files
-          for (let i = 0; i < fileList.length; i++) {
-            const file = fileList[i];
-            const fileName = file.name.toLowerCase();
-            
-            // Read file content
-            const content = await readFileAsText(file);
-            processedFiles[fileName] = content;
-            
-            // Update progress
-            setFilesUploaded(i + 1);
-            setUploadProgress(Math.round(((i + 1) / fileList.length) * 100));
-          }
-          
-          // Pass processed files to parent
-          onFilesUploaded(processedFiles);
-        } catch (error) {
-          console.error('Error processing files:', error);
-          alert('Error processing files. Please try again.');
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      
-      const readFileAsText = (file) => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.onerror = (e) => reject(e);
-          reader.readAsText(file);
-        });
-      };
-      
-      const triggerFileInput = () => {
-        fileInputRef.current.click();
-      };
-      
-      return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Upload Your CSV Files</h2>
-          
-          <div 
-            className={`file-upload ${isDragging ? 'highlight' : ''}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={triggerFileInput}
-          >
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              className="visuallyhidden"
-              multiple 
-              accept=".csv"
-              onChange={handleFileSelection}
-            />
-            
-            {isLoading ? (
-              <div>
-                <p className="mb-2">Processing files: {filesUploaded} uploaded</p>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="bg-blue-600 h-2.5 rounded-full" 
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <p className="text-gray-600">Drag and drop your CSV files here</p>
-                <p className="text-gray-500 text-sm mt-1">Or click to browse files</p>
-                <p className="text-blue-500 text-sm mt-3">
-                  <strong>Important:</strong> Include viz_index.csv and all VIZ_*.csv files
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <div className="text-sm text-gray-600 mt-4">
-            <h3 className="font-medium mb-2">Instructions:</h3>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Prepare all 35 CSV files and the viz_index.csv file</li>
-              <li>Upload all files at once by dragging them or clicking to browse</li>
-              <li>The dashboard will automatically process the files</li>
-              <li>No data is sent to any server - everything runs locally in your browser</li>
-            </ol>
-          </div>
-        </div>
-      );
-    };
-    
-    // Main dashboard component (adapted from your original code)
-    const TransfusionDashboard = ({ files }) => {
+    // Main dashboard component (adapted for GitHub Pages)
+    const TransfusionDashboard = () => {
       // State variables
       const [indexData, setIndexData] = useState([]);
       const [vitalParams, setVitalParams] = useState([]);
@@ -270,26 +83,29 @@
         loadIndexData();
       }, []);
 
-      const loadIndexData = () => {
+      const loadIndexData = async () => {
         try {
           setLoading(true);
-          // Find the index file
-          const indexFileName = Object.keys(files).find(name => 
-            name.toLowerCase().includes('index') || name.toLowerCase() === 'viz_index.csv'
-          );
+          setError(null);
           
-          if (!indexFileName) {
-            setError("Index file (viz_index.csv) not found");
-            setLoading(false);
-            return;
+          // Use fetch API to get the index file from data folder
+          const response = await fetch('./data/viz_index.csv');
+          if (!response.ok) {
+            throw new Error(`Failed to load index CSV: ${response.status} ${response.statusText}`);
           }
           
-          const indexFileContent = files[indexFileName];
+          const indexFileContent = await response.text();
           
           Papa.parse(indexFileContent, {
             header: true,
             skipEmptyLines: true,
             complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                setError(`Parse error: ${results.errors[0].message}`);
+                setLoading(false);
+                return;
+              }
+              
               // Trim whitespace from fields
               const cleanedData = results.data.map(row => {
                 const cleanRow = {};
@@ -345,37 +161,42 @@
 
       // Load visualization data when vital param and comp factor change
       useEffect(() => {
-        loadVisualizationData();
+        if (selectedVital && selectedCompFactor) {
+          loadVisualizationData();
+        }
       }, [selectedVital, selectedCompFactor]);
 
-      const loadVisualizationData = () => {
+      const loadVisualizationData = async () => {
         if (!selectedVital || !selectedCompFactor) return;
         
         try {
           setLoading(true);
+          setError(null);
+          
           // Construct filename based on selected parameters
           // Convert to uppercase to match actual file naming pattern
-          const fileName = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`.toLowerCase();
+          const fileName = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`;
           setCurrentFileName(fileName);
           
-          // Find the matching file (case insensitive)
-          const matchingFileName = Object.keys(files).find(name => 
-            name.toLowerCase() === fileName
-          );
-          
-          if (!matchingFileName) {
-            setError(`Visualization file not found: ${fileName}`);
-            setLoading(false);
-            return;
+          // Use fetch API to load the visualization file from data folder
+          const response = await fetch(`./data/${fileName.toLowerCase()}`);
+          if (!response.ok) {
+            throw new Error(`Failed to load visualization file: ${response.status} ${response.statusText}`);
           }
           
-          const fileContent = files[matchingFileName];
+          const fileContent = await response.text();
           
           Papa.parse(fileContent, {
             header: true,
             dynamicTyping: true,
             skipEmptyLines: true,
             complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                setError(`Parse error: ${results.errors[0].message}`);
+                setLoading(false);
+                return;
+              }
+              
               if (results.data.length === 0) {
                 setError("No data found in the CSV file");
                 setLoading(false);
@@ -407,6 +228,12 @@
                 key !== 'YLabel'
               );
               
+              if (!comparisonColumnName) {
+                setError("Could not determine comparison column");
+                setLoading(false);
+                return;
+              }
+              
               // Get unique comparison values
               const uniqueCompValues = _.uniqBy(results.data, comparisonColumnName)
                 .map(row => row[comparisonColumnName])
@@ -434,7 +261,7 @@
             }
           });
         } catch (error) {
-          setError(`Failed to load visualization data (${error.message})`);
+          setError(`Failed to load visualization data: ${error.message}`);
           setLoading(false);
         }
       };
