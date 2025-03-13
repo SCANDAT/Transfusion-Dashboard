@@ -114,9 +114,7 @@
         this.chartData = [];          
         this.selectedVital = '';      
         this.selectedCompFactor = ''; 
-        // All possible categories for the current dataset
         this.comparisonValues = [];   
-        // Which categories are currently active
         this.selectedComparisons = [];
 
         this.timeRange = [0, 720];    
@@ -131,9 +129,8 @@
         this.chart = null;            
         this.isInitialLoad = true;    
         this.debugMode = false;       
-
-        // We'll track the last known RBC factor and Vital Param
-        // so we can detect changes
+        
+        // Keep track of previous vital & factor
         this.lastSelectedCompFactor = null;
         this.lastSelectedVital = null;
         
@@ -229,13 +226,12 @@
         chartCard.className = 'card';
         chartCard.innerHTML = `
           <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
-          <!-- Model descriptions panel above the chart -->
           <div id="model-descriptions" class="info" style="margin-bottom: 10px;"></div>
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
           </div>
-          <!-- The chart.js legend is displayed at the bottom of the plot area -->
-          <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
+          <!-- Removed the file-info text to hide the CSV source file -->
+          <!-- (i.e. we no longer show "File: VIZ_XXX.csv") -->
         `;
         this.container.appendChild(chartCard);
         
@@ -394,7 +390,7 @@
               });
               
               // Gather unique vital parameters
-              this.vitalParams = _.uniqBy(this.indexData, 'VitalParam')
+              let unsortedVitals = _.uniqBy(this.indexData, 'VitalParam')
                 .map(item => ({
                   value: item.VitalParam,
                   label: item.VitalName 
@@ -402,25 +398,58 @@
                     : item.VitalParam
                 }));
               
-              this.logDebug(`Found ${this.vitalParams.length} unique vital parameters`);
+              // 1) We reorder them to the user-requested sequence
+              const desiredOrder = [
+                'Mean Arterial Pressure (mmHg)',
+                'Systolic Blood Pressure (mmHg)',
+                'Diastolic Blood Pressure (mmHg)',
+                'Heart Rate (bpm)',
+                'Fraction of Inspired Oxygen (%)',
+                'Peripheral Capillary Oxygen Saturation (%)',
+                'Minute Ventilation (L/min)'
+              ];
               
-              // Default vital param: Mean Arterial Pressure (mmHg)
-              if (this.vitalParams.length > 0) {
-                const desiredVital = this.vitalParams.find(v => v.label === 'Mean Arterial Pressure (mmHg)');
-                if (desiredVital) {
-                  this.selectedVital = desiredVital.value;
-                } else {
-                  this.selectedVital = this.vitalParams[0].value;
-                }
-                this.logDebug(`Selected initial vital parameter: ${this.selectedVital}`);
+              // Sort vitals by that custom order
+              this.vitalParams = unsortedVitals.sort((a, b) => {
+                const i1 = desiredOrder.indexOf(a.label);
+                const i2 = desiredOrder.indexOf(b.label);
                 
-                // Populate dropdown, then factor
-                this.updateVitalSelect();
-                this.updateCompFactors();
+                // If both are found, compare indexes
+                if (i1 !== -1 && i2 !== -1) {
+                  return i1 - i2;
+                }
+                // If one is missing from desired list, push it after the known ones
+                if (i1 === -1 && i2 === -1) {
+                  // fallback: normal alphabetical
+                  return a.label.localeCompare(b.label);
+                } else if (i1 === -1) {
+                  return 1;
+                } else if (i2 === -1) {
+                  return -1;
+                }
+                return 0; 
+              });
+              
+              this.logDebug(`Reordered vitalParams: ${this.vitalParams.map(v => v.label).join(', ')}`);
+              
+              // Default vital param: "Mean Arterial Pressure (mmHg)" if it exists
+              const desiredVital = this.vitalParams.find(v => v.label === 'Mean Arterial Pressure (mmHg)');
+              if (desiredVital) {
+                this.selectedVital = desiredVital.value;
+              } else if (this.vitalParams.length > 0) {
+                this.selectedVital = this.vitalParams[0].value;
               } else {
-                this.logDebug("No vital parameters found in index data");
+                this.logDebug("No vital parameters found in index data after reorder");
                 this.showError("No vital parameters found in index data. Check CSV format.");
+                this.hideLoading();
+                return;
               }
+              
+              this.logDebug(`Selected initial vital parameter: ${this.selectedVital}`);
+              
+              // Populate dropdown, then factor
+              this.updateVitalSelect();
+              this.updateCompFactors();
               
               this.hideLoading();
             },
@@ -509,7 +538,7 @@
         });
       }
       
-      // Fetch file with fallback to uppercase/lowercase
+      // Safe fetch
       async safeFetch(baseName) {
         const fileOptions = [];
         
@@ -559,16 +588,14 @@
         try {
           this.showLoading();
           
-          // Detect if RBC factor changed or vital changed
           const oldFactor = this.lastSelectedCompFactor;
           const oldVital = this.lastSelectedVital;
-          
-          // Update stored values for next time
-          this.lastSelectedCompFactor = this.selectedCompFactor;
-          this.lastSelectedVital = this.selectedVital;
-
           const factorChanged = (oldFactor !== null && oldFactor !== this.selectedCompFactor);
           const vitalChanged = (oldVital !== null && oldVital !== this.selectedVital);
+          
+          // Update stored values
+          this.lastSelectedCompFactor = this.selectedCompFactor;
+          this.lastSelectedVital = this.selectedVital;
 
           const baseFileName = `VIZ_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}`;
           this.logDebug(`Base visualization filename: ${baseFileName}`);
@@ -602,7 +629,7 @@
               
               this.logDebug(`Metadata: ${JSON.stringify(this.metaInfo)}`);
               
-              // Set chart title
+              // Chart title
               document.getElementById('chart-title').innerHTML = `
                 <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
               `;
@@ -619,11 +646,7 @@
                 </div>
               `;
               
-              // File info
-              document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
-              
-              this.logDebug(`Columns in visualization data: ${results.meta.fields.join(', ')}`);
-              
+              // Identify the comparison column
               const sampleRow = results.data[0];
               const comparisonColumnName = Object.keys(sampleRow).find(key => 
                 key !== 'TimeFromTransfusion' && 
@@ -647,45 +670,42 @@
               
               this.logDebug(`Determined comparison column: ${comparisonColumnName}`);
               
-              // Grab the old selection before we overwrite
+              // Keep track of the old selectedComparisons
               const oldSelection = [...this.selectedComparisons];
               
-              // Gather unique comparison values
-              this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
+              // All unique categories
+              let newValues = _.uniqBy(results.data, comparisonColumnName)
                 .map(row => row[comparisonColumnName])
                 .filter(value => value !== undefined)
                 .sort((a, b) => {
-                  // Place null at front if it exists, but we handle that below
                   if (a === null) return -1;
                   if (b === null) return 1;
                   return a - b;
                 });
               
-              const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
-              if (hasNullValues && this.comparisonValues[0] !== null) {
-                this.comparisonValues.unshift(null);
-                this.logDebug("Added null reference value");
+              const hasNull = results.data.some(row => row[comparisonColumnName] === null);
+              if (hasNull && newValues[0] !== null) {
+                newValues.unshift(null);
               }
               
-              // Decide how to set selectedComparisons:
-              // 1) On first load or if RBC factor changed => all categories
-              // 2) If only vital changed => keep the user's old selection (intersect with new possible categories)
+              this.comparisonValues = newValues;
+              this.logDebug(`comparisonValues => ${this.comparisonValues.join(', ')}`);
               
+              // Decide how to set selectedComparisons
               if (this.isInitialLoad) {
-                this.logDebug("Initial load => show all categories by default (excluding null).");
+                this.logDebug("Initial load => show all categories except null");
                 this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
                 this.isInitialLoad = false;
               } else if (factorChanged) {
-                this.logDebug("RBC factor changed => show all categories by default (excluding null).");
+                this.logDebug("RBC factor changed => show all categories except null");
                 this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
               } else {
-                // If vital changed (or we just reloaded with same factor & vital):
-                // keep whatever the user had, but only if it's still valid
-                this.logDebug("Vital changed or same => preserve old selection (intersection).");
+                // Vital changed or user reloaded same combos => preserve old selection if valid
+                this.logDebug("Vital changed => keep old selection intersection if valid");
                 this.selectedComparisons = oldSelection.filter(v => this.comparisonValues.includes(v));
               }
               
-              this.logDebug(`Final selected comparisons: ${this.selectedComparisons.join(', ')}`);
+              this.logDebug(`Final selectedComparisons => ${this.selectedComparisons.join(', ')}`);
               
               // Store chart data
               this.chartData = {
@@ -693,14 +713,14 @@
                 comparisonColumn: comparisonColumnName
               };
               
-              // Update the tags
+              // Update tags
               this.updateComparisonTags(comparisonColumnName);
               
-              // Ensure time range inputs match our state
+              // Time range
               document.getElementById('time-min').value = this.timeRange[0];
               document.getElementById('time-max').value = this.timeRange[1];
               
-              // Now update the chart
+              // Render
               this.updateChart();
               
               this.hideLoading();
@@ -717,7 +737,7 @@
         }
       }
       
-      // Create clickable tags for each RBC factor category
+      // Create clickable tags
       updateComparisonTags(comparisonColumnName) {
         const container = document.getElementById('comparison-tags');
         container.innerHTML = '';
@@ -741,7 +761,7 @@
         });
       }
       
-      // Convert factor value into a human-readable legend label
+      // Human-readable label
       getLegendLabel(value, modelType = null) {
         if (value === null) return 'Reference';
         
@@ -783,11 +803,10 @@
             categoryLabel = `${value}`;
         }
         
-        // If we want to differentiate base vs full model in the label
         return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
       }
       
-      // Return color sets for each factor
+      // Coloring
       getLineColor(value, index = 0) {
         const colors = [
           {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},
@@ -811,7 +830,6 @@
         return colors[valueIndex % colors.length];
       }
       
-      // Prepare data for chart
       prepareChartData() {
         if (!this.chartData.data || this.chartData.data.length === 0) return null;
         
@@ -916,7 +934,6 @@
         };
       }
       
-      // Render chart
       updateChart() {
         const chartData = this.prepareChartData();
         
@@ -944,7 +961,6 @@
         minY = Math.max(0, minY - padding);
         maxY = maxY + padding;
         
-        // Cap at 100% if vital param is SpO2
         if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
           maxY = 100;
         }
@@ -1072,4 +1088,3 @@
   </script>
 </body>
 </html>
-
