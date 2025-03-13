@@ -2,140 +2,101 @@
 <html>
 <head>
   <title>Transfusion Data Dashboard</title>
+  
   <!-- React (No JSX/Babel) -->
   <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
   
-  <!-- Recharts and dependencies -->
-  <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
-  <script src="https://unpkg.com/recharts@2.1.12/umd/Recharts.min.js"></script>
-  
-  <!-- Other libraries -->
+  <!-- Load Lodash -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  
+  <!-- Load PapaParse for CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   
-  <!-- Tailwind-like utility CSS -->
+  <!-- Basic styling -->
   <style>
-    /* Base styles */
-    *, *::before, *::after { box-sizing: border-box; }
     body { 
       font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
       margin: 0;
-      padding: 0;
-      background-color: #f3f4f6;
+      background-color: #f5f5f5;
     }
-    
-    /* Layout */
-    .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .items-center { align-items: center; }
-    .justify-between { justify-content: space-between; }
-    .gap-4 { gap: 1rem; }
-    .m-4 { margin: 1rem; }
-    .mt-4 { margin-top: 1rem; }
-    .mb-4 { margin-bottom: 1rem; }
-    .p-4 { padding: 1rem; }
-    
-    /* Components */
+    .container { 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 20px; 
+    }
     .card {
       background: white;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .select {
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #666;
+    }
+    .error {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .success {
+      background-color: #d1fae5;
+      color: #065f46;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .select-control {
       width: 100%;
-      padding: 0.5rem;
+      padding: 8px;
+      border-radius: 4px;
       border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
+      margin-bottom: 15px;
     }
     .label {
       display: block;
-      font-size: 0.875rem;
       font-weight: 500;
-      margin-bottom: 0.5rem;
+      margin-bottom: 5px;
     }
     .btn {
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-    }
-    .btn-primary {
       background-color: #3b82f6;
       color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    .btn-primary:hover {
+    .btn:hover {
       background-color: #2563eb;
     }
-    .btn-gray {
-      background-color: #f3f4f6;
-      color: #4b5563;
-    }
-    .btn-gray:hover {
-      background-color: #e5e7eb;
-    }
-    
-    /* Status Messages */
-    .status-msg {
-      padding: 1rem;
-      border-radius: 0.375rem;
-      margin-bottom: 1rem;
-    }
-    .success { background-color: #d1fae5; color: #065f46; }
-    .error { background-color: #fee2e2; color: #b91c1c; }
-    .info { background-color: #dbeafe; color: #1e40af; }
-    .warning { background-color: #fffbeb; color: #92400e; }
-    
-    /* Text utilities */
-    .text-center { text-align: center; }
-    .text-lg { font-size: 1.125rem; }
-    .text-xl { font-size: 1.25rem; }
-    .text-2xl { font-size: 1.5rem; }
-    .font-bold { font-weight: 700; }
-    .text-gray-500 { color: #6b7280; }
-    .text-gray-700 { color: #374151; }
-    
-    /* Browser warning */
-    .browser-warning {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background-color: #fee2e2;
-      color: #b91c1c;
-      padding: 1rem;
-      text-align: center;
-      z-index: 1000;
-    }
-    
-    /* Chart container */
     .chart-container {
       height: 400px;
-      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px;
+      background-color: white;
     }
-    
-    /* Filter pill buttons */
-    .filter-pill {
-      display: inline-flex;
-      padding: 0.25rem 0.75rem;
-      margin: 0.25rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      background-color: #e5e7eb;
-      cursor: pointer;
-    }
-    .filter-pill.active {
-      background-color: #3b82f6;
-      color: white;
+    pre {
+      background-color: #f3f4f6;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
     }
   </style>
 </head>
 <body>
-  <div id="loading-message" style="text-align:center; padding:20px">
+  <!-- Initial loading message -->
+  <div id="loading-message" style="text-align:center; padding:40px;">
     <h2>Loading Transfusion Dashboard...</h2>
     <p>If this message persists, please check the browser console for errors.</p>
   </div>
@@ -143,794 +104,259 @@
   <div id="root"></div>
 
   <script>
-    // Utility functions
-    function isChromeBrowser() {
-      return /Chrome/.test(navigator.userAgent) && !/Edge|Edg/.test(navigator.userAgent);
-    }
-    
-    // Hide the original loading message
+    // Hide the original loading message once our script starts
     document.getElementById('loading-message').style.display = 'none';
     
     // Use React.createElement instead of JSX
     const e = React.createElement;
     
-    // Get Recharts components
-    const {
-      LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
-      Legend, ResponsiveContainer, ReferenceLine, Area
-    } = Recharts;
-    
-    // Define main App component
-    function App() {
-      // State declarations
-      const [indexData, setIndexData] = React.useState([]);
-      const [vitalParams, setVitalParams] = React.useState([]);
-      const [compFactors, setCompFactors] = React.useState([]);
-      const [selectedVital, setSelectedVital] = React.useState('');
-      const [selectedCompFactor, setSelectedCompFactor] = React.useState('');
-      const [chartData, setChartData] = React.useState([]);
-      const [loading, setLoading] = React.useState(true);
-      const [error, setError] = React.useState(null);
-      const [showConfidenceInterval, setShowConfidenceInterval] = React.useState(true);
-      const [showBaseModel, setShowBaseModel] = React.useState(true);
-      const [timeRange, setTimeRange] = React.useState([0, 720]);
-      const [comparisonValues, setComparisonValues] = React.useState([]);
-      const [selectedComparison, setSelectedComparison] = React.useState([]);
-      const [currentFileName, setCurrentFileName] = React.useState('');
-      const [metaInfo, setMetaInfo] = React.useState({
-        vitalName: '',
-        compName: '',
-        yLabel: ''
+    // Create a simple diagnostic app first
+    const DiagnosticApp = () => {
+      const [diagnosticState, setDiagnosticState] = React.useState({
+        recharts: { loading: true, loaded: false, error: null },
+        dataAccess: { loading: false, tested: false, result: null }
       });
-      const [fileCase, setFileCase] = React.useState('unknown');
-
-      // Load index data on mount
-      React.useEffect(function() {
-        loadIndexData();
-      }, []);
-
-      function loadIndexData() {
-        setLoading(true);
-        setError(null);
-        console.log("Loading index data...");
-        
-        // Try lowercase first
-        fetch('./data/viz_index.csv')
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('Lowercase file not found');
-            }
-            setFileCase('lowercase');
-            return response.text();
-          })
-          .catch(function(err) {
-            // Try uppercase if lowercase fails
-            console.log("Trying uppercase version...");
-            return fetch('./data/VIZ_INDEX.CSV')
-              .then(function(response) {
-                if (!response.ok) {
-                  throw new Error('Both lowercase and uppercase files not found');
-                }
-                setFileCase('uppercase');
-                return response.text();
-              });
-          })
-          .then(function(csvText) {
-            console.log("CSV loaded, parsing...");
-            Papa.parse(csvText, {
-              header: true,
-              skipEmptyLines: true,
-              complete: function(results) {
-                console.log("Parse complete, rows:", results.data.length);
-                
-                // Clean data - trim whitespace
-                const cleanedData = results.data.map(function(row) {
-                  const cleanRow = {};
-                  Object.keys(row).forEach(function(key) {
-                    cleanRow[key] = typeof row[key] === 'string' ? row[key].trim() : row[key];
-                  });
-                  return cleanRow;
-                });
-                
-                setIndexData(cleanedData);
-                
-                // Extract vital parameters for dropdown
-                const uniqueVitals = _.uniqBy(cleanedData, 'VitalParam')
-                  .map(function(item) {
-                    return {
-                      value: item.VitalParam, 
-                      label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
-                    };
-                  });
-                
-                setVitalParams(uniqueVitals);
-                
-                if (uniqueVitals.length > 0) {
-                  setSelectedVital(uniqueVitals[0].value);
-                }
-                
-                setLoading(false);
-              },
-              error: function(error) {
-                console.error("CSV parse error:", error);
-                setError("Failed to parse index CSV: " + error.message);
-                setLoading(false);
-              }
-            });
-          })
-          .catch(function(error) {
-            console.error("Load error:", error);
-            setError("Failed to load index CSV: " + error.message);
-            setLoading(false);
-          });
-      }
-
-      // Update comparison factors when vital parameter changes
-      React.useEffect(function() {
-        if (selectedVital && indexData.length > 0) {
-          const relevantFactors = indexData.filter(function(item) {
-            return item.VitalParam === selectedVital;
-          });
-          
-          setCompFactors(relevantFactors.map(function(item) {
-            return {
-              value: item.CompFactor,
-              label: item.CompName || item.CompFactor
-            };
-          }));
-          
-          if (relevantFactors.length > 0) {
-            setSelectedCompFactor(relevantFactors[0].CompFactor);
-          }
-        }
-      }, [selectedVital, indexData]);
-
-      // Load visualization data when vital param and comp factor change
-      React.useEffect(function() {
-        if (selectedVital && selectedCompFactor) {
-          loadVisualizationData();
-        }
-      }, [selectedVital, selectedCompFactor]);
-
-      function loadVisualizationData() {
-        if (!selectedVital || !selectedCompFactor) return;
-        
-        setLoading(true);
-        setError(null);
-        
-        // Construct filename based on file case detected earlier
-        let fileName;
-        if (fileCase === 'uppercase') {
-          fileName = `VIZ_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.CSV`;
-        } else {
-          fileName = `viz_${selectedVital.trim().toUpperCase()}_${selectedCompFactor.trim().toUpperCase()}.csv`;
-        }
-        
-        setCurrentFileName(fileName);
-        console.log("Loading visualization file:", fileName);
-        
-        fetch(`./data/${fileName}`)
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error(`Failed to load visualization file (${response.status})`);
-            }
-            return response.text();
-          })
-          .then(function(csvText) {
-            console.log("Visualization file loaded, parsing...");
-            
-            Papa.parse(csvText, {
-              header: true,
-              dynamicTyping: true,
-              skipEmptyLines: true,
-              complete: function(results) {
-                if (results.data.length === 0) {
-                  setError("No data found in the CSV file");
-                  setLoading(false);
-                  return;
-                }
-                
-                console.log("Visualization data parsed, rows:", results.data.length);
-                
-                // Extract metadata
-                const firstRow = results.data[0];
-                setMetaInfo({
-                  vitalName: firstRow.VitalName || "Vital Parameter",
-                  compName: firstRow.CompName || "Comparison Factor",
-                  yLabel: firstRow.YLabel || "Value"
-                });
-                
-                // Determine comparison column name
-                const sampleRow = results.data[0];
-                const comparisonColumnName = Object.keys(sampleRow).find(function(key) {
-                  return key !== 'TimeFromTransfusion' && 
-                    key !== 'PredVal_Base' && 
-                    key !== 'StdErrVal_Base' && 
-                    key !== 'PredVal_Full' && 
-                    key !== 'StdErrVal_Full' && 
-                    key !== 'Lower_Full' && 
-                    key !== 'Upper_Full' && 
-                    key !== 'VitalParam' && 
-                    key !== 'CompFactor' && 
-                    key !== 'CompName' && 
-                    key !== 'VitalName' && 
-                    key !== 'YLabel';
-                });
-                
-                if (!comparisonColumnName) {
-                  setError("Could not determine comparison column");
-                  setLoading(false);
-                  return;
-                }
-                
-                console.log("Comparison column:", comparisonColumnName);
-                
-                // Get unique comparison values
-                const uniqueCompValues = _.uniqBy(results.data, comparisonColumnName)
-                  .map(function(row) { return row[comparisonColumnName]; })
-                  .filter(function(value) { return value !== null && value !== undefined; })
-                  .sort(function(a, b) { return a - b; });
-                
-                // Add null as a separate option if it exists in the data
-                const hasNullValues = results.data.some(function(row) { 
-                  return row[comparisonColumnName] === null; 
-                });
-                
-                if (hasNullValues) {
-                  uniqueCompValues.unshift(null);
-                }
-                
-                setComparisonValues(uniqueCompValues);
-                
-                // Default to selecting all non-null values
-                setSelectedComparison(uniqueCompValues.filter(function(v) { return v !== null; }));
-                
-                // Process data for chart
-                setChartData(results.data);
-                setLoading(false);
-              },
-              error: function(error) {
-                console.error("Parse error:", error);
-                setError("Failed to parse visualization CSV: " + error.message);
-                setLoading(false);
-              }
-            });
-          })
-          .catch(function(error) {
-            console.error("Load error:", error);
-            setError(`Failed to load visualization data: ${error.message}`);
-            setLoading(false);
-          });
-      }
-
-      // Get comparison column name
-      function getComparisonColumnName() {
-        if (!chartData || chartData.length === 0) return '';
-        
-        const sampleRow = chartData[0];
-        return Object.keys(sampleRow).find(function(key) {
-          return key !== 'TimeFromTransfusion' && 
-            key !== 'PredVal_Base' && 
-            key !== 'StdErrVal_Base' && 
-            key !== 'PredVal_Full' && 
-            key !== 'StdErrVal_Full' && 
-            key !== 'Lower_Full' && 
-            key !== 'Upper_Full' && 
-            key !== 'VitalParam' && 
-            key !== 'CompFactor' && 
-            key !== 'CompName' && 
-            key !== 'VitalName' && 
-            key !== 'YLabel';
-        }) || '';
-      }
-
-      // Get legend label
-      function getLegendLabel(compFactor, value, modelType) {
-        if (value === null) return 'Reference';
-        
-        // Remove trailing spaces
-        const factor = compFactor.trim();
-        let categoryLabel = '';
-        
-        switch (factor) {
-          case 'DonorHb_Cat':
-            switch (value) {
-              case 1: categoryLabel = 'Donor Hb < 125 g/L'; break;
-              case 2: categoryLabel = 'Donor Hb 125-139 g/L'; break;
-              case 3: categoryLabel = 'Donor Hb 140-154 g/L'; break;
-              case 4: categoryLabel = 'Donor Hb 155-169 g/L'; break;
-              case 5: categoryLabel = 'Donor Hb ≥ 170 g/L'; break;
-              default: categoryLabel = `Donor Hb Category ${value}`;
-            }
-            break;
-          case 'Storage_Cat':
-            switch (value) {
-              case 1: categoryLabel = 'Storage < 10 days'; break;
-              case 2: categoryLabel = 'Storage 10-19 days'; break;
-              case 3: categoryLabel = 'Storage 20-29 days'; break;
-              case 4: categoryLabel = 'Storage 30-39 days'; break;
-              case 5: categoryLabel = 'Storage ≥ 40 days'; break;
-              default: categoryLabel = `Storage Category ${value}`;
-            }
-            break;
-          case 'DonorSex':
-            categoryLabel = value === 1 ? 'Male Donor' : value === 2 ? 'Female Donor' : `Donor Sex ${value}`;
-            break;
-          case 'DonorParity':
-            categoryLabel = value === 0 ? 'Nulliparous Donor' : value === 1 ? 'Parous Donor' : `Donor Parity ${value}`;
-            break;
-          case 'wdy_donation':
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            categoryLabel = days[value-1] || `Day ${value}`;
-            break;
-          default:
-            categoryLabel = `${value}`;
-        }
-        
-        return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
-      }
-
-      // Process data for percentage formatting
-      function processDataPoint(point) {
-        const needsMultiplication = 
-          point.predBase !== null && point.predBase < 1 &&
-          point.predFull !== null && point.predFull < 1;
-        
-        return {
-          time: point.time,
-          predBase: needsMultiplication ? point.predBase * 100 : point.predBase,
-          predFull: needsMultiplication ? point.predFull * 100 : point.predFull,
-          lower: needsMultiplication ? point.lower * 100 : point.lower,
-          upper: needsMultiplication ? point.upper * 100 : point.upper
-        };
-      }
-
-      // Calculate Y-axis domain
-      function getYAxisDomain(chartData, vitalType) {
-        const allData = chartData.flatMap(function(series) {
-          return series.data.flatMap(function(point) {
-            return [point.predBase, point.predFull, point.lower, point.upper];
-          });
-        }).filter(function(value) { 
-          return value !== null && value !== undefined && !isNaN(value); 
-        });
-        
-        if (allData.length === 0) return [0, 100];
-        
-        let minValue = Math.min.apply(null, allData);
-        let maxValue = Math.max.apply(null, allData);
-        
-        const range = maxValue - minValue;
-        const padding = Math.max(range * 0.1, 0.5);
-        
-        minValue = Math.max(0, minValue - padding);
-        maxValue = maxValue + padding;
-        
-        if (vitalType && vitalType.trim() === 'SpO2' && maxValue > 99) {
-          maxValue = 100;
-        }
-        
-        if (maxValue - minValue < 5) {
-          minValue = Math.max(0, minValue - 2.5);
-          maxValue = maxValue + 2.5;
-        }
-        
-        return [minValue, maxValue];
-      }
-
-      // Get line colors
-      function getLineColor(compValue, values) {
-        const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2'];
-        
-        if (compValue === null) {
-          return '#000000';
-        }
-        
-        const index = values.indexOf(compValue);
-        
-        if (index === -1 || index >= colors.length) {
-          return colors[compValue % colors.length] || colors[0];
-        }
-        
-        return colors[index % colors.length];
-      }
-
-      // Filter data based on selections
-      function getFilteredData() {
-        if (!chartData || chartData.length === 0) return [];
-        
-        const compColumn = getComparisonColumnName();
-        if (!compColumn) return [];
-        
-        return chartData.filter(function(row) {
-          return selectedComparison.includes(row[compColumn]) && 
-            row.TimeFromTransfusion >= timeRange[0] && 
-            row.TimeFromTransfusion <= timeRange[1];
-        });
-      }
-
-      // Group data for chart
-      function getChartData() {
-        const filteredData = getFilteredData();
-        const compColumn = getComparisonColumnName();
-        
-        if (filteredData.length === 0 || !compColumn) return [];
-        
-        // Group by comparison value
-        const groupedByComp = _.groupBy(filteredData, compColumn);
-        
-        // Process entries in ascending order
-        const entries = Object.entries(groupedByComp);
-        entries.sort(function(a, b) {
-          if (a[0] === "null") return -1;
-          if (b[0] === "null") return 1;
-          return parseFloat(a[0]) - parseFloat(b[0]);
-        });
-        
-        const series = [];
-        
-        // Create full model series
-        entries.forEach(function([compValue, rows]) {
-          const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
-          const parsedValue = compValue === "null" ? null : parseFloat(compValue);
-          const categoryLabel = getLegendLabel(selectedCompFactor, parsedValue);
-          
-          series.push({
-            name: `Fully Adjusted: ${categoryLabel}`,
-            categoryLabel: categoryLabel,
-            modelType: 'Fully Adjusted Model',
-            compValue: parsedValue,
-            color: getLineColor(parsedValue, comparisonValues),
-            data: sortedRows.map(function(row) {
-              return processDataPoint({
-                time: row.TimeFromTransfusion,
-                predBase: row.PredVal_Base,
-                predFull: row.PredVal_Full,
-                lower: row.Lower_Full,
-                upper: row.Upper_Full
-              });
-            })
-          });
-        });
-        
-        // Add base model series if enabled
-        if (showBaseModel) {
-          entries.forEach(function([compValue, rows]) {
-            const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
-            const parsedValue = compValue === "null" ? null : parseFloat(compValue);
-            const categoryLabel = getLegendLabel(selectedCompFactor, parsedValue);
-            
-            series.push({
-              name: `Base: ${categoryLabel}`,
-              categoryLabel: categoryLabel,
-              modelType: 'Base Model',
-              compValue: parsedValue,
-              color: getLineColor(parsedValue, comparisonValues),
-              isBase: true,
-              data: sortedRows.map(function(row) {
-                return processDataPoint({
-                  time: row.TimeFromTransfusion,
-                  predBase: row.PredVal_Base,
-                  predFull: row.PredVal_Full,
-                  lower: row.Lower_Full,
-                  upper: row.Upper_Full
-                });
-              })
-            });
-          });
-        }
-        
-        return series;
-      }
-
-      // Event handlers
-      function handleVitalChange(event) {
-        setSelectedVital(event.target.value);
-        setChartData([]);
-        setError(null);
-      }
-
-      function handleCompFactorChange(event) {
-        setSelectedCompFactor(event.target.value);
-        setChartData([]);
-        setError(null);
-      }
-
-      function handleComparisonSelection(value) {
-        if (selectedComparison.includes(value)) {
-          setSelectedComparison(selectedComparison.filter(function(v) { return v !== value; }));
-        } else {
-          setSelectedComparison([...selectedComparison, value]);
-        }
-      }
-
-      function handleTimeRangeChange(index, value) {
-        const newRange = [...timeRange];
-        newRange[index] = parseInt(value);
-        setTimeRange(newRange);
-      }
       
-      function renderChart() {
-        const chartSeries = getChartData();
-        const yDomain = getYAxisDomain(chartSeries, selectedVital);
+      // Test Recharts loading by dynamically adding the script
+      React.useEffect(() => {
+        console.log("Testing Recharts loading...");
         
-        // Create line elements
-        const lineElements = [];
-        const areaElements = [];
-        
-        chartSeries.forEach(function(series, index) {
-          // Add line
-          lineElements.push(
-            e(Line, {
-              key: `line-${index}`,
-              name: series.name,
-              data: series.data,
-              dataKey: series.isBase ? "predBase" : "predFull",
-              stroke: series.color,
-              strokeWidth: series.isBase ? 1.5 : 2,
-              strokeDasharray: series.isBase ? "5 5" : undefined,
-              dot: false,
-              activeDot: series.isBase ? false : { r: 6 }
-            })
-          );
+        const loadRecharts = () => {
+          // First try to load dependecies
+          const propTypesScript = document.createElement('script');
+          propTypesScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js';
           
-          // Add confidence interval areas
-          if (showConfidenceInterval && !series.isBase) {
-            areaElements.push(
-              e(Area, {
-                key: `area-lower-${index}`,
-                name: `${series.categoryLabel} (CI)`,
-                data: series.data,
-                dataKey: "lower",
-                stroke: "none",
-                fill: series.color,
-                fillOpacity: 0.1,
-                legendType: "none"
-              })
-            );
+          propTypesScript.onload = () => {
+            console.log("PropTypes loaded");
             
-            areaElements.push(
-              e(Area, {
-                key: `area-upper-${index}`,
-                data: series.data,
-                dataKey: "upper",
-                stroke: "none",
-                fill: series.color,
-                fillOpacity: 0.1,
-                legendType: "none"
-              })
-            );
-          }
-        });
-        
-        // Create the chart
-        return e(ResponsiveContainer, { width: "100%", height: 400 },
-          e(LineChart, { margin: { top: 20, right: 30, left: 20, bottom: 10 } },
-            e(CartesianGrid, { strokeDasharray: "3 3" }),
-            e(XAxis, {
-              dataKey: "time",
-              type: "number",
-              domain: [timeRange[0], timeRange[1]],
-              label: {
-                value: 'Time From Transfusion (minutes)',
-                position: 'insideBottom',
-                offset: -5
-              }
-            }),
-            e(YAxis, {
-              domain: yDomain,
-              tickFormatter: function(value) { return Math.round(value); },
-              label: {
-                value: metaInfo.yLabel,
-                angle: -90,
-                position: 'insideLeft'
-              }
-            }),
-            e(Tooltip, {
-              formatter: function(value, name) { return [value.toFixed(1), name]; },
-              labelFormatter: function(label) { return `Time: ${label} min`; }
-            }),
-            e(Legend, {
-              align: 'center',
-              verticalAlign: 'bottom'
-            }),
-            e(ReferenceLine, { y: 0, stroke: "#000" }),
-            ...areaElements,
-            ...lineElements
-          )
-        );
-      }
-      
-      // Render browser warning if using Chrome
-      const browserWarning = isChromeBrowser() ? 
-        e('div', { className: 'browser-warning' },
-          'This dashboard may not work correctly in Chrome. Please try Microsoft Edge or Firefox for best results.'
-        ) : null;
-      
-      // Main render
-      return e('div', { className: 'container' },
-        browserWarning,
-        
-        e('h1', { className: 'text-2xl font-bold text-center mb-4' }, 
-          'Transfusion Data Visualization Dashboard'
-        ),
-        
-        e('p', { className: 'text-center text-gray-500 mb-4' },
-          'Displaying time-series data after blood transfusion'
-        ),
-        
-        // Controls
-        e('div', { className: 'card' },
-          e('div', { className: 'flex flex-col md:flex-row gap-4' },
-            // Vital parameter selector
-            e('div', { className: 'flex-1' },
-              e('label', { className: 'label' }, 'Vital Parameter:'),
-              e('select', {
-                value: selectedVital,
-                onChange: handleVitalChange,
-                className: 'select',
-                disabled: loading
-              }, vitalParams.map(function(vital) {
-                return e('option', { key: vital.value, value: vital.value }, vital.label);
-              }))
-            ),
+            // Then try to load Recharts itself
+            const rechartsScript = document.createElement('script');
+            rechartsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.js';
             
-            // Comparison factor selector
-            e('div', { className: 'flex-1' },
-              e('label', { className: 'label' }, 'Comparison Factor:'),
-              e('select', {
-                value: selectedCompFactor,
-                onChange: handleCompFactorChange,
-                className: 'select',
-                disabled: loading
-              }, compFactors.map(function(factor) {
-                return e('option', { key: factor.value, value: factor.value }, factor.label);
-              }))
-            )
-          ),
-          
-          // Time range controls
-          e('div', { className: 'mt-4' },
-            e('label', { className: 'label' }, 'Time Range (minutes):'),
-            e('div', { className: 'flex items-center gap-4' },
-              e('input', {
-                type: 'number',
-                value: timeRange[0],
-                onChange: function(e) { handleTimeRangeChange(0, e.target.value); },
-                className: 'select',
-                style: { maxWidth: '100px' },
-                min: 0,
-                max: timeRange[1]
-              }),
-              e('span', null, 'to'),
-              e('input', {
-                type: 'number',
-                value: timeRange[1],
-                onChange: function(e) { handleTimeRangeChange(1, e.target.value); },
-                className: 'select',
-                style: { maxWidth: '100px' },
-                min: timeRange[0],
-                max: 720
-              }),
-              e('button', {
-                onClick: function() { setTimeRange([0, 720]); },
-                className: 'btn btn-gray'
-              }, 'Reset')
-            )
-          ),
-          
-          // Display options
-          e('div', { className: 'mt-4' },
-            e('label', { className: 'label' }, 'Display Options:'),
-            e('div', { className: 'flex gap-4' },
-              e('label', { className: 'flex items-center' },
-                e('input', {
-                  type: 'checkbox',
-                  checked: showConfidenceInterval,
-                  onChange: function() { setShowConfidenceInterval(!showConfidenceInterval); },
-                  style: { marginRight: '8px' }
-                }),
-                'Show Confidence Interval'
-              ),
-              e('label', { className: 'flex items-center' },
-                e('input', {
-                  type: 'checkbox',
-                  checked: showBaseModel,
-                  onChange: function() { setShowBaseModel(!showBaseModel); },
-                  style: { marginRight: '8px' }
-                }),
-                'Show Base Model'
-              )
-            )
-          ),
-          
-          // Comparison values selection
-          e('div', { className: 'mt-4' },
-            e('label', { className: 'label' }, 'Comparison Values:'),
-            e('div', { className: 'flex flex-wrap gap-2' },
-              comparisonValues.map(function(value) {
-                return e('button', {
-                  key: value === null ? 'null' : value,
-                  onClick: function() { handleComparisonSelection(value); },
-                  className: selectedComparison.includes(value) ? 'filter-pill active' : 'filter-pill',
-                  style: {
-                    borderLeft: selectedComparison.includes(value)
-                      ? `4px solid ${getLineColor(value, comparisonValues)}`
-                      : '4px solid transparent'
+            rechartsScript.onload = () => {
+              console.log("Recharts loaded successfully!");
+              
+              // Check if Recharts is defined on the window
+              if (window.Recharts) {
+                setDiagnosticState(prev => ({
+                  ...prev,
+                  recharts: { loading: false, loaded: true, error: null }
+                }));
+              } else {
+                setDiagnosticState(prev => ({
+                  ...prev,
+                  recharts: { 
+                    loading: false, 
+                    loaded: false, 
+                    error: "Script loaded but Recharts object not found on window" 
                   }
-                }, getLegendLabel(selectedCompFactor, value));
+                }));
+              }
+            };
+            
+            rechartsScript.onerror = (e) => {
+              console.error("Failed to load Recharts:", e);
+              setDiagnosticState(prev => ({
+                ...prev,
+                recharts: { 
+                  loading: false, 
+                  loaded: false, 
+                  error: "Failed to load Recharts script" 
+                }
+              }));
+            };
+            
+            document.head.appendChild(rechartsScript);
+          };
+          
+          propTypesScript.onerror = (e) => {
+            console.error("Failed to load PropTypes:", e);
+            setDiagnosticState(prev => ({
+              ...prev,
+              recharts: { 
+                loading: false, 
+                loaded: false, 
+                error: "Failed to load PropTypes dependency" 
+              }
+            }));
+          };
+          
+          document.head.appendChild(propTypesScript);
+        };
+        
+        loadRecharts();
+      }, []);
+      
+      // Test data access
+      const testDataAccess = () => {
+        setDiagnosticState(prev => ({
+          ...prev,
+          dataAccess: { loading: true, tested: true, result: null }
+        }));
+        
+        // Try to load index file (try both lowercase and uppercase)
+        fetch('./data/viz_index.csv')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Status: ${response.status}`);
+            }
+            return response.text();
+          })
+          .then(csvText => {
+            setDiagnosticState(prev => ({
+              ...prev,
+              dataAccess: {
+                loading: false,
+                tested: true,
+                result: {
+                  success: true,
+                  fileCase: 'lowercase',
+                  preview: csvText.substring(0, 200)
+                }
+              }
+            }));
+          })
+          .catch(err => {
+            console.log("Lowercase failed, trying uppercase...");
+            
+            fetch('./data/VIZ_INDEX.CSV')
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`Status: ${response.status}`);
+                }
+                return response.text();
               })
-            )
-          )
+              .then(csvText => {
+                setDiagnosticState(prev => ({
+                  ...prev,
+                  dataAccess: {
+                    loading: false,
+                    tested: true,
+                    result: {
+                      success: true,
+                      fileCase: 'uppercase',
+                      preview: csvText.substring(0, 200)
+                    }
+                  }
+                }));
+              })
+              .catch(dataErr => {
+                setDiagnosticState(prev => ({
+                  ...prev,
+                  dataAccess: {
+                    loading: false,
+                    tested: true,
+                    result: {
+                      success: false,
+                      error: `${err.message}, then ${dataErr.message}`
+                    }
+                  }
+                }));
+              });
+          });
+      };
+      
+      return e('div', { className: 'container' },
+        e('div', { className: 'header' },
+          e('h1', null, 'Transfusion Dashboard Diagnostics')
         ),
         
-        // Visualization area
+        // Recharts Status
         e('div', { className: 'card' },
-          loading ? 
-            e('div', { className: 'flex items-center justify-center', style: { height: '400px' } },
-              e('p', null, 'Loading visualization data...')
-            ) :
-            error ?
-              e('div', { className: 'status-msg error' },
-                e('p', null, error)
+          e('h2', null, 'Recharts Library Status'),
+          
+          diagnosticState.recharts.loading ?
+            e('p', null, 'Testing Recharts loading...') :
+            diagnosticState.recharts.loaded ?
+              e('div', { className: 'success' },
+                e('p', null, 'Recharts library loaded successfully! ✅'),
+                e('p', null, 'The dashboard should be able to display visualizations.')
               ) :
-              chartData.length > 0 ?
-                e('div', null,
-                  e('h2', { className: 'text-xl font-bold text-center mb-4' },
-                    `${metaInfo.vitalName} by ${metaInfo.compName}`
-                  ),
-                  
-                  e('div', { className: 'flex justify-center gap-4 mb-4' },
-                    e('div', { className: 'p-2 bg-blue-100 rounded text-sm', style: { borderLeft: '4px solid #3b82f6' } },
-                      e('span', { className: 'font-bold' }, 'Base Model: '),
-                      'Adjusts for time, age, ICU time, RBC count, sex, and ward'
-                    ),
-                    e('div', { className: 'p-2 bg-blue-100 rounded text-sm', style: { borderLeft: '4px solid #3b82f6' } },
-                      e('span', { className: 'font-bold' }, 'Fully Adjusted Model: '),
-                      'Base model + fluids, vasopressors, and sedatives'
-                    )
-                  ),
-                  
-                  // Chart
-                  renderChart(),
-                  
-                  e('div', { className: 'text-center text-sm text-gray-500 mt-2' },
-                    e('p', null, `File: ${currentFileName}`)
-                  )
+              e('div', { className: 'error' },
+                e('p', null, `Error: ${diagnosticState.recharts.error} ❌`),
+                e('p', null, 'The dashboard needs Recharts to display visualizations.'),
+                e('p', null, 'Possible solutions:'),
+                e('ul', null,
+                  e('li', null, 'Try a different browser (Edge, Firefox)'),
+                  e('li', null, 'Check for content blockers or security settings'),
+                  e('li', null, 'Try using a different CDN for Recharts')
+                )
+              )
+        ),
+        
+        // Data Access Status
+        e('div', { className: 'card' },
+          e('h2', null, 'Data File Access'),
+          
+          !diagnosticState.dataAccess.tested ?
+            e('div', null,
+              e('p', null, 'Test if your CSV data files are accessible:'),
+              e('button', { 
+                className: 'btn', 
+                onClick: testDataAccess 
+              }, 'Test Data Access')
+            ) :
+            
+            diagnosticState.dataAccess.loading ?
+              e('p', null, 'Testing data access...') :
+              
+              diagnosticState.dataAccess.result.success ?
+                e('div', { className: 'success' },
+                  e('p', null, `Success! Found index file (${diagnosticState.dataAccess.result.fileCase} case) ✅`),
+                  e('p', null, 'First 200 characters:'),
+                  e('pre', null, diagnosticState.dataAccess.result.preview)
                 ) :
-                e('div', { className: 'flex items-center justify-center', style: { height: '400px' } },
-                  e('p', null, 'Select parameters to visualize data')
+                e('div', { className: 'error' },
+                  e('p', null, `Error accessing data files: ${diagnosticState.dataAccess.result.error} ❌`),
+                  e('p', null, 'Check that:'),
+                  e('ul', null,
+                    e('li', null, 'Your /data/ folder exists in the repository'),
+                    e('li', null, 'It contains the viz_index.csv or VIZ_INDEX.CSV file'),
+                    e('li', null, 'The files have been properly committed and pushed to GitHub')
+                  )
                 )
         ),
         
-        // Info footer
+        // Next steps
         e('div', { className: 'card' },
-          e('p', { className: 'text-sm text-gray-700' },
-            'This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood storage factors affect patient outcomes.'
+          e('h2', null, 'Next Steps'),
+          e('p', null, 'Based on these diagnostics, here\'s what to do:'),
+          
+          e('ul', null,
+            diagnosticState.recharts.loaded ? 
+              e('li', null, '✅ Recharts is working correctly') : 
+              e('li', null, '❌ Fix Recharts loading issue before proceeding'),
+              
+            diagnosticState.dataAccess.result && diagnosticState.dataAccess.result.success ? 
+              e('li', null, '✅ Data files are accessible') : 
+              e('li', null, '❌ Fix data access issues before proceeding')
           ),
-          e('p', { className: 'text-sm text-gray-700 mt-2' },
-            e('strong', null, 'Data Categories:'), e('br'),
-            e('span', { className: 'font-medium' }, 'DonorHb_Cat: '), 'Donor hemoglobin levels (g/L)', e('br'),
-            e('span', { className: 'font-medium' }, 'Storage_Cat: '), 'Blood storage duration (days)', e('br'),
-            e('span', { className: 'font-medium' }, 'DonorSex: '), 'Biological sex of donor', e('br'),
-            e('span', { className: 'font-medium' }, 'DonorParity: '), 'Whether donor has given birth (Parous) or not (Nulliparous)', e('br'),
-            e('span', { className: 'font-medium' }, 'wdy_donation: '), 'Day of the week when donation occurred'
-          )
+          
+          (diagnosticState.recharts.loaded && 
+           diagnosticState.dataAccess.result && 
+           diagnosticState.dataAccess.result.success) ?
+            e('div', { className: 'success', style: { marginTop: '15px' } },
+              e('p', null, 'All systems are go! You can now implement the full dashboard.')
+            ) :
+            e('div', { className: 'error', style: { marginTop: '15px' } },
+              e('p', null, 'Some issues need to be resolved before the full dashboard can work.')
+            )
         )
       );
-    }
+    };
     
-    // Render app with error handling
+    // Render the diagnostic app
     try {
-      ReactDOM.render(e(App), document.getElementById('root'));
-      console.log("App rendered successfully");
+      ReactDOM.render(e(DiagnosticApp), document.getElementById('root'));
+      console.log("Diagnostic app rendered successfully");
     } catch (err) {
-      console.error("Fatal error rendering app:", err);
+      console.error("Error rendering diagnostic app:", err);
       document.getElementById('root').innerHTML = `
-        <div class="status-msg error" style="margin:20px">
-          <h3>Error Rendering Dashboard:</h3>
-          <p>${err.message}</p>
-          <p>Try using Edge or Firefox instead of Chrome.</p>
+        <div class="container">
+          <div class="error" style="margin-top: 30px">
+            <h3>Error Rendering Diagnostic App:</h3>
+            <p>${err.message}</p>
+          </div>
         </div>
       `;
     }
