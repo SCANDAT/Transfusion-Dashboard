@@ -10,27 +10,82 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
   
   <style>
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+    body { 
+      font-family: system-ui, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: #f5f5f5; 
+    }
     .container { max-width: 1200px; margin: 0 auto; }
-    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card { 
+      background: white; 
+      border-radius: 8px; 
+      padding: 20px; 
+      margin-bottom: 20px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    }
     .header { text-align: center; margin-bottom: 20px; }
     .controls { margin-bottom: 20px; }
     .row { display: flex; gap: 20px; flex-wrap: wrap; }
     .col { flex: 1; min-width: 300px; }
     .form-group { margin-bottom: 15px; }
     .form-label { display: block; margin-bottom: 5px; font-weight: 500; }
-    .form-select, .form-input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
-    .btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+    .form-select, .form-input { 
+      width: 100%; 
+      padding: 8px; 
+      border-radius: 4px; 
+      border: 1px solid #ddd; 
+    }
+    .btn { 
+      background: #3b82f6; 
+      color: white; 
+      border: none; 
+      padding: 8px 16px; 
+      border-radius: 4px; 
+      cursor: pointer; 
+    }
     .btn:hover { background: #2563eb; }
     .btn-sm { padding: 4px 8px; font-size: 0.9em; }
     .chart-container { position: relative; height: 400px; width: 100%; }
-    .tag { display: inline-block; padding: 4px 8px; border-radius: 16px; margin-right: 5px; margin-bottom: 5px; cursor: pointer; }
+    .tag { 
+      display: inline-block; 
+      padding: 4px 8px; 
+      border-radius: 16px; 
+      margin-right: 5px; 
+      margin-bottom: 5px; 
+      cursor: pointer; 
+    }
     .tag.active { background: #3b82f6; color: white; }
     .tag:not(.active) { background: #e5e7eb; }
-    .info { padding: 10px; background: #f0f9ff; border-radius: 4px; margin-bottom: 10px; }
-    .loading { text-align: center; padding: 50px; font-size: 18px; color: #666; }
-    .error { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .debug-info { font-family: monospace; font-size: 12px; background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-top: 10px; white-space: pre-wrap; }
+    .info { 
+      padding: 10px; 
+      background: #f0f9ff; 
+      border-radius: 4px; 
+      margin-bottom: 10px; 
+    }
+    .loading { 
+      text-align: center; 
+      padding: 50px; 
+      font-size: 18px; 
+      color: #666; 
+    }
+    .error { 
+      background: #fee2e2; 
+      color: #b91c1c; 
+      padding: 15px; 
+      border-radius: 6px; 
+      margin-bottom: 20px; 
+    }
+    .debug-info { 
+      font-family: monospace; 
+      font-size: 12px; 
+      background: #f8fafc; 
+      padding: 10px; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 4px; 
+      margin-top: 10px; 
+      white-space: pre-wrap; 
+    }
   </style>
 </head>
 <body>
@@ -52,27 +107,30 @@
         this.container = document.getElementById(containerId);
         
         // State variables
-        this.fileCase = 'unknown';    // Whether files are uppercase or lowercase
-        this.indexData = [];          // Data from index file
-        this.vitalParams = [];        // List of vital parameters
-        this.compFactors = [];        // List of comparison factors
-        this.chartData = [];          // Data for current chart
-        this.selectedVital = '';      // Currently selected vital parameter
-        this.selectedCompFactor = ''; // Currently selected comparison factor
-        this.comparisonValues = [];   // Available comparison values
-        this.selectedComparisons = []; // Selected comparison values
-        this.timeRange = [0, 720];    // Time range in minutes
-        this.showConfidenceInterval = true; // Whether to show CI
-        this.showBaseModel = true;    // Whether to show base model
-        this.metaInfo = {             // Metadata for current visualization
+        this.fileCase = 'unknown';    
+        this.indexData = [];          
+        this.vitalParams = [];        
+        this.compFactors = [];        
+        this.chartData = [];          
+        this.selectedVital = '';      
+        this.selectedCompFactor = ''; 
+        this.comparisonValues = [];   
+        this.selectedComparisons = [];
+        this.timeRange = [0, 720];    
+
+        // *** CHANGED BELOW: default to false so they are unchecked on initial load
+        this.showConfidenceInterval = false; 
+        this.showBaseModel = false; 
+
+        this.metaInfo = {             
           vitalName: '',
           compName: '',
           yLabel: ''
         };
-        this.currentFileName = '';    // Current data file name
-        this.chart = null;            // Chart.js instance
-        this.isInitialLoad = true;    // Flag for initial load
-        this.debugMode = false;       // Debug mode flag
+        this.currentFileName = '';    
+        this.chart = null;            
+        this.isInitialLoad = true;    
+        this.debugMode = false;       
         
         // Initialize dashboard
         this.initialize();
@@ -87,7 +145,6 @@
           // Load index data
           await this.loadIndexData();
           
-          // No need to force early visualization load - will happen after index data loads
         } catch (error) {
           console.error('Initialization error:', error);
           this.showError(`Failed to initialize dashboard: ${error.message}`);
@@ -138,10 +195,10 @@
             <label class="form-label">Display Options:</label>
             <div style="display: flex; gap: 20px;">
               <label>
-                <input type="checkbox" id="show-ci" checked> Show Confidence Interval
+                <input type="checkbox" id="show-ci"> Show Confidence Interval
               </label>
               <label>
-                <input type="checkbox" id="show-base" checked> Show Base Model
+                <input type="checkbox" id="show-base"> Show Base Model
               </label>
             </div>
           </div>
@@ -229,7 +286,7 @@
           this.updateChart();
         });
         
-        // Debug mode toggle (hidden unless activated by URL parameter or key combo)
+        // Debug mode toggle
         document.getElementById('debug-mode').addEventListener('change', (e) => {
           this.debugMode = e.target.checked;
           document.getElementById('debug-output').style.display = this.debugMode ? 'block' : 'none';
@@ -253,6 +310,10 @@
             document.getElementById('debug-container').style.display = 'block';
           }
         });
+        
+        // *** CHANGED BELOW: reflect initial unchecked state in the actual checkboxes
+        document.getElementById('show-ci').checked = false;
+        document.getElementById('show-base').checked = false;
       }
       
       // Load index data
@@ -329,9 +390,14 @@
               
               this.logDebug(`Found ${this.vitalParams.length} unique vital parameters`);
               
-              // Set initial vital parameter and update UI
+              // *** CHANGED BELOW: default vital to Mean Arterial Pressure (mmHg)
               if (this.vitalParams.length > 0) {
-                this.selectedVital = this.vitalParams[0].value;
+                const desiredVital = this.vitalParams.find(v => v.label === 'Mean Arterial Pressure (mmHg)');
+                if (desiredVital) {
+                  this.selectedVital = desiredVital.value;
+                } else {
+                  this.selectedVital = this.vitalParams[0].value;
+                }
                 this.logDebug(`Selected initial vital parameter: ${this.selectedVital}`);
                 this.updateVitalSelect();
                 this.updateCompFactors();
@@ -369,8 +435,14 @@
         
         this.updateCompFactorSelect();
         
+        // *** CHANGED BELOW: default comp factor to Donor Hemoglobin
         if (this.compFactors.length > 0) {
-          this.selectedCompFactor = this.compFactors[0].value;
+          const desiredComp = this.compFactors.find(f => f.label === 'Donor Hemoglobin');
+          if (desiredComp) {
+            this.selectedCompFactor = desiredComp.value;
+          } else {
+            this.selectedCompFactor = this.compFactors[0].value;
+          }
           this.logDebug(`Selected initial comparison factor: ${this.selectedCompFactor}`);
           this.loadVisualizationData();
         } else {
@@ -427,11 +499,9 @@
         fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
         fileOptions.push(`./data/${baseName}.csv`);
         
-        // Log all paths we'll try
         this.logDebug(`Attempting to fetch file with base name: ${baseName}`);
         this.logDebug(`Will try paths: ${fileOptions.join(', ')}`);
         
-        // Try each path
         let lastError = null;
         for (const path of fileOptions) {
           try {
@@ -454,7 +524,6 @@
           }
         }
         
-        // If we've tried all options and nothing worked, throw the last error
         throw lastError || new Error("Failed to load file with all attempted paths");
       }
       
@@ -500,7 +569,7 @@
               const firstRow = results.data[0];
               this.metaInfo = {
                 vitalName: firstRow.VitalName || "Vital Parameter",
-                compName: firstRow.CompName || "RBC Component Factor",
+                compName: firstRow.CompName || "Comparison Factor",
                 yLabel: firstRow.YLabel || "Value"
               };
               
@@ -526,7 +595,6 @@
                 </div>
               `;
               
-              // Log the columns we found
               this.logDebug(`Columns in visualization data: ${results.meta.fields.join(', ')}`);
               
               // Determine comparison column name
@@ -629,7 +697,6 @@
       getLegendLabel(value, modelType = null) {
         if (value === null) return 'Reference';
         
-        // Remove trailing spaces
         const factor = this.selectedCompFactor.trim();
         let categoryLabel = '';
         
@@ -673,7 +740,6 @@
       
       // Get line color for a value
       getLineColor(value, index = 0) {
-        // Colors that work well for both lines and areas
         const colors = [
           {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},  // blue
           {line: 'rgb(255, 127, 14)', area: 'rgba(255, 127, 14, 0.2)'},  // orange
@@ -684,9 +750,8 @@
           {line: 'rgb(227, 119, 194)', area: 'rgba(227, 119, 194, 0.2)'}, // pink
         ];
         
-        // Special case for reference/null values
         if (value === null) {
-          return {line: 'rgb(0, 0, 0)', area: 'rgba(0, 0, 0, 0.1)'};  // black
+          return {line: 'rgb(0, 0, 0)', area: 'rgba(0, 0, 0, 0.1)'};
         }
         
         const valueIndex = this.comparisonValues.indexOf(value);
@@ -697,7 +762,7 @@
         return colors[valueIndex % colors.length];
       }
       
-      // Process data for percentage formatting
+      // Process data for percentage formatting (unused in the current logic, but left as is)
       processDataPoint(point) {
         const needsMultiplication = 
           point.predBase !== null && point.predBase < 1 &&
@@ -734,27 +799,23 @@
         // Group data by comparison value
         const groupedByComp = _.groupBy(filteredData, compColumn);
         
-        // Sort by time and prepare datasets
         const datasets = [];
         const allTimes = [];
         
         Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
-          // Sort by time
           const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
           
-          // Collect all times for x-axis
           sortedRows.forEach(row => {
             if (!allTimes.includes(row.TimeFromTransfusion)) {
               allTimes.push(row.TimeFromTransfusion);
             }
           });
           
-          // Parse comparison value
           const parsedValue = compValue === "null" ? null : parseFloat(compValue);
           const color = this.getLineColor(parsedValue, index);
           const categoryLabel = this.getLegendLabel(parsedValue);
           
-          // Create dataset for full model
+          // Full model
           datasets.push({
             label: `${categoryLabel} (Full)`,
             data: sortedRows.map(row => ({
@@ -770,9 +831,8 @@
             pointHoverRadius: 4
           });
           
-          // Add confidence interval if enabled
+          // Confidence Interval
           if (this.showConfidenceInterval) {
-            // Create filled area between upper and lower bounds
             datasets.push({
               label: `${categoryLabel} (CI)`,
               data: sortedRows.map(row => ({
@@ -782,7 +842,7 @@
               borderColor: 'transparent',
               backgroundColor: color.area,
               pointRadius: 0,
-              fill: '+1',  // Fill to the next dataset
+              fill: '+1',
               tension: 0.3
             });
             
@@ -796,11 +856,11 @@
               pointRadius: 0,
               fill: false,
               tension: 0.3,
-              hidden: true  // Hide this line but use it for filling
+              hidden: true
             });
           }
           
-          // Create dataset for base model if enabled
+          // Base model
           if (this.showBaseModel) {
             datasets.push({
               label: `${categoryLabel} (Base)`,
@@ -820,7 +880,6 @@
           }
         });
         
-        // Sort all times for consistent x-axis
         allTimes.sort((a, b) => a - b);
         
         return {
@@ -840,7 +899,6 @@
         
         const ctx = document.getElementById('chart-canvas').getContext('2d');
         
-        // Calculate appropriate Y-axis range
         let minY = Infinity;
         let maxY = -Infinity;
         
@@ -853,7 +911,6 @@
           });
         });
         
-        // Add padding and ensure min is 0 if close
         const range = maxY - minY;
         const padding = Math.max(range * 0.1, 0.5);
         minY = Math.max(0, minY - padding);
@@ -864,18 +921,15 @@
           maxY = 100;
         }
         
-        // Ensure some range to avoid flat lines
         if (maxY - minY < 5) {
           minY = Math.max(0, minY - 2.5);
           maxY = maxY + 2.5;
         }
         
-        // Destroy existing chart if it exists
         if (this.chart) {
           this.chart.destroy();
         }
         
-        // Create new chart
         this.chart = new Chart(ctx, {
           type: 'line',
           data: {
@@ -912,8 +966,7 @@
                 display: true,
                 position: 'top',
                 labels: {
-                  // Filter out CI upper bounds from legend
-                  filter: function(legendItem, chartData) {
+                  filter: function(legendItem) {
                     return !legendItem.text.includes('CI Upper');
                   }
                 }
@@ -945,11 +998,8 @@
         const debugOutput = document.getElementById('debug-output');
         const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
         debugOutput.textContent += `[${timestamp}] ${message}\n`;
-        
-        // Auto-scroll to bottom
         debugOutput.scrollTop = debugOutput.scrollHeight;
         
-        // Also log to console
         console.log(`[DEBUG] ${message}`);
       }
       
@@ -978,7 +1028,6 @@
         errorElement.textContent = message;
         this.container.insertBefore(errorElement, this.container.firstChild);
         
-        // Auto remove after 10 seconds
         setTimeout(() => {
           errorElement.remove();
         }, 10000);
