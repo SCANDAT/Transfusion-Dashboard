@@ -1,4 +1,4 @@
-<!<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>Transfusion Data Dashboard</title>
@@ -172,7 +172,7 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <!-- CHANGED #2: rename label from "Comparison Factor" to "RBC Component Factor" -->
+                <!-- RBC Component Factor Label -->
                 <label class="form-label">RBC Component Factor:</label>
                 <select id="factor-select" class="form-select"></select>
               </div>
@@ -222,13 +222,11 @@
         chartCard.className = 'card';
         chartCard.innerHTML = `
           <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
-          <!-- We'll move the legend below the chart, so remove it here and place after the canvas -->
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
           </div>
-          <!-- Moved legend below the chart -->
+          <!-- Legend below chart -->
           <div id="chart-legend" class="info" style="margin-top: 10px;"></div>
-
           <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
         `;
         this.container.appendChild(chartCard);
@@ -249,7 +247,7 @@
         `;
         this.container.appendChild(infoCard);
         
-        // Set up event listeners
+        // Event listeners
         document.getElementById('vital-select').addEventListener('change', (e) => {
           this.selectedVital = e.target.value;
           this.updateCompFactors();
@@ -287,7 +285,7 @@
           this.updateChart();
         });
         
-        // Debug mode toggle
+        // Debug mode
         document.getElementById('debug-mode').addEventListener('change', (e) => {
           this.debugMode = e.target.checked;
           document.getElementById('debug-output').style.display = this.debugMode ? 'block' : 'none';
@@ -305,14 +303,14 @@
           this.logDebug('Debug mode enabled via URL parameter');
         }
         
-        // Add keyboard shortcut (Ctrl+Shift+D) to show debug mode
+        // Shortcut to enable debug mode
         document.addEventListener('keydown', (e) => {
           if (e.ctrlKey && e.shiftKey && e.key === 'D') {
             document.getElementById('debug-container').style.display = 'block';
           }
         });
         
-        // Reflect initial unchecked state in the actual checkboxes
+        // Reflect initial unchecked state
         document.getElementById('show-ci').checked = false;
         document.getElementById('show-base').checked = false;
       }
@@ -321,7 +319,6 @@
       async loadIndexData() {
         try {
           this.showLoading();
-          console.log("Loading index data...");
           this.logDebug("Attempting to load index data...");
           
           const indexFileOptions = [
@@ -360,15 +357,9 @@
             complete: (results) => {
               if (results.errors && results.errors.length > 0) {
                 this.logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
-                if (results.errors.some(e => e.code === "MissingHeader")) {
-                  this.logDebug(`CSV header row: ${csvText.split('\n')[0]}`);
-                }
               }
               
               this.logDebug(`CSV parsed successfully, found ${results.data.length} rows`);
-              if (results.data.length > 0) {
-                this.logDebug(`Sample row: ${JSON.stringify(results.data[0])}`);
-              }
               
               this.indexData = results.data.map(row => {
                 const cleanRow = {};
@@ -378,15 +369,18 @@
                 return cleanRow;
               });
               
+              // Gather unique vital parameters
               this.vitalParams = _.uniqBy(this.indexData, 'VitalParam')
                 .map(item => ({
                   value: item.VitalParam,
-                  label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
+                  label: item.VitalName 
+                    ? item.VitalName.replace('Vital Parameter Trajectory: ', '') 
+                    : item.VitalParam
                 }));
               
               this.logDebug(`Found ${this.vitalParams.length} unique vital parameters`);
               
-              // Default to Mean Arterial Pressure (mmHg)
+              // Default vital param: Mean Arterial Pressure (mmHg)
               if (this.vitalParams.length > 0) {
                 const desiredVital = this.vitalParams.find(v => v.label === 'Mean Arterial Pressure (mmHg)');
                 if (desiredVital) {
@@ -395,6 +389,8 @@
                   this.selectedVital = this.vitalParams[0].value;
                 }
                 this.logDebug(`Selected initial vital parameter: ${this.selectedVital}`);
+                
+                // Populate dropdown, then factor
                 this.updateVitalSelect();
                 this.updateCompFactors();
               } else {
@@ -410,14 +406,13 @@
             }
           });
         } catch (error) {
-          console.error("Load index error:", error);
           this.logDebug(`Failed to load index data: ${error.message}`);
           this.hideLoading();
           this.showError(`Failed to load index data: ${error.message}`);
         }
       }
       
-      // Update comparison factors based on selected vital parameter
+      // Update RBC component factors
       updateCompFactors() {
         if (!this.selectedVital || this.indexData.length === 0) return;
         
@@ -429,26 +424,40 @@
           label: item.CompName || item.CompFactor
         }));
         
+        // Update the RBC factor dropdown
         this.updateCompFactorSelect();
         
-        // Force the default to Donor Hemoglobin if it exists
-        if (this.compFactors.length > 0) {
-          const desiredComp = this.compFactors.find(f => f.label === 'Donor Hemoglobin');
-          if (desiredComp) {
-            this.selectedCompFactor = desiredComp.value;
-          } else {
-            // fallback to the first if we don't find "Donor Hemoglobin"
+        // Check if the user’s current RBC factor is still valid
+        const isUserFactorValid = this.compFactors.some(f => f.value === this.selectedCompFactor);
+        
+        // If it's not valid (or user never had one selected), pick "Donor Hemoglobin" if it exists,
+        // otherwise default to the first factor
+        if (!isUserFactorValid) {
+          const donorHb = this.compFactors.find(f => f.label === 'Donor Hemoglobin');
+          if (donorHb) {
+            this.selectedCompFactor = donorHb.value;
+          } else if (this.compFactors.length > 0) {
             this.selectedCompFactor = this.compFactors[0].value;
+          } else {
+            this.logDebug("No comparison factors found for selected vital parameter");
+            this.showError(`No comparison factors found for ${this.selectedVital}`);
+            return;
           }
-          this.logDebug(`Selected initial comparison factor: ${this.selectedCompFactor}`);
-          this.loadVisualizationData();
-        } else {
-          this.logDebug("No comparison factors found for selected vital parameter");
-          this.showError(`No comparison factors found for ${this.selectedVital}`);
         }
+        
+        this.logDebug(`Final RBC factor selection: ${this.selectedCompFactor}`);
+        
+        // Make sure the dropdown reflects the final selection
+        const select = document.getElementById('factor-select');
+        if (select) {
+          select.value = this.selectedCompFactor;
+        }
+        
+        // Load new data with the final factor
+        this.loadVisualizationData();
       }
       
-      // Update vital parameter select options
+      // Populate Vital Parameter dropdown
       updateVitalSelect() {
         const select = document.getElementById('vital-select');
         select.innerHTML = '';
@@ -463,7 +472,7 @@
         select.value = this.selectedVital;
       }
       
-      // Update comparison factor select options
+      // Populate RBC factor dropdown
       updateCompFactorSelect() {
         const select = document.getElementById('factor-select');
         select.innerHTML = '';
@@ -474,12 +483,9 @@
           option.textContent = factor.label;
           select.appendChild(option);
         });
-        
-        // Ensure the dropdown is populated with the selected factor
-        select.value = this.selectedCompFactor;
       }
       
-      // Safe fetch with multiple case options
+      // Fetch file with fallback to uppercase/lowercase
       async safeFetch(baseName) {
         const fileOptions = [];
         
@@ -491,7 +497,7 @@
           fileOptions.push(`./data/${baseName}.CSV`);
         }
         
-        // Always try both cases
+        // Also always try both cases
         fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
         fileOptions.push(`./data/${baseName}.csv`);
         
@@ -522,7 +528,7 @@
         throw lastError || new Error("Failed to load file with all attempted paths");
       }
       
-      // Load visualization data
+      // Load the data for the current Vital + RBC factor combination
       async loadVisualizationData() {
         if (!this.selectedVital || !this.selectedCompFactor) return;
         
@@ -551,9 +557,6 @@
               }
               
               this.logDebug(`Parsed ${results.data.length} rows of visualization data`);
-              if (results.data.length > 0) {
-                this.logDebug(`Sample visualization data row: ${JSON.stringify(results.data[0])}`);
-              }
               
               const firstRow = results.data[0];
               this.metaInfo = {
@@ -564,13 +567,15 @@
               
               this.logDebug(`Metadata: ${JSON.stringify(this.metaInfo)}`);
               
+              // Set chart title
               document.getElementById('chart-title').innerHTML = `
                 <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
               `;
               
+              // File info
               document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
               
-              // The legend is now below the chart
+              // Legend below the chart
               document.getElementById('chart-legend').innerHTML = `
                 <div style="display: flex; justify-content: center; gap: 20px;">
                   <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
@@ -607,12 +612,11 @@
               
               this.logDebug(`Determined comparison column: ${comparisonColumnName}`);
               
+              // Gather unique comparison values
               this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
                 .map(row => row[comparisonColumnName])
                 .filter(value => value !== null && value !== undefined)
                 .sort((a, b) => a - b);
-              
-              this.logDebug(`Found ${this.comparisonValues.length} unique comparison values: ${this.comparisonValues.join(', ')}`);
               
               const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
               if (hasNullValues) {
@@ -620,9 +624,11 @@
                 this.logDebug("Added null reference value");
               }
               
+              // Default to all non-null
               this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
               this.logDebug(`Selected comparison values: ${this.selectedComparisons.join(', ')}`);
               
+              // Render the tags
               this.updateComparisonTags(comparisonColumnName);
               
               this.chartData = {
@@ -630,9 +636,11 @@
                 comparisonColumn: comparisonColumnName
               };
               
+              // Ensure time range inputs match our state
               document.getElementById('time-min').value = this.timeRange[0];
               document.getElementById('time-max').value = this.timeRange[1];
               
+              // Now update the chart
               this.updateChart();
               
               this.hideLoading();
@@ -643,13 +651,13 @@
             }
           });
         } catch (error) {
-          console.error("Load visualization error:", error);
           this.logDebug(`Failed to load visualization data: ${error.message}`);
           this.hideLoading();
           this.showError(`Failed to load visualization data: ${error.message}`);
         }
       }
       
+      // Create clickable tags for each RBC factor category
       updateComparisonTags(comparisonColumnName) {
         const container = document.getElementById('comparison-tags');
         container.innerHTML = '';
@@ -658,6 +666,7 @@
           const tag = document.createElement('span');
           tag.className = this.selectedComparisons.includes(value) ? 'tag active' : 'tag';
           tag.textContent = this.getLegendLabel(value);
+          
           tag.addEventListener('click', () => {
             if (this.selectedComparisons.includes(value)) {
               this.selectedComparisons = this.selectedComparisons.filter(v => v !== value);
@@ -667,10 +676,12 @@
             tag.className = this.selectedComparisons.includes(value) ? 'tag active' : 'tag';
             this.updateChart();
           });
+          
           container.appendChild(tag);
         });
       }
       
+      // Convert factor value into a human-readable legend label
       getLegendLabel(value, modelType = null) {
         if (value === null) return 'Reference';
         
@@ -712,9 +723,11 @@
             categoryLabel = `${value}`;
         }
         
+        // If we want to differentiate base vs full model in the label
         return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
       }
       
+      // Return color sets for each factor
       getLineColor(value, index = 0) {
         const colors = [
           {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},
@@ -738,24 +751,7 @@
         return colors[valueIndex % colors.length];
       }
       
-      processDataPoint(point) {
-        const needsMultiplication = 
-          point.predBase !== null && point.predBase < 1 &&
-          point.predFull !== null && point.predFull < 1;
-        
-        if (needsMultiplication) {
-          return {
-            time: point.time,
-            predBase: point.predBase * 100,
-            predFull: point.predFull * 100,
-            lower: point.lower * 100,
-            upper: point.upper * 100
-          };
-        }
-        
-        return point;
-      }
-      
+      // Prepare data for chart
       prepareChartData() {
         if (!this.chartData.data || this.chartData.data.length === 0) return null;
         
@@ -776,6 +772,7 @@
         
         Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
           const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
+          
           sortedRows.forEach(row => {
             if (!allTimes.includes(row.TimeFromTransfusion)) {
               allTimes.push(row.TimeFromTransfusion);
@@ -786,7 +783,7 @@
           const color = this.getLineColor(parsedValue, index);
           const categoryLabel = this.getLegendLabel(parsedValue);
           
-          // Full model
+          // Full model line
           datasets.push({
             label: `${categoryLabel} (Full)`,
             data: sortedRows.map(row => ({
@@ -802,7 +799,7 @@
             pointHoverRadius: 4
           });
           
-          // CI
+          // Confidence Interval
           if (this.showConfidenceInterval) {
             datasets.push({
               label: `${categoryLabel} (CI)`,
@@ -831,7 +828,7 @@
             });
           }
           
-          // Base model
+          // Base model line
           if (this.showBaseModel) {
             datasets.push({
               label: `${categoryLabel} (Base)`,
@@ -859,6 +856,7 @@
         };
       }
       
+      // Render chart
       updateChart() {
         const chartData = this.prepareChartData();
         
@@ -886,7 +884,7 @@
         minY = Math.max(0, minY - padding);
         maxY = maxY + padding;
         
-        // Cap at 100% for SpO2
+        // Cap at 100% if vital param is SpO2
         if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
           maxY = 100;
         }
@@ -932,13 +930,12 @@
               }
             },
             plugins: {
-              // CHANGED #3: move legend "below" by setting position to bottom
               legend: {
                 display: true,
-                position: 'bottom',
+                position: 'bottom', // Legend below the chart
                 labels: {
                   filter: function(legendItem) {
-                    // Hide CI Upper
+                    // Hide CI Upper from legend
                     return !legendItem.text.includes('CI Upper');
                   }
                 }
