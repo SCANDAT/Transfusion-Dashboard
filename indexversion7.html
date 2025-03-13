@@ -231,6 +231,7 @@
             <canvas id="chart-canvas"></canvas>
           </div>
           <!-- Removed the file-info text to hide the CSV source file -->
+          <!-- (i.e. we no longer show "File: VIZ_XXX.csv") -->
         `;
         this.container.appendChild(chartCard);
         
@@ -617,20 +618,6 @@
                 throw new Error("No data found in the CSV file");
               }
               
-              // === NEW: Convert blank or invalid CI columns to null
-              results.data = results.data.map(row => {
-                // If Lower_Full is not a valid number, force to null
-                if (typeof row.Lower_Full !== 'number' || isNaN(row.Lower_Full)) {
-                  row.Lower_Full = null;
-                }
-                // Same for Upper_Full
-                if (typeof row.Upper_Full !== 'number' || isNaN(row.Upper_Full)) {
-                  row.Upper_Full = null;
-                }
-                return row;
-              });
-              // === END NEW
-
               this.logDebug(`Parsed ${results.data.length} rows of visualization data`);
               
               const firstRow = results.data[0];
@@ -974,7 +961,6 @@
         minY = Math.max(0, minY - padding);
         maxY = maxY + padding;
         
-        // If vital param is SpO2, cap at 100%
         if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
           maxY = 100;
         }
