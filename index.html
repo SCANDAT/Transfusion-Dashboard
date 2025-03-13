@@ -30,6 +30,7 @@
     .info { padding: 10px; background: #f0f9ff; border-radius: 4px; margin-bottom: 10px; }
     .loading { text-align: center; padding: 50px; font-size: 18px; color: #666; }
     .error { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .debug-info { font-family: monospace; font-size: 12px; background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-top: 10px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -70,6 +71,8 @@
         };
         this.currentFileName = '';    // Current data file name
         this.chart = null;            // Chart.js instance
+        this.isInitialLoad = true;    // Flag for initial load
+        this.debugMode = false;       // Debug mode flag
         
         // Initialize dashboard
         this.initialize();
@@ -84,10 +87,7 @@
           // Load index data
           await this.loadIndexData();
           
-          // Load initial visualization
-          if (this.selectedVital && this.selectedCompFactor) {
-            await this.loadVisualizationData();
-          }
+          // No need to force early visualization load - will happen after index data loads
         } catch (error) {
           console.error('Initialization error:', error);
           this.showError(`Failed to initialize dashboard: ${error.message}`);
@@ -127,9 +127,9 @@
           <div class="form-group">
             <label class="form-label">Time Range (minutes):</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <input type="number" id="time-min" class="form-input" min="0" max="720" style="width: 80px;">
+              <input type="number" id="time-min" class="form-input" min="0" max="720" style="width: 80px;" value="0">
               <span>to</span>
-              <input type="number" id="time-max" class="form-input" min="0" max="720" style="width: 80px;">
+              <input type="number" id="time-max" class="form-input" min="0" max="720" style="width: 80px;" value="720">
               <button id="time-reset" class="btn btn-sm">Reset</button>
             </div>
           </div>
@@ -149,6 +149,15 @@
           <div class="form-group">
             <label class="form-label">Comparison Values:</label>
             <div id="comparison-tags"></div>
+          </div>
+          
+          <div id="debug-container" style="display: none;">
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="debug-mode"> Enable Debug Mode
+              </label>
+            </div>
+            <div id="debug-output" class="debug-info" style="display: none;"></div>
           </div>
         `;
         this.container.appendChild(controls);
@@ -219,6 +228,31 @@
           this.showBaseModel = e.target.checked;
           this.updateChart();
         });
+        
+        // Debug mode toggle (hidden unless activated by URL parameter or key combo)
+        document.getElementById('debug-mode').addEventListener('change', (e) => {
+          this.debugMode = e.target.checked;
+          document.getElementById('debug-output').style.display = this.debugMode ? 'block' : 'none';
+          if (this.debugMode) {
+            this.logDebug('Debug mode enabled');
+          }
+        });
+        
+        // Check URL for debug flag
+        if (window.location.search.includes('debug=true')) {
+          document.getElementById('debug-container').style.display = 'block';
+          document.getElementById('debug-mode').checked = true;
+          this.debugMode = true;
+          document.getElementById('debug-output').style.display = 'block';
+          this.logDebug('Debug mode enabled via URL parameter');
+        }
+        
+        // Add keyboard shortcut (Ctrl+Shift+D) to show debug mode
+        document.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+            document.getElementById('debug-container').style.display = 'block';
+          }
+        });
       }
       
       // Load index data
@@ -226,29 +260,57 @@
         try {
           this.showLoading();
           console.log("Loading index data...");
+          this.logDebug("Attempting to load index data...");
           
-          // Try lowercase first
-          let response;
-          let csvText;
+          // Try lowercase and uppercase with better error handling
+          const indexFileOptions = [
+            { case: 'lowercase', path: './data/viz_index.csv' },
+            { case: 'uppercase', path: './data/VIZ_INDEX.CSV' }
+          ];
           
-          try {
-            response = await fetch('./data/viz_index.csv');
-            if (!response.ok) throw new Error(`Status: ${response.status}`);
-            csvText = await response.text();
-            this.fileCase = 'lowercase';
-          } catch (err) {
-            console.log("Trying uppercase version...");
-            response = await fetch('./data/VIZ_INDEX.CSV');
-            if (!response.ok) throw new Error(`Both lowercase and uppercase files not found`);
-            csvText = await response.text();
-            this.fileCase = 'uppercase';
+          let csvText = null;
+          
+          for (const option of indexFileOptions) {
+            try {
+              this.logDebug(`Trying ${option.case} index file: ${option.path}`);
+              const response = await fetch(option.path);
+              
+              if (response.ok) {
+                csvText = await response.text();
+                this.fileCase = option.case;
+                this.logDebug(`Successfully loaded ${option.case} index file`);
+                break;
+              } else {
+                this.logDebug(`${option.case} index file returned status: ${response.status}`);
+              }
+            } catch (err) {
+              this.logDebug(`Error loading ${option.case} index file: ${err.message}`);
+            }
+          }
+          
+          if (!csvText) {
+            throw new Error("Could not load index file in either uppercase or lowercase format");
           }
           
           // Parse CSV
+          this.logDebug("Parsing index CSV...");
           Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true,
             complete: (results) => {
+              // Check for any parse errors
+              if (results.errors && results.errors.length > 0) {
+                this.logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
+                if (results.errors.some(e => e.code === "MissingHeader")) {
+                  this.logDebug(`CSV header row: ${csvText.split('\n')[0]}`);
+                }
+              }
+              
+              this.logDebug(`CSV parsed successfully, found ${results.data.length} rows`);
+              if (results.data.length > 0) {
+                this.logDebug(`Sample row: ${JSON.stringify(results.data[0])}`);
+              }
+              
               // Clean data
               this.indexData = results.data.map(row => {
                 const cleanRow = {};
@@ -265,21 +327,29 @@
                   label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
                 }));
               
-              // Set initial vital parameter
+              this.logDebug(`Found ${this.vitalParams.length} unique vital parameters`);
+              
+              // Set initial vital parameter and update UI
               if (this.vitalParams.length > 0) {
                 this.selectedVital = this.vitalParams[0].value;
+                this.logDebug(`Selected initial vital parameter: ${this.selectedVital}`);
                 this.updateVitalSelect();
                 this.updateCompFactors();
+              } else {
+                this.logDebug("No vital parameters found in index data");
+                this.showError("No vital parameters found in index data. Check CSV format.");
               }
               
               this.hideLoading();
             },
             error: (error) => {
+              this.logDebug(`CSV parse error: ${error.message}`);
               throw new Error(`CSV parse error: ${error.message}`);
             }
           });
         } catch (error) {
           console.error("Load index error:", error);
+          this.logDebug(`Failed to load index data: ${error.message}`);
           this.hideLoading();
           this.showError(`Failed to load index data: ${error.message}`);
         }
@@ -290,6 +360,7 @@
         if (!this.selectedVital || this.indexData.length === 0) return;
         
         const relevantFactors = this.indexData.filter(item => item.VitalParam === this.selectedVital);
+        this.logDebug(`Found ${relevantFactors.length} comparison factors for vital ${this.selectedVital}`);
         
         this.compFactors = relevantFactors.map(item => ({
           value: item.CompFactor,
@@ -300,7 +371,11 @@
         
         if (this.compFactors.length > 0) {
           this.selectedCompFactor = this.compFactors[0].value;
+          this.logDebug(`Selected initial comparison factor: ${this.selectedCompFactor}`);
           this.loadVisualizationData();
+        } else {
+          this.logDebug("No comparison factors found for selected vital parameter");
+          this.showError(`No comparison factors found for ${this.selectedVital}`);
         }
       }
       
@@ -334,6 +409,55 @@
         select.value = this.selectedCompFactor;
       }
       
+      // Improved safe fetch with multiple case options
+      async safeFetch(baseName) {
+        // Try multiple variants of the filename
+        const fileOptions = [];
+        
+        // Add variants based on determined file case
+        if (this.fileCase === 'uppercase') {
+          fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
+          fileOptions.push(`./data/${baseName.toUpperCase()}.csv`);
+        } else {
+          fileOptions.push(`./data/${baseName}.csv`);
+          fileOptions.push(`./data/${baseName}.CSV`);
+        }
+        
+        // Always try both cases as fallback
+        fileOptions.push(`./data/${baseName.toUpperCase()}.CSV`);
+        fileOptions.push(`./data/${baseName}.csv`);
+        
+        // Log all paths we'll try
+        this.logDebug(`Attempting to fetch file with base name: ${baseName}`);
+        this.logDebug(`Will try paths: ${fileOptions.join(', ')}`);
+        
+        // Try each path
+        let lastError = null;
+        for (const path of fileOptions) {
+          try {
+            this.logDebug(`Trying path: ${path}`);
+            const response = await fetch(path);
+            
+            if (response.ok) {
+              this.logDebug(`Successfully loaded file from: ${path}`);
+              return { 
+                text: await response.text(),
+                path: path
+              };
+            } else {
+              this.logDebug(`Path ${path} returned status: ${response.status}`);
+              lastError = new Error(`HTTP status ${response.status} for ${path}`);
+            }
+          } catch (err) {
+            this.logDebug(`Error fetching ${path}: ${err.message}`);
+            lastError = err;
+          }
+        }
+        
+        // If we've tried all options and nothing worked, throw the last error
+        throw lastError || new Error("Failed to load file with all attempted paths");
+      }
+      
       // Load visualization data
       async loadVisualizationData() {
         if (!this.selectedVital || !this.selectedCompFactor) return;
@@ -341,32 +465,35 @@
         try {
           this.showLoading();
           
-          // Construct filename based on file case
-          let fileName;
-          if (this.fileCase === 'uppercase') {
-            fileName = `VIZ_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}.CSV`;
-          } else {
-            fileName = `viz_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}.csv`;
-          }
+          // Construct the base filename (without extension)
+          const baseFileName = `viz_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}`;
+          this.logDebug(`Base visualization filename: ${baseFileName}`);
           
-          this.currentFileName = fileName;
-          console.log("Loading visualization file:", fileName);
+          // Use the improved safeFetch method
+          const { text: csvText, path: loadedPath } = await this.safeFetch(baseFileName);
           
-          const response = await fetch(`./data/${fileName}`);
-          if (!response.ok) {
-            throw new Error(`Failed to load visualization file (${response.status})`);
-          }
-          
-          const csvText = await response.text();
+          // Update the displayed filename
+          this.currentFileName = loadedPath.split('/').pop();
+          this.logDebug(`Using file: ${this.currentFileName}`);
           
           // Parse CSV
+          this.logDebug("Parsing visualization CSV...");
           Papa.parse(csvText, {
             header: true,
             dynamicTyping: true,
             skipEmptyLines: true,
             complete: (results) => {
+              if (results.errors && results.errors.length > 0) {
+                this.logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
+              }
+              
               if (results.data.length === 0) {
                 throw new Error("No data found in the CSV file");
+              }
+              
+              this.logDebug(`Parsed ${results.data.length} rows of visualization data`);
+              if (results.data.length > 0) {
+                this.logDebug(`Sample visualization data row: ${JSON.stringify(results.data[0])}`);
               }
               
               // Extract metadata
@@ -376,6 +503,8 @@
                 compName: firstRow.CompName || "Comparison Factor",
                 yLabel: firstRow.YLabel || "Value"
               };
+              
+              this.logDebug(`Metadata: ${JSON.stringify(this.metaInfo)}`);
               
               // Update chart title
               document.getElementById('chart-title').innerHTML = `
@@ -397,6 +526,9 @@
                 </div>
               `;
               
+              // Log the columns we found
+              this.logDebug(`Columns in visualization data: ${results.meta.fields.join(', ')}`);
+              
               // Determine comparison column name
               const sampleRow = results.data[0];
               const comparisonColumnName = Object.keys(sampleRow).find(key => 
@@ -415,8 +547,11 @@
               );
               
               if (!comparisonColumnName) {
+                this.logDebug(`Could not determine comparison column. Available columns: ${Object.keys(sampleRow).join(', ')}`);
                 throw new Error("Could not determine comparison column");
               }
+              
+              this.logDebug(`Determined comparison column: ${comparisonColumnName}`);
               
               // Get unique comparison values
               this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
@@ -424,14 +559,18 @@
                 .filter(value => value !== null && value !== undefined)
                 .sort((a, b) => a - b);
               
+              this.logDebug(`Found ${this.comparisonValues.length} unique comparison values: ${this.comparisonValues.join(', ')}`);
+              
               // Add null as a separate option if it exists
               const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
               if (hasNullValues) {
                 this.comparisonValues.unshift(null);
+                this.logDebug("Added null reference value");
               }
               
               // Default to all non-null values
               this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
+              this.logDebug(`Selected comparison values: ${this.selectedComparisons.join(', ')}`);
               
               // Update comparison tags
               this.updateComparisonTags(comparisonColumnName);
@@ -452,11 +591,13 @@
               this.hideLoading();
             },
             error: (error) => {
+              this.logDebug(`CSV parse error: ${error.message}`);
               throw new Error(`CSV parse error: ${error.message}`);
             }
           });
         } catch (error) {
           console.error("Load visualization error:", error);
+          this.logDebug(`Failed to load visualization data: ${error.message}`);
           this.hideLoading();
           this.showError(`Failed to load visualization data: ${error.message}`);
         }
@@ -795,6 +936,21 @@
           this.chart.destroy();
           this.chart = null;
         }
+      }
+      
+      // Log debug information
+      logDebug(message) {
+        if (!this.debugMode) return;
+        
+        const debugOutput = document.getElementById('debug-output');
+        const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+        debugOutput.textContent += `[${timestamp}] ${message}\n`;
+        
+        // Auto-scroll to bottom
+        debugOutput.scrollTop = debugOutput.scrollHeight;
+        
+        // Also log to console
+        console.log(`[DEBUG] ${message}`);
       }
       
       // Show loading indicator
