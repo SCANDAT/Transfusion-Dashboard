@@ -1,65 +1,838 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Recharts Test</title>
+  <title>Transfusion Data Dashboard</title>
+  <meta charset="UTF-8">
+  
+  <!-- Chart.js - more reliable on CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  
   <style>
-    .status { padding: 20px; margin: 20px; border-radius: 8px; }
-    .success { background: #d1fae5; color: #065f46; }
-    .error { background: #fee2e2; color: #b91c1c; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header { text-align: center; margin-bottom: 20px; }
+    .controls { margin-bottom: 20px; }
+    .row { display: flex; gap: 20px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 300px; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 500; }
+    .form-select, .form-input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+    .btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+    .btn:hover { background: #2563eb; }
+    .btn-sm { padding: 4px 8px; font-size: 0.9em; }
+    .chart-container { position: relative; height: 400px; width: 100%; }
+    .tag { display: inline-block; padding: 4px 8px; border-radius: 16px; margin-right: 5px; margin-bottom: 5px; cursor: pointer; }
+    .tag.active { background: #3b82f6; color: white; }
+    .tag:not(.active) { background: #e5e7eb; }
+    .info { padding: 10px; background: #f0f9ff; border-radius: 4px; margin-bottom: 10px; }
+    .loading { text-align: center; padding: 50px; font-size: 18px; color: #666; }
+    .error { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <h1>Recharts Loading Test</h1>
-  <div id="status" class="status">Checking Recharts loading...</div>
-  
-  <!-- React first -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-  
-  <!-- Script to check for Recharts -->
+  <div id="loading" class="loading">Loading Transfusion Dashboard...</div>
+  <div id="app-container" class="container" style="display: none;"></div>
+
   <script>
-    function updateStatus(message, isSuccess) {
-      const statusDiv = document.getElementById('status');
-      statusDiv.innerHTML = message;
-      statusDiv.className = isSuccess ? 'status success' : 'status error';
+    // Hide loading message when page is ready
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+      }, 500); 
+    });
+
+    // Main dashboard class
+    class TransfusionDashboard {
+      constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        
+        // State variables
+        this.fileCase = 'unknown';    // Whether files are uppercase or lowercase
+        this.indexData = [];          // Data from index file
+        this.vitalParams = [];        // List of vital parameters
+        this.compFactors = [];        // List of comparison factors
+        this.chartData = [];          // Data for current chart
+        this.selectedVital = '';      // Currently selected vital parameter
+        this.selectedCompFactor = ''; // Currently selected comparison factor
+        this.comparisonValues = [];   // Available comparison values
+        this.selectedComparisons = []; // Selected comparison values
+        this.timeRange = [0, 720];    // Time range in minutes
+        this.showConfidenceInterval = true; // Whether to show CI
+        this.showBaseModel = true;    // Whether to show base model
+        this.metaInfo = {             // Metadata for current visualization
+          vitalName: '',
+          compName: '',
+          yLabel: ''
+        };
+        this.currentFileName = '';    // Current data file name
+        this.chart = null;            // Chart.js instance
+        
+        // Initialize dashboard
+        this.initialize();
+      }
+      
+      // Initialize dashboard
+      async initialize() {
+        try {
+          // Create UI structure
+          this.createUI();
+          
+          // Load index data
+          await this.loadIndexData();
+          
+          // Load initial visualization
+          if (this.selectedVital && this.selectedCompFactor) {
+            await this.loadVisualizationData();
+          }
+        } catch (error) {
+          console.error('Initialization error:', error);
+          this.showError(`Failed to initialize dashboard: ${error.message}`);
+        }
+      }
+      
+      // Create UI elements
+      createUI() {
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'header';
+        header.innerHTML = `
+          <h1>Transfusion Data Visualization Dashboard</h1>
+          <p>Displaying time-series data after blood transfusion</p>
+        `;
+        this.container.appendChild(header);
+        
+        // Create controls
+        const controls = document.createElement('div');
+        controls.className = 'card controls';
+        controls.innerHTML = `
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label class="form-label">Vital Parameter:</label>
+                <select id="vital-select" class="form-select"></select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label class="form-label">Comparison Factor:</label>
+                <select id="factor-select" class="form-select"></select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Time Range (minutes):</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="number" id="time-min" class="form-input" min="0" max="720" style="width: 80px;">
+              <span>to</span>
+              <input type="number" id="time-max" class="form-input" min="0" max="720" style="width: 80px;">
+              <button id="time-reset" class="btn btn-sm">Reset</button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Display Options:</label>
+            <div style="display: flex; gap: 20px;">
+              <label>
+                <input type="checkbox" id="show-ci" checked> Show Confidence Interval
+              </label>
+              <label>
+                <input type="checkbox" id="show-base" checked> Show Base Model
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Comparison Values:</label>
+            <div id="comparison-tags"></div>
+          </div>
+        `;
+        this.container.appendChild(controls);
+        
+        // Create chart area
+        const chartCard = document.createElement('div');
+        chartCard.className = 'card';
+        chartCard.innerHTML = `
+          <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
+          <div id="chart-legend" class="info"></div>
+          <div id="chart-container" class="chart-container">
+            <canvas id="chart-canvas"></canvas>
+          </div>
+          <div id="file-info" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;"></div>
+        `;
+        this.container.appendChild(chartCard);
+        
+        // Create info card
+        const infoCard = document.createElement('div');
+        infoCard.className = 'card';
+        infoCard.innerHTML = `
+          <p>This dashboard visualizes the time series of vital parameters after blood transfusion, showing how different donor and blood storage factors affect patient outcomes.</p>
+          <p><strong>Data Categories:</strong></p>
+          <ul>
+            <li><strong>DonorHb_Cat:</strong> Donor hemoglobin levels (g/L)</li>
+            <li><strong>Storage_Cat:</strong> Blood storage duration (days)</li>
+            <li><strong>DonorSex:</strong> Biological sex of donor</li>
+            <li><strong>DonorParity:</strong> Whether donor has given birth (Parous) or not (Nulliparous)</li>
+            <li><strong>wdy_donation:</strong> Day of the week when donation occurred</li>
+          </ul>
+        `;
+        this.container.appendChild(infoCard);
+        
+        // Set up event listeners
+        document.getElementById('vital-select').addEventListener('change', (e) => {
+          this.selectedVital = e.target.value;
+          this.updateCompFactors();
+        });
+        
+        document.getElementById('factor-select').addEventListener('change', (e) => {
+          this.selectedCompFactor = e.target.value;
+          this.loadVisualizationData();
+        });
+        
+        document.getElementById('time-min').addEventListener('change', (e) => {
+          this.timeRange[0] = parseInt(e.target.value);
+          this.updateChart();
+        });
+        
+        document.getElementById('time-max').addEventListener('change', (e) => {
+          this.timeRange[1] = parseInt(e.target.value);
+          this.updateChart();
+        });
+        
+        document.getElementById('time-reset').addEventListener('click', () => {
+          this.timeRange = [0, 720];
+          document.getElementById('time-min').value = 0;
+          document.getElementById('time-max').value = 720;
+          this.updateChart();
+        });
+        
+        document.getElementById('show-ci').addEventListener('change', (e) => {
+          this.showConfidenceInterval = e.target.checked;
+          this.updateChart();
+        });
+        
+        document.getElementById('show-base').addEventListener('change', (e) => {
+          this.showBaseModel = e.target.checked;
+          this.updateChart();
+        });
+      }
+      
+      // Load index data
+      async loadIndexData() {
+        try {
+          this.showLoading();
+          console.log("Loading index data...");
+          
+          // Try lowercase first
+          let response;
+          let csvText;
+          
+          try {
+            response = await fetch('./data/viz_index.csv');
+            if (!response.ok) throw new Error(`Status: ${response.status}`);
+            csvText = await response.text();
+            this.fileCase = 'lowercase';
+          } catch (err) {
+            console.log("Trying uppercase version...");
+            response = await fetch('./data/VIZ_INDEX.CSV');
+            if (!response.ok) throw new Error(`Both lowercase and uppercase files not found`);
+            csvText = await response.text();
+            this.fileCase = 'uppercase';
+          }
+          
+          // Parse CSV
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              // Clean data
+              this.indexData = results.data.map(row => {
+                const cleanRow = {};
+                Object.keys(row).forEach(key => {
+                  cleanRow[key] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                });
+                return cleanRow;
+              });
+              
+              // Extract vital parameters
+              this.vitalParams = _.uniqBy(this.indexData, 'VitalParam')
+                .map(item => ({
+                  value: item.VitalParam,
+                  label: item.VitalName ? item.VitalName.replace('Vital Parameter Trajectory: ', '') : item.VitalParam
+                }));
+              
+              // Set initial vital parameter
+              if (this.vitalParams.length > 0) {
+                this.selectedVital = this.vitalParams[0].value;
+                this.updateVitalSelect();
+                this.updateCompFactors();
+              }
+              
+              this.hideLoading();
+            },
+            error: (error) => {
+              throw new Error(`CSV parse error: ${error.message}`);
+            }
+          });
+        } catch (error) {
+          console.error("Load index error:", error);
+          this.hideLoading();
+          this.showError(`Failed to load index data: ${error.message}`);
+        }
+      }
+      
+      // Update comparison factors based on selected vital parameter
+      updateCompFactors() {
+        if (!this.selectedVital || this.indexData.length === 0) return;
+        
+        const relevantFactors = this.indexData.filter(item => item.VitalParam === this.selectedVital);
+        
+        this.compFactors = relevantFactors.map(item => ({
+          value: item.CompFactor,
+          label: item.CompName || item.CompFactor
+        }));
+        
+        this.updateCompFactorSelect();
+        
+        if (this.compFactors.length > 0) {
+          this.selectedCompFactor = this.compFactors[0].value;
+          this.loadVisualizationData();
+        }
+      }
+      
+      // Update vital parameter select options
+      updateVitalSelect() {
+        const select = document.getElementById('vital-select');
+        select.innerHTML = '';
+        
+        this.vitalParams.forEach(vital => {
+          const option = document.createElement('option');
+          option.value = vital.value;
+          option.textContent = vital.label;
+          select.appendChild(option);
+        });
+        
+        select.value = this.selectedVital;
+      }
+      
+      // Update comparison factor select options
+      updateCompFactorSelect() {
+        const select = document.getElementById('factor-select');
+        select.innerHTML = '';
+        
+        this.compFactors.forEach(factor => {
+          const option = document.createElement('option');
+          option.value = factor.value;
+          option.textContent = factor.label;
+          select.appendChild(option);
+        });
+        
+        select.value = this.selectedCompFactor;
+      }
+      
+      // Load visualization data
+      async loadVisualizationData() {
+        if (!this.selectedVital || !this.selectedCompFactor) return;
+        
+        try {
+          this.showLoading();
+          
+          // Construct filename based on file case
+          let fileName;
+          if (this.fileCase === 'uppercase') {
+            fileName = `VIZ_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}.CSV`;
+          } else {
+            fileName = `viz_${this.selectedVital.trim().toUpperCase()}_${this.selectedCompFactor.trim().toUpperCase()}.csv`;
+          }
+          
+          this.currentFileName = fileName;
+          console.log("Loading visualization file:", fileName);
+          
+          const response = await fetch(`./data/${fileName}`);
+          if (!response.ok) {
+            throw new Error(`Failed to load visualization file (${response.status})`);
+          }
+          
+          const csvText = await response.text();
+          
+          // Parse CSV
+          Papa.parse(csvText, {
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              if (results.data.length === 0) {
+                throw new Error("No data found in the CSV file");
+              }
+              
+              // Extract metadata
+              const firstRow = results.data[0];
+              this.metaInfo = {
+                vitalName: firstRow.VitalName || "Vital Parameter",
+                compName: firstRow.CompName || "Comparison Factor",
+                yLabel: firstRow.YLabel || "Value"
+              };
+              
+              // Update chart title
+              document.getElementById('chart-title').innerHTML = `
+                <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
+              `;
+              
+              // Update file info
+              document.getElementById('file-info').textContent = `File: ${this.currentFileName}`;
+              
+              // Update chart legend
+              document.getElementById('chart-legend').innerHTML = `
+                <div style="display: flex; justify-content: center; gap: 20px;">
+                  <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
+                    <span style="font-weight: bold;">Base Model:</span> Adjusts for time, age, ICU time, RBC count, sex, and ward
+                  </div>
+                  <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
+                    <span style="font-weight: bold;">Fully Adjusted Model:</span> Base model + fluids, vasopressors, and sedatives
+                  </div>
+                </div>
+              `;
+              
+              // Determine comparison column name
+              const sampleRow = results.data[0];
+              const comparisonColumnName = Object.keys(sampleRow).find(key => 
+                key !== 'TimeFromTransfusion' && 
+                key !== 'PredVal_Base' && 
+                key !== 'StdErrVal_Base' && 
+                key !== 'PredVal_Full' && 
+                key !== 'StdErrVal_Full' && 
+                key !== 'Lower_Full' && 
+                key !== 'Upper_Full' && 
+                key !== 'VitalParam' && 
+                key !== 'CompFactor' && 
+                key !== 'CompName' && 
+                key !== 'VitalName' && 
+                key !== 'YLabel'
+              );
+              
+              if (!comparisonColumnName) {
+                throw new Error("Could not determine comparison column");
+              }
+              
+              // Get unique comparison values
+              this.comparisonValues = _.uniqBy(results.data, comparisonColumnName)
+                .map(row => row[comparisonColumnName])
+                .filter(value => value !== null && value !== undefined)
+                .sort((a, b) => a - b);
+              
+              // Add null as a separate option if it exists
+              const hasNullValues = results.data.some(row => row[comparisonColumnName] === null);
+              if (hasNullValues) {
+                this.comparisonValues.unshift(null);
+              }
+              
+              // Default to all non-null values
+              this.selectedComparisons = this.comparisonValues.filter(v => v !== null);
+              
+              // Update comparison tags
+              this.updateComparisonTags(comparisonColumnName);
+              
+              // Store chart data with comparison column name
+              this.chartData = {
+                data: results.data,
+                comparisonColumn: comparisonColumnName
+              };
+              
+              // Update time inputs
+              document.getElementById('time-min').value = this.timeRange[0];
+              document.getElementById('time-max').value = this.timeRange[1];
+              
+              // Update chart
+              this.updateChart();
+              
+              this.hideLoading();
+            },
+            error: (error) => {
+              throw new Error(`CSV parse error: ${error.message}`);
+            }
+          });
+        } catch (error) {
+          console.error("Load visualization error:", error);
+          this.hideLoading();
+          this.showError(`Failed to load visualization data: ${error.message}`);
+        }
+      }
+      
+      // Update comparison value tags
+      updateComparisonTags(comparisonColumnName) {
+        const container = document.getElementById('comparison-tags');
+        container.innerHTML = '';
+        
+        this.comparisonValues.forEach(value => {
+          const tag = document.createElement('span');
+          tag.className = this.selectedComparisons.includes(value) ? 'tag active' : 'tag';
+          tag.textContent = this.getLegendLabel(value);
+          tag.addEventListener('click', () => {
+            if (this.selectedComparisons.includes(value)) {
+              this.selectedComparisons = this.selectedComparisons.filter(v => v !== value);
+            } else {
+              this.selectedComparisons.push(value);
+            }
+            tag.className = this.selectedComparisons.includes(value) ? 'tag active' : 'tag';
+            this.updateChart();
+          });
+          container.appendChild(tag);
+        });
+      }
+      
+      // Get human-readable label for comparison value
+      getLegendLabel(value, modelType = null) {
+        if (value === null) return 'Reference';
+        
+        // Remove trailing spaces
+        const factor = this.selectedCompFactor.trim();
+        let categoryLabel = '';
+        
+        switch (factor) {
+          case 'DonorHb_Cat':
+            switch (value) {
+              case 1: categoryLabel = 'Donor Hb < 125 g/L'; break;
+              case 2: categoryLabel = 'Donor Hb 125-139 g/L'; break;
+              case 3: categoryLabel = 'Donor Hb 140-154 g/L'; break;
+              case 4: categoryLabel = 'Donor Hb 155-169 g/L'; break;
+              case 5: categoryLabel = 'Donor Hb ≥ 170 g/L'; break;
+              default: categoryLabel = `Donor Hb Category ${value}`;
+            }
+            break;
+          case 'Storage_Cat':
+            switch (value) {
+              case 1: categoryLabel = 'Storage < 10 days'; break;
+              case 2: categoryLabel = 'Storage 10-19 days'; break;
+              case 3: categoryLabel = 'Storage 20-29 days'; break;
+              case 4: categoryLabel = 'Storage 30-39 days'; break;
+              case 5: categoryLabel = 'Storage ≥ 40 days'; break;
+              default: categoryLabel = `Storage Category ${value}`;
+            }
+            break;
+          case 'DonorSex':
+            categoryLabel = value === 1 ? 'Male Donor' : value === 2 ? 'Female Donor' : `Donor Sex ${value}`;
+            break;
+          case 'DonorParity':
+            categoryLabel = value === 0 ? 'Nulliparous Donor' : value === 1 ? 'Parous Donor' : `Donor Parity ${value}`;
+            break;
+          case 'wdy_donation':
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            categoryLabel = days[value-1] || `Day ${value}`;
+            break;
+          default:
+            categoryLabel = `${value}`;
+        }
+        
+        return modelType ? `${categoryLabel} (${modelType})` : categoryLabel;
+      }
+      
+      // Get line color for a value
+      getLineColor(value, index = 0) {
+        // Colors that work well for both lines and areas
+        const colors = [
+          {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},  // blue
+          {line: 'rgb(255, 127, 14)', area: 'rgba(255, 127, 14, 0.2)'},  // orange
+          {line: 'rgb(44, 160, 44)', area: 'rgba(44, 160, 44, 0.2)'},    // green
+          {line: 'rgb(214, 39, 40)', area: 'rgba(214, 39, 40, 0.2)'},    // red
+          {line: 'rgb(148, 103, 189)', area: 'rgba(148, 103, 189, 0.2)'}, // purple
+          {line: 'rgb(140, 86, 75)', area: 'rgba(140, 86, 75, 0.2)'},    // brown
+          {line: 'rgb(227, 119, 194)', area: 'rgba(227, 119, 194, 0.2)'}, // pink
+        ];
+        
+        // Special case for reference/null values
+        if (value === null) {
+          return {line: 'rgb(0, 0, 0)', area: 'rgba(0, 0, 0, 0.1)'};  // black
+        }
+        
+        const valueIndex = this.comparisonValues.indexOf(value);
+        if (valueIndex === -1) {
+          return colors[index % colors.length];
+        }
+        
+        return colors[valueIndex % colors.length];
+      }
+      
+      // Process data for percentage formatting
+      processDataPoint(point) {
+        const needsMultiplication = 
+          point.predBase !== null && point.predBase < 1 &&
+          point.predFull !== null && point.predFull < 1;
+        
+        if (needsMultiplication) {
+          return {
+            time: point.time,
+            predBase: point.predBase * 100,
+            predFull: point.predFull * 100,
+            lower: point.lower * 100,
+            upper: point.upper * 100
+          };
+        }
+        
+        return point;
+      }
+      
+      // Get data for Chart.js
+      prepareChartData() {
+        if (!this.chartData.data || this.chartData.data.length === 0) return null;
+        
+        const compColumn = this.chartData.comparisonColumn;
+        
+        // Filter data
+        const filteredData = this.chartData.data.filter(row => 
+          this.selectedComparisons.includes(row[compColumn]) && 
+          row.TimeFromTransfusion >= this.timeRange[0] && 
+          row.TimeFromTransfusion <= this.timeRange[1]
+        );
+        
+        if (filteredData.length === 0) return null;
+        
+        // Group data by comparison value
+        const groupedByComp = _.groupBy(filteredData, compColumn);
+        
+        // Sort by time and prepare datasets
+        const datasets = [];
+        const allTimes = [];
+        
+        Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
+          // Sort by time
+          const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
+          
+          // Collect all times for x-axis
+          sortedRows.forEach(row => {
+            if (!allTimes.includes(row.TimeFromTransfusion)) {
+              allTimes.push(row.TimeFromTransfusion);
+            }
+          });
+          
+          // Parse comparison value
+          const parsedValue = compValue === "null" ? null : parseFloat(compValue);
+          const color = this.getLineColor(parsedValue, index);
+          const categoryLabel = this.getLegendLabel(parsedValue);
+          
+          // Create dataset for full model
+          datasets.push({
+            label: `${categoryLabel} (Full)`,
+            data: sortedRows.map(row => ({
+              x: row.TimeFromTransfusion,
+              y: row.PredVal_Full
+            })),
+            borderColor: color.line,
+            backgroundColor: color.line,
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          });
+          
+          // Add confidence interval if enabled
+          if (this.showConfidenceInterval) {
+            // Create filled area between upper and lower bounds
+            datasets.push({
+              label: `${categoryLabel} (CI)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.Lower_Full
+              })),
+              borderColor: 'transparent',
+              backgroundColor: color.area,
+              pointRadius: 0,
+              fill: '+1',  // Fill to the next dataset
+              tension: 0.3
+            });
+            
+            datasets.push({
+              label: `${categoryLabel} (CI Upper)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.Upper_Full
+              })),
+              borderColor: 'transparent',
+              pointRadius: 0,
+              fill: false,
+              tension: 0.3,
+              hidden: true  // Hide this line but use it for filling
+            });
+          }
+          
+          // Create dataset for base model if enabled
+          if (this.showBaseModel) {
+            datasets.push({
+              label: `${categoryLabel} (Base)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.PredVal_Base
+              })),
+              borderColor: color.line,
+              backgroundColor: color.line,
+              borderWidth: 1.5,
+              borderDash: [5, 5],
+              tension: 0.3,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 2
+            });
+          }
+        });
+        
+        // Sort all times for consistent x-axis
+        allTimes.sort((a, b) => a - b);
+        
+        return {
+          datasets: datasets,
+          allTimes: allTimes
+        };
+      }
+      
+      // Update chart
+      updateChart() {
+        const chartData = this.prepareChartData();
+        
+        if (!chartData) {
+          this.clearChart();
+          return;
+        }
+        
+        const ctx = document.getElementById('chart-canvas').getContext('2d');
+        
+        // Calculate appropriate Y-axis range
+        let minY = Infinity;
+        let maxY = -Infinity;
+        
+        chartData.datasets.forEach(dataset => {
+          dataset.data.forEach(point => {
+            if (point.y !== null && !isNaN(point.y)) {
+              minY = Math.min(minY, point.y);
+              maxY = Math.max(maxY, point.y);
+            }
+          });
+        });
+        
+        // Add padding and ensure min is 0 if close
+        const range = maxY - minY;
+        const padding = Math.max(range * 0.1, 0.5);
+        minY = Math.max(0, minY - padding);
+        maxY = maxY + padding;
+        
+        // Cap at 100% for SpO2
+        if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
+          maxY = 100;
+        }
+        
+        // Ensure some range to avoid flat lines
+        if (maxY - minY < 5) {
+          minY = Math.max(0, minY - 2.5);
+          maxY = maxY + 2.5;
+        }
+        
+        // Destroy existing chart if it exists
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        
+        // Create new chart
+        this.chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            datasets: chartData.datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'nearest',
+              intersect: false
+            },
+            scales: {
+              x: {
+                type: 'linear',
+                title: {
+                  display: true,
+                  text: 'Time From Transfusion (minutes)'
+                },
+                min: this.timeRange[0],
+                max: this.timeRange[1]
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: this.metaInfo.yLabel
+                },
+                min: minY,
+                max: maxY
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  // Filter out CI upper bounds from legend
+                  filter: function(legendItem, chartData) {
+                    return !legendItem.text.includes('CI Upper');
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      // Clear chart
+      clearChart() {
+        if (this.chart) {
+          this.chart.destroy();
+          this.chart = null;
+        }
+      }
+      
+      // Show loading indicator
+      showLoading() {
+        if (!this.loadingElement) {
+          this.loadingElement = document.createElement('div');
+          this.loadingElement.className = 'loading';
+          this.loadingElement.textContent = 'Loading data...';
+          this.container.appendChild(this.loadingElement);
+        }
+      }
+      
+      // Hide loading indicator
+      hideLoading() {
+        if (this.loadingElement) {
+          this.loadingElement.remove();
+          this.loadingElement = null;
+        }
+      }
+      
+      // Show error message
+      showError(message) {
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error';
+        errorElement.textContent = message;
+        this.container.insertBefore(errorElement, this.container.firstChild);
+        
+        // Auto remove after 10 seconds
+        setTimeout(() => {
+          errorElement.remove();
+        }, 10000);
+      }
     }
     
-    // Check if Recharts is already defined
-    if (window.Recharts) {
-      updateStatus('✅ Recharts is already defined! (Library loaded successfully)', true);
-    } else {
-      updateStatus('⚠️ Recharts not loaded yet. Attempting to load it now...', false);
-    }
-  </script>
-  
-  <!-- Try loading the dependencies and Recharts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.min.js"></script>
-  
-  <!-- Final check -->
-  <script>
-    // Check again after scripts have loaded
-    setTimeout(function() {
-      console.log("Checking Recharts availability...");
-      
-      if (window.Recharts) {
-        updateStatus(`
-          ✅ SUCCESS: Recharts loaded successfully!<br>
-          Available components: ${Object.keys(window.Recharts).join(', ')}
-        `, true);
-      } else {
-        updateStatus(`
-          ❌ ERROR: Recharts is still not defined after loading scripts.<br>
-          <br>
-          Try this alternative approach:<br>
-          <ol>
-            <li>Create a simple HTML file without React</li>
-            <li>Use pre-generated SVG charts instead of dynamic Recharts</li>
-            <li>Or use a different visualization library like Chart.js</li>
-          </ol>
-        `, false);
-      }
-    }, 1000); // Give scripts a second to load
+    // Initialize dashboard when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      new TransfusionDashboard('app-container');
+    });
   </script>
 </body>
 </html>
