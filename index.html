@@ -1,57 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minimal Test</title>
-  
-  <!-- Just React and ReactDOM -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.18.13/babel.min.js"></script>
-  
+  <title>Ultra Minimal Test</title>
   <style>
-    .status { padding: 1rem; margin: 1rem 0; border-radius: 4px; }
-    .success { background: #d4edda; color: #155724; }
-    .error { background: #f8d7da; color: #721c24; }
+    .box {
+      margin: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .success { background-color: #d4edda; }
+    .error { background-color: #f8d7da; }
   </style>
 </head>
 <body>
-  <h1>React Mounting Test</h1>
+  <h1>GitHub Pages Test</h1>
   
-  <div id="vanilla-test" class="status">
-    If you see this text change to "Vanilla JS works", standard JavaScript is working
+  <div id="test1" class="box">
+    Test 1: If this changes to green, basic JS works
   </div>
   
-  <div id="react-root"></div>
+  <div id="react-check" class="box">
+    Test 2: Checking if React is loaded
+  </div>
+  
+  <div id="react-root" class="box">
+    Test 3: React component should render here
+  </div>
 
+  <!-- No external libraries yet - just test basic JS -->
   <script>
-    // Test 1: Vanilla JavaScript execution
-    document.getElementById('vanilla-test').innerHTML = '<div class="success">Vanilla JS works</div>';
-    console.log("Vanilla JS executed");
-  </script>
-
-  <script type="text/babel">
-    // Test 2: React mounting
-    console.log("Babel script executing");
+    // Test 1: Basic JavaScript
+    document.getElementById('test1').textContent = 'Basic JavaScript works!';
+    document.getElementById('test1').className = 'box success';
     
-    try {
-      const App = () => {
-        console.log("React component rendering");
-        return (
-          <div class="status success">
-            React is working! The component mounted successfully.
-          </div>
-        );
+    // Display library status when page loads
+    window.onload = function() {
+      const reactDiv = document.getElementById('react-check');
+      
+      // Now load React manually
+      const reactScript = document.createElement('script');
+      reactScript.src = 'https://unpkg.com/react@17/umd/react.development.js';
+      
+      reactScript.onload = function() {
+        const reactDomScript = document.createElement('script');
+        reactDomScript.src = 'https://unpkg.com/react-dom@17/umd/react-dom.development.js';
+        
+        reactDomScript.onload = function() {
+          reactDiv.textContent = 'React and ReactDOM loaded successfully!';
+          reactDiv.className = 'box success';
+          
+          // Now that React is definitely loaded, try direct DOM manipulation
+          const root = document.getElementById('react-root');
+          root.textContent = '';
+          
+          const heading = document.createElement('h3');
+          heading.textContent = 'React Component Placeholder';
+          root.appendChild(heading);
+          
+          const paragraph = document.createElement('p');
+          paragraph.textContent = 'React DOM manipulation works!';
+          root.appendChild(paragraph);
+          root.className = 'box success';
+          
+          // Try pure JS version of what React would do
+          const div = document.createElement('div');
+          div.textContent = 'If you see this, React DOM API is accessible';
+          root.appendChild(div);
+        };
+        
+        reactDomScript.onerror = function() {
+          reactDiv.textContent = 'Failed to load ReactDOM! Check console for details.';
+          reactDiv.className = 'box error';
+        };
+        
+        document.head.appendChild(reactDomScript);
       };
       
-      ReactDOM.render(<App />, document.getElementById('react-root'));
-      console.log("ReactDOM.render called");
-    } catch(e) {
-      console.error("React error:", e);
-      document.getElementById('react-root').innerHTML = 
-        `<div class="status error">React error: ${e.message}</div>`;
-    }
+      reactScript.onerror = function() {
+        reactDiv.textContent = 'Failed to load React! Check console for details.';
+        reactDiv.className = 'box error';
+      };
+      
+      document.head.appendChild(reactScript);
+    };
   </script>
 </body>
 </html>
