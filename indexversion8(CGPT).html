@@ -231,7 +231,6 @@
             <canvas id="chart-canvas"></canvas>
           </div>
           <!-- Removed the file-info text to hide the CSV source file -->
-          <!-- (i.e. we no longer show "File: VIZ_XXX.csv") -->
         `;
         this.container.appendChild(chartCard);
         
@@ -480,7 +479,7 @@
         // Update the RBC factor dropdown
         this.updateCompFactorSelect();
         
-        // Check if the user's current RBC factor is still valid
+        // Check if the user’s current RBC factor is still valid
         const isUserFactorValid = this.compFactors.some(f => f.value === this.selectedCompFactor);
         
         // If it's not valid (or user never had one selected), pick "Donor Hemoglobin" if it exists,
@@ -618,6 +617,20 @@
                 throw new Error("No data found in the CSV file");
               }
               
+              // === NEW: Convert blank or invalid CI columns to null
+              results.data = results.data.map(row => {
+                // If Lower_Full is not a valid number, force to null
+                if (typeof row.Lower_Full !== 'number' || isNaN(row.Lower_Full)) {
+                  row.Lower_Full = null;
+                }
+                // Same for Upper_Full
+                if (typeof row.Upper_Full !== 'number' || isNaN(row.Upper_Full)) {
+                  row.Upper_Full = null;
+                }
+                return row;
+              });
+              // === END NEW
+
               this.logDebug(`Parsed ${results.data.length} rows of visualization data`);
               
               const firstRow = results.data[0];
@@ -835,126 +848,79 @@
         
         const compColumn = this.chartData.comparisonColumn;
         
-        // Filter data by time range and selected comparison values
         const filteredData = this.chartData.data.filter(row => 
+          this.selectedComparisons.includes(row[compColumn]) && 
           row.TimeFromTransfusion >= this.timeRange[0] && 
           row.TimeFromTransfusion <= this.timeRange[1]
         );
         
         if (filteredData.length === 0) return null;
         
-        // Group by comparison column value
-        const groupedByComp = _.groupBy(filteredData, row => {
-          // Handle empty/undefined category values specially
-          const categoryValue = row[compColumn];
-          if (categoryValue === null || categoryValue === undefined || categoryValue === '') {
-            return 'null';
-          }
-          return categoryValue;
-        });
+        const groupedByComp = _.groupBy(filteredData, compColumn);
         
         const datasets = [];
         const allTimes = [];
-        const processedCategories = new Set();
         
-        // Process each comparison value category
         Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
-          // Convert "null" string back to null for processing
-          const categoryValue = compValue === "null" ? null : 
-                              isNaN(parseFloat(compValue)) ? compValue : parseFloat(compValue);
-          
-          // Skip if this category is not selected
-          if (!this.selectedComparisons.includes(categoryValue)) {
-            return;
-          }
-          
-          processedCategories.add(String(categoryValue));
-          
-          // Sort rows by time
           const sortedRows = _.sortBy(rows, 'TimeFromTransfusion');
           
-          // Collect all time points for x-axis
           sortedRows.forEach(row => {
             if (!allTimes.includes(row.TimeFromTransfusion)) {
               allTimes.push(row.TimeFromTransfusion);
             }
           });
           
-          const color = this.getLineColor(categoryValue, index);
-          const categoryLabel = this.getLegendLabel(categoryValue);
+          const parsedValue = compValue === "null" ? null : parseFloat(compValue);
+          const color = this.getLineColor(parsedValue, index);
+          const categoryLabel = this.getLegendLabel(parsedValue);
           
-          // Check if we have valid data for the main line
-          const hasValidMainData = sortedRows.some(row => 
-            row.PredVal_Full !== null && row.PredVal_Full !== undefined);
+          // Full model line
+          datasets.push({
+            label: `${categoryLabel} (Full)`,
+            data: sortedRows.map(row => ({
+              x: row.TimeFromTransfusion,
+              y: row.PredVal_Full
+            })),
+            borderColor: color.line,
+            backgroundColor: color.line,
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          });
           
-          if (hasValidMainData) {
-            // Full model line
+          // Confidence Interval
+          if (this.showConfidenceInterval) {
             datasets.push({
-              label: `${categoryLabel} (Full)`,
+              label: `${categoryLabel} (CI)`,
               data: sortedRows.map(row => ({
                 x: row.TimeFromTransfusion,
-                y: row.PredVal_Full
+                y: row.Lower_Full
               })),
-              borderColor: color.line,
-              backgroundColor: color.line,
-              borderWidth: 2,
-              tension: 0.3,
-              fill: false,
+              borderColor: 'transparent',
+              backgroundColor: color.area,
               pointRadius: 0,
-              pointHoverRadius: 4
+              fill: '+1',
+              tension: 0.3
             });
             
-            // Check if we have valid data for confidence intervals
-            const hasValidCIData = sortedRows.some(row => 
-              row.Lower_Full !== null && row.Lower_Full !== undefined && 
-              row.Upper_Full !== null && row.Upper_Full !== undefined);
-            
-            // Only add CI datasets if we have valid CI data and the option is enabled
-            if (this.showConfidenceInterval && hasValidCIData) {
-              // Create a clean dataset for CI with only valid points
-              const validCIPoints = sortedRows.filter(row => 
-                row.Lower_Full !== null && row.Lower_Full !== undefined && 
-                row.Upper_Full !== null && row.Upper_Full !== undefined
-              );
-              
-              const lowerCIDataset = {
-                label: `${categoryLabel} (CI)`,
-                data: validCIPoints.map(row => ({
-                  x: row.TimeFromTransfusion,
-                  y: row.Lower_Full
-                })),
-                borderColor: 'transparent',
-                backgroundColor: color.area,
-                pointRadius: 0,
-                fill: false, // Changed to false initially
-                tension: 0.3
-              };
-              
-              const upperCIDataset = {
-                label: `${categoryLabel} (CI Upper)`,
-                data: validCIPoints.map(row => ({
-                  x: row.TimeFromTransfusion,
-                  y: row.Upper_Full
-                })),
-                borderColor: 'transparent',
-                backgroundColor: 'transparent',
-                pointRadius: 0,
-                fill: '-1', // Fill to the previous dataset (lower CI)
-                tension: 0.3
-              };
-              
-              // Add the CI datasets to our collection
-              datasets.push(lowerCIDataset);
-              datasets.push(upperCIDataset);
-            }
+            datasets.push({
+              label: `${categoryLabel} (CI Upper)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row.Upper_Full
+              })),
+              borderColor: 'transparent',
+              pointRadius: 0,
+              fill: false,
+              tension: 0.3,
+              hidden: true
+            });
           }
           
-          // Check if we have valid data for base model
-          const hasValidBaseData = sortedRows.some(row => 
-            row.PredVal_Base !== null && row.PredVal_Base !== undefined);
-          
-          // Base model line (only if option is enabled and we have valid data)
-          if (this.showBaseModel && hasValidBaseData) {
+          // Base model line
+          if (this.showBaseModel) {
             datasets.push({
               label: `${categoryLabel} (Base)`,
               data: sortedRows.map(row => ({
@@ -973,12 +939,6 @@
           }
         });
         
-        // If no selected categories had data, return null
-        if (processedCategories.size === 0) {
-          return null;
-        }
-        
-        // Sort time points for consistent x-axis
         allTimes.sort((a, b) => a - b);
         
         return {
@@ -1014,6 +974,7 @@
         minY = Math.max(0, minY - padding);
         maxY = maxY + padding;
         
+        // If vital param is SpO2, cap at 100%
         if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
           maxY = 100;
         }
