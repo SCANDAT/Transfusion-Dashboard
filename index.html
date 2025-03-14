@@ -644,10 +644,10 @@
               document.getElementById('model-descriptions').innerHTML = `
                 <div style="display: flex; justify-content: center; gap: 20px;">
                   <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
-                    <span style="font-weight: bold;">Base Model:</span> Mixed effects model that adjusts for time since transfusion, patient age, time since ICU admission, RBC transfusion count, patient sex, and ICU ward
+                    <span style="font-weight: bold;">Base Model:</span> Base Model: A mixed-effects model with a random intercept for patient ID that adjusts for time from transfusion (natural cubic spline with fixed knots at -660, -360, -60, 0, 60, 360, and 660 minutes), patient age and time spent in the ICU prior to transfusion (natural cubic splines with three percentile-based knots), RBC transfusion count, patient sex, and ICU ward name
                   </div>
                   <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
-                    <span style="font-weight: bold;">Fully Adjusted Model:</span> Base model + fluids, vasopressors, and sedatives
+                    <span style="font-weight: bold;">Fully Adjusted Model:</span> A mixed-effects model containing all base model variables as well as cumulative crystalloid fluids and vasopressors administered (in ml) in the last 1 and 24 hours prior to transfusion (natural cubic splines with three percentile-based knots), and a binary variable for whether sedatives were administered in the last 1 and 24 hours prior to transfusion 
                   </div>
                 </div>
               `;
