@@ -120,10 +120,12 @@
         this.timeRange = [0, 720];    
         this.showConfidenceInterval = false; 
         this.showBaseModel = false; 
+        this.showDeltaPlot = false;   // New state variable for delta plots
         this.metaInfo = {             
           vitalName: '',
           compName: '',
-          yLabel: ''
+          yLabel: '',
+          DeltaYLabel: ''             // New metadata for delta plots
         };
         this.currentFileName = '';    
         this.chart = null;            
@@ -201,6 +203,9 @@
               </label>
               <label>
                 <input type="checkbox" id="show-base"> Show Base Model
+              </label>
+              <label>
+                <input type="checkbox" id="show-delta"> Show Change from Baseline
               </label>
             </div>
           </div>
@@ -305,6 +310,11 @@
           this.updateChart();
         });
         
+        document.getElementById('show-delta').addEventListener('change', (e) => {
+          this.showDeltaPlot = e.target.checked;
+          this.updateChart();
+        });
+        
         // Debug mode
         document.getElementById('debug-mode').addEventListener('change', (e) => {
           this.debugMode = e.target.checked;
@@ -333,6 +343,7 @@
         // Reflect initial unchecked state
         document.getElementById('show-ci').checked = false;
         document.getElementById('show-base').checked = false;
+        document.getElementById('show-delta').checked = false;
       }
       
       // Load index data
@@ -624,14 +635,15 @@
               this.metaInfo = {
                 vitalName: firstRow.VitalName || "Vital Parameter",
                 compName: firstRow.CompName || "Comparison Factor",
-                yLabel: firstRow.YLabel || "Value"
+                yLabel: firstRow.YLabel || "Value",
+                DeltaYLabel: firstRow.DeltaYLabel || "Change in Value"
               };
               
               this.logDebug(`Metadata: ${JSON.stringify(this.metaInfo)}`);
               
               // Chart title
               document.getElementById('chart-title').innerHTML = `
-                <h2>${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
+                <h2>${this.showDeltaPlot ? 'Change in ' : ''}${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
               `;
               
               // Model descriptions
@@ -660,7 +672,12 @@
                 key !== 'CompFactor' && 
                 key !== 'CompName' && 
                 key !== 'VitalName' && 
-                key !== 'YLabel'
+                key !== 'YLabel' &&
+                key !== 'DeltaYLabel' &&
+                key !== 'Delta_Base' &&
+                key !== 'Delta_Full' &&
+                key !== 'Delta_Lower' &&
+                key !== 'Delta_Upper'
               );
               
               if (!comparisonColumnName) {
@@ -883,9 +900,15 @@
           const color = this.getLineColor(categoryValue, index);
           const categoryLabel = this.getLegendLabel(categoryValue);
           
+          // Determine which fields to use based on plot mode
+          const valueField = this.showDeltaPlot ? 'Delta_Full' : 'PredVal_Full';
+          const lowerField = this.showDeltaPlot ? 'Delta_Lower' : 'Lower_Full';
+          const upperField = this.showDeltaPlot ? 'Delta_Upper' : 'Upper_Full';
+          const baseField = this.showDeltaPlot ? 'Delta_Base' : 'PredVal_Base';
+          
           // Check if we have valid data for the main line
           const hasValidMainData = sortedRows.some(row => 
-            row.PredVal_Full !== null && row.PredVal_Full !== undefined);
+            row[valueField] !== null && row[valueField] !== undefined);
           
           if (hasValidMainData) {
             // Full model line
@@ -893,7 +916,7 @@
               label: `${categoryLabel} (Full)`,
               data: sortedRows.map(row => ({
                 x: row.TimeFromTransfusion,
-                y: row.PredVal_Full
+                y: row[valueField]
               })),
               borderColor: color.line,
               backgroundColor: color.line,
@@ -906,22 +929,22 @@
             
             // Check if we have valid data for confidence intervals
             const hasValidCIData = sortedRows.some(row => 
-              row.Lower_Full !== null && row.Lower_Full !== undefined && 
-              row.Upper_Full !== null && row.Upper_Full !== undefined);
+              row[lowerField] !== null && row[lowerField] !== undefined && 
+              row[upperField] !== null && row[upperField] !== undefined);
             
             // Only add CI datasets if we have valid CI data and the option is enabled
             if (this.showConfidenceInterval && hasValidCIData) {
               // Create a clean dataset for CI with only valid points
               const validCIPoints = sortedRows.filter(row => 
-                row.Lower_Full !== null && row.Lower_Full !== undefined && 
-                row.Upper_Full !== null && row.Upper_Full !== undefined
+                row[lowerField] !== null && row[lowerField] !== undefined && 
+                row[upperField] !== null && row[upperField] !== undefined
               );
               
               const lowerCIDataset = {
                 label: `${categoryLabel} (CI)`,
                 data: validCIPoints.map(row => ({
                   x: row.TimeFromTransfusion,
-                  y: row.Lower_Full
+                  y: row[lowerField]
                 })),
                 borderColor: 'transparent',
                 backgroundColor: color.area,
@@ -934,7 +957,7 @@
                 label: `${categoryLabel} (CI Upper)`,
                 data: validCIPoints.map(row => ({
                   x: row.TimeFromTransfusion,
-                  y: row.Upper_Full
+                  y: row[upperField]
                 })),
                 borderColor: 'transparent',
                 backgroundColor: 'transparent',
@@ -951,7 +974,7 @@
           
           // Check if we have valid data for base model
           const hasValidBaseData = sortedRows.some(row => 
-            row.PredVal_Base !== null && row.PredVal_Base !== undefined);
+            row[baseField] !== null && row[baseField] !== undefined);
           
           // Base model line (only if option is enabled and we have valid data)
           if (this.showBaseModel && hasValidBaseData) {
@@ -959,7 +982,7 @@
               label: `${categoryLabel} (Base)`,
               data: sortedRows.map(row => ({
                 x: row.TimeFromTransfusion,
-                y: row.PredVal_Base
+                y: row[baseField]
               })),
               borderColor: color.line,
               backgroundColor: color.line,
@@ -1014,7 +1037,8 @@
         minY = Math.max(0, minY - padding);
         maxY = maxY + padding;
         
-        if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
+        // Special case for SpO2 when not in delta mode
+        if (!this.showDeltaPlot && this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
           maxY = 100;
         }
         
@@ -1022,6 +1046,17 @@
           minY = Math.max(0, minY - 2.5);
           maxY = maxY + 2.5;
         }
+        
+        // For delta plots, ensure 0 is included in the range
+        if (this.showDeltaPlot) {
+          if (minY > 0) minY = 0;
+          if (maxY < 0) maxY = 0;
+        }
+        
+        // Update chart title based on delta mode
+        document.getElementById('chart-title').innerHTML = `
+          <h2>${this.showDeltaPlot ? 'Change in ' : ''}${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
+        `;
         
         if (this.chart) {
           this.chart.destroy();
@@ -1052,7 +1087,7 @@
               y: {
                 title: {
                   display: true,
-                  text: this.metaInfo.yLabel
+                  text: this.showDeltaPlot ? this.metaInfo.DeltaYLabel : this.metaInfo.yLabel
                 },
                 min: minY,
                 max: maxY,
