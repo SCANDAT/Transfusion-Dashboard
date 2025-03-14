@@ -117,18 +117,15 @@
         this.comparisonValues = [];   
         this.selectedComparisons = [];
 
-        // ** Changed default time range to allow negative times **
-        this.timeRange = [-720, 720];    
-
+        this.timeRange = [0, 720];    
         this.showConfidenceInterval = false; 
         this.showBaseModel = false; 
-        this.showDeltaPlot = false;   
-        
+        this.showDeltaPlot = false;   // New state variable for delta plots
         this.metaInfo = {             
           vitalName: '',
           compName: '',
           yLabel: '',
-          DeltaYLabel: ''
+          DeltaYLabel: ''             // New metadata for delta plots
         };
         this.currentFileName = '';    
         this.chart = null;            
@@ -191,10 +188,9 @@
           <div class="form-group">
             <label class="form-label">Time Range (minutes):</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <!-- Removed min="0" and max="720" so negative times are allowed -->
-              <input type="number" id="time-min" class="form-input" style="width: 80px;" value="-720">
+              <input type="number" id="time-min" class="form-input" min="0" max="720" style="width: 80px;" value="0">
               <span>to</span>
-              <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
+              <input type="number" id="time-max" class="form-input" min="0" max="720" style="width: 80px;" value="720">
               <button id="time-reset" class="btn btn-sm">Reset</button>
             </div>
           </div>
@@ -239,6 +235,8 @@
           <div id="chart-container" class="chart-container">
             <canvas id="chart-canvas"></canvas>
           </div>
+          <!-- Removed the file-info text to hide the CSV source file -->
+          <!-- (i.e. we no longer show "File: VIZ_XXX.csv") -->
         `;
         this.container.appendChild(chartCard);
         
@@ -296,9 +294,8 @@
         });
         
         document.getElementById('time-reset').addEventListener('click', () => {
-          // Reset range to the full -720 to +720
-          this.timeRange = [-720, 720];
-          document.getElementById('time-min').value = -720;
+          this.timeRange = [0, 720];
+          document.getElementById('time-min').value = 0;
           document.getElementById('time-max').value = 720;
           this.updateChart();
         });
@@ -736,7 +733,7 @@
               // Update tags
               this.updateComparisonTags(comparisonColumnName);
               
-              // Time range inputs
+              // Time range
               document.getElementById('time-min').value = this.timeRange[0];
               document.getElementById('time-max').value = this.timeRange[1];
               
@@ -865,7 +862,7 @@
         
         // Group by comparison column value
         const groupedByComp = _.groupBy(filteredData, row => {
-          // Handle empty/undefined category values
+          // Handle empty/undefined category values specially
           const categoryValue = row[compColumn];
           if (categoryValue === null || categoryValue === undefined || categoryValue === '') {
             return 'null';
@@ -880,9 +877,8 @@
         // Process each comparison value category
         Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
           // Convert "null" string back to null for processing
-          const categoryValue = (compValue === "null")
-            ? null
-            : isNaN(parseFloat(compValue)) ? compValue : parseFloat(compValue);
+          const categoryValue = compValue === "null" ? null : 
+                              isNaN(parseFloat(compValue)) ? compValue : parseFloat(compValue);
           
           // Skip if this category is not selected
           if (!this.selectedComparisons.includes(categoryValue)) {
@@ -912,8 +908,7 @@
           
           // Check if we have valid data for the main line
           const hasValidMainData = sortedRows.some(row => 
-            row[valueField] !== null && row[valueField] !== undefined
-          );
+            row[valueField] !== null && row[valueField] !== undefined);
           
           if (hasValidMainData) {
             // Full model line
@@ -932,15 +927,16 @@
               pointHoverRadius: 4
             });
             
-            // Confidence intervals
+            // Check if we have valid data for confidence intervals
             const hasValidCIData = sortedRows.some(row => 
-              row[lowerField] !== null && row[lowerField] !== undefined &&
-              row[upperField] !== null && row[upperField] !== undefined
-            );
+              row[lowerField] !== null && row[lowerField] !== undefined && 
+              row[upperField] !== null && row[upperField] !== undefined);
             
+            // Only add CI datasets if we have valid CI data and the option is enabled
             if (this.showConfidenceInterval && hasValidCIData) {
+              // Create a clean dataset for CI with only valid points
               const validCIPoints = sortedRows.filter(row => 
-                row[lowerField] !== null && row[lowerField] !== undefined &&
+                row[lowerField] !== null && row[lowerField] !== undefined && 
                 row[upperField] !== null && row[upperField] !== undefined
               );
               
@@ -953,7 +949,7 @@
                 borderColor: 'transparent',
                 backgroundColor: color.area,
                 pointRadius: 0,
-                fill: false,
+                fill: false, // Changed to false initially
                 tension: 0.3
               };
               
@@ -966,20 +962,21 @@
                 borderColor: 'transparent',
                 backgroundColor: 'transparent',
                 pointRadius: 0,
-                fill: '-1',
+                fill: '-1', // Fill to the previous dataset (lower CI)
                 tension: 0.3
               };
               
+              // Add the CI datasets to our collection
               datasets.push(lowerCIDataset);
               datasets.push(upperCIDataset);
             }
           }
           
-          // Base model line
+          // Check if we have valid data for base model
           const hasValidBaseData = sortedRows.some(row => 
-            row[baseField] !== null && row[baseField] !== undefined
-          );
+            row[baseField] !== null && row[baseField] !== undefined);
           
+          // Base model line (only if option is enabled and we have valid data)
           if (this.showBaseModel && hasValidBaseData) {
             datasets.push({
               label: `${categoryLabel} (Base)`,
@@ -999,6 +996,7 @@
           }
         });
         
+        // If no selected categories had data, return null
         if (processedCategories.size === 0) {
           return null;
         }
@@ -1036,30 +1034,10 @@
         
         const range = maxY - minY;
         const padding = Math.max(range * 0.1, 0.5);
-
-        // -----------------------------------------
-        // Fix so that delta plots can go negative:
-        // Only clamp to 0 in "absolute" mode
-        // -----------------------------------------
-        if (!this.showDeltaPlot) {
-          // Absolute mode: ensure y >= 0
-          minY = Math.max(0, minY - padding);
-          maxY = maxY + padding;
-        } else {
-          // Delta mode: allow negative
-          minY = minY - padding;
-          maxY = maxY + padding;
-
-          // Force the axis to include zero if data is above or below
-          if (minY > 0) {
-            minY = 0;
-          }
-          if (maxY < 0) {
-            maxY = 0;
-          }
-        }
-
-        // Special case for SpO2 in absolute mode
+        minY = Math.max(0, minY - padding);
+        maxY = maxY + padding;
+        
+        // Special case for SpO2 when not in delta mode
         if (!this.showDeltaPlot && this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
           maxY = 100;
         }
@@ -1069,7 +1047,13 @@
           maxY = maxY + 2.5;
         }
         
-        // Update chart title
+        // For delta plots, ensure 0 is included in the range
+        if (this.showDeltaPlot) {
+          if (minY > 0) minY = 0;
+          if (maxY < 0) maxY = 0;
+        }
+        
+        // Update chart title based on delta mode
         document.getElementById('chart-title').innerHTML = `
           <h2>${this.showDeltaPlot ? 'Change in ' : ''}${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
         `;
