@@ -117,7 +117,7 @@
         this.comparisonValues = [];   
         this.selectedComparisons = [];
 
-        // Allow negative times:
+        // ** Changed default time range to allow negative times **
         this.timeRange = [-720, 720];    
 
         this.showConfidenceInterval = false; 
@@ -191,7 +191,7 @@
           <div class="form-group">
             <label class="form-label">Time Range (minutes):</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <!-- Let negative values be allowed -->
+              <!-- Removed min="0" and max="720" so negative times are allowed -->
               <input type="number" id="time-min" class="form-input" style="width: 80px;" value="-720">
               <span>to</span>
               <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
@@ -215,7 +215,7 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">Comparison Values:</label>
+            <label class="form-label">RBC Component Categories:</label>
             <div id="comparison-tags"></div>
           </div>
           
@@ -296,6 +296,7 @@
         });
         
         document.getElementById('time-reset').addEventListener('click', () => {
+          // Reset range to the full -720 to +720
           this.timeRange = [-720, 720];
           document.getElementById('time-min').value = -720;
           document.getElementById('time-max').value = 720;
@@ -334,6 +335,13 @@
           document.getElementById('debug-output').style.display = 'block';
           this.logDebug('Debug mode enabled via URL parameter');
         }
+        
+        // Shortcut to enable debug mode
+        document.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+            document.getElementById('debug-container').style.display = 'block';
+          }
+        });
         
         // Reflect initial unchecked state
         document.getElementById('show-ci').checked = false;
@@ -489,7 +497,8 @@
         // Check if the user's current RBC factor is still valid
         const isUserFactorValid = this.compFactors.some(f => f.value === this.selectedCompFactor);
         
-        // If it's not valid, pick "Donor Hemoglobin" if it exists, otherwise first factor
+        // If it's not valid (or user never had one selected), pick "Donor Hemoglobin" if it exists,
+        // otherwise default to the first factor
         if (!isUserFactorValid) {
           const donorHb = this.compFactors.find(f => f.label === 'Donor Hemoglobin');
           if (donorHb) {
@@ -856,6 +865,7 @@
         
         // Group by comparison column value
         const groupedByComp = _.groupBy(filteredData, row => {
+          // Handle empty/undefined category values
           const categoryValue = row[compColumn];
           if (categoryValue === null || categoryValue === undefined || categoryValue === '') {
             return 'null';
@@ -867,21 +877,18 @@
         const allTimes = [];
         const processedCategories = new Set();
         
-        // For absolute vs. delta mode
-        const valueField = this.showDeltaPlot ? 'Delta_Full' : 'PredVal_Full';
-        const lowerField = this.showDeltaPlot ? 'Delta_Lower' : 'Lower_Full';
-        const upperField = this.showDeltaPlot ? 'Delta_Upper' : 'Upper_Full';
-        const baseField = this.showDeltaPlot ? 'Delta_Base' : 'PredVal_Base';
-        
         // Process each comparison value category
         Object.entries(groupedByComp).forEach(([compValue, rows], index) => {
-          const categoryValue = compValue === "null" ? null : 
-                                isNaN(parseFloat(compValue)) ? compValue : parseFloat(compValue);
+          // Convert "null" string back to null for processing
+          const categoryValue = (compValue === "null")
+            ? null
+            : isNaN(parseFloat(compValue)) ? compValue : parseFloat(compValue);
           
-          // Skip if not selected
+          // Skip if this category is not selected
           if (!this.selectedComparisons.includes(categoryValue)) {
             return;
           }
+          
           processedCategories.add(String(categoryValue));
           
           // Sort rows by time
@@ -897,21 +904,46 @@
           const color = this.getLineColor(categoryValue, index);
           const categoryLabel = this.getLegendLabel(categoryValue);
           
-          // Check for main line data
+          // Determine which fields to use based on plot mode
+          const valueField = this.showDeltaPlot ? 'Delta_Full' : 'PredVal_Full';
+          const lowerField = this.showDeltaPlot ? 'Delta_Lower' : 'Lower_Full';
+          const upperField = this.showDeltaPlot ? 'Delta_Upper' : 'Upper_Full';
+          const baseField = this.showDeltaPlot ? 'Delta_Base' : 'PredVal_Base';
+          
+          // Check if we have valid data for the main line
           const hasValidMainData = sortedRows.some(row => 
             row[valueField] !== null && row[valueField] !== undefined
           );
           
-          // Check for CI data
-          const hasValidCIData = sortedRows.some(row => 
-            row[lowerField] !== null && row[lowerField] !== undefined &&
-            row[upperField] !== null && row[upperField] !== undefined
-          );
-          
-          // Build the CI dataset(s) if user wants it and data is valid
           if (hasValidMainData) {
+            // Full model line
+            datasets.push({
+              label: `${categoryLabel} (Full)`,
+              data: sortedRows.map(row => ({
+                x: row.TimeFromTransfusion,
+                y: row[valueField]
+              })),
+              borderColor: color.line,
+              backgroundColor: color.line,
+              borderWidth: 2,
+              tension: 0.3,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 4
+            });
+            
+            // Confidence intervals
+            const hasValidCIData = sortedRows.some(row => 
+              row[lowerField] !== null && row[lowerField] !== undefined &&
+              row[upperField] !== null && row[upperField] !== undefined
+            );
+            
             if (this.showConfidenceInterval && hasValidCIData) {
-              // The “lower boundary” dataset (no fill)
+              const validCIPoints = sortedRows.filter(row => 
+                row[lowerField] !== null && row[lowerField] !== undefined &&
+                row[upperField] !== null && row[upperField] !== undefined
+              );
+              
               const lowerCIDataset = {
                 label: `${categoryLabel} (CI Lower)`,
                 data: sortedRows.map(row => ({
@@ -921,11 +953,10 @@
                 borderColor: 'transparent',
                 backgroundColor: 'transparent',
                 pointRadius: 0,
-                fill: false,
+                fill: false,          // DO NOT fill from here down
                 tension: 0.3
               };
               
-              // The “upper boundary” dataset (fill down to the lower)
               const upperCIDataset = {
                 label: `${categoryLabel} (CI Upper)`,
                 data: sortedRows.map(row => ({
@@ -933,13 +964,12 @@
                   y: row[upperField]
                 })),
                 borderColor: 'transparent',
-                backgroundColor: color.area,
+                backgroundColor: color.area, 
                 pointRadius: 0,
-                fill: '-1', // fill to the previous dataset
+                fill: '+1',           // fill down to the “previous” dataset
                 tension: 0.3
               };
-              
-              // Then the main “Full” line itself
+
               const mainLineDataset = {
                 label: `${categoryLabel} (Full)`,
                 data: sortedRows.map(row => ({
@@ -954,26 +984,9 @@
                 pointRadius: 0
               };
               
-              // Push in the correct order to create a band
               datasets.push(lowerCIDataset);
               datasets.push(upperCIDataset);
               datasets.push(mainLineDataset);
-              
-            } else {
-              // If no CI or invalid CI, just push the main line
-              datasets.push({
-                label: `${categoryLabel} (Full)`,
-                data: sortedRows.map(row => ({
-                  x: row.TimeFromTransfusion,
-                  y: row[valueField]
-                })),
-                borderColor: color.line,
-                backgroundColor: color.line,
-                borderWidth: 2,
-                tension: 0.3,
-                fill: false,
-                pointRadius: 0
-              });
             }
           }
           
@@ -1039,17 +1052,26 @@
         const range = maxY - minY;
         const padding = Math.max(range * 0.1, 0.5);
 
-        // If we're in absolute mode, clamp below 0
+        // -----------------------------------------
+        // Fix so that delta plots can go negative:
+        // Only clamp to 0 in "absolute" mode
+        // -----------------------------------------
         if (!this.showDeltaPlot) {
+          // Absolute mode: ensure y >= 0
           minY = Math.max(0, minY - padding);
           maxY = maxY + padding;
         } else {
-          // Delta mode => allow negative
+          // Delta mode: allow negative
           minY = minY - padding;
           maxY = maxY + padding;
-          // Force axis to include zero if data are all above/below
-          if (minY > 0) minY = 0;
-          if (maxY < 0) maxY = 0;
+
+          // Force the axis to include zero if data is above or below
+          if (minY > 0) {
+            minY = 0;
+          }
+          if (maxY < 0) {
+            maxY = 0;
+          }
         }
 
         // Special case for SpO2 in absolute mode
@@ -1117,7 +1139,7 @@
                 position: 'bottom',
                 labels: {
                   filter: function(legendItem) {
-                    // Hide "CI Upper" from legend if desired:
+                    // Hide CI Upper from legend
                     return !legendItem.text.includes('CI Upper');
                   }
                 }
