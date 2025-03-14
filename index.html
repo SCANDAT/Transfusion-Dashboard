@@ -945,33 +945,48 @@
               );
               
               const lowerCIDataset = {
-                label: `${categoryLabel} (CI)`,
-                data: validCIPoints.map(row => ({
+                label: `${categoryLabel} (CI Lower)`,
+                data: sortedRows.map(row => ({
                   x: row.TimeFromTransfusion,
                   y: row[lowerField]
                 })),
                 borderColor: 'transparent',
-                backgroundColor: color.area,
+                backgroundColor: 'transparent',
                 pointRadius: 0,
-                fill: true, 
+                fill: false,          // DO NOT fill from here down
                 tension: 0.3
               };
               
               const upperCIDataset = {
                 label: `${categoryLabel} (CI Upper)`,
-                data: validCIPoints.map(row => ({
+                data: sortedRows.map(row => ({
                   x: row.TimeFromTransfusion,
                   y: row[upperField]
                 })),
                 borderColor: 'transparent',
-                backgroundColor: 'transparent',
+                backgroundColor: color.area, 
                 pointRadius: 0,
-                fill: '-1',  // fills from this line down to the previous dataset
+                fill: '-1',           // fill down to the “previous” dataset
                 tension: 0.3
+              };
+
+              const mainLineDataset = {
+                label: `${categoryLabel} (Full)`,
+                data: sortedRows.map(row => ({
+                  x: row.TimeFromTransfusion,
+                  y: row[valueField]
+                })),
+                borderColor: color.line,
+                backgroundColor: color.line,
+                borderWidth: 2,
+                tension: 0.3,
+                fill: false,
+                pointRadius: 0
               };
               
               datasets.push(lowerCIDataset);
               datasets.push(upperCIDataset);
+              datasets.push(mainLineDataset);
             }
           }
           
