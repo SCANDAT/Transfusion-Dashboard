@@ -117,12 +117,12 @@
         this.comparisonValues = [];   
         this.selectedComparisons = [];
 
-        // Allow negative times:
-        this.timeRange = [-720, 720];    
+        // Start from transfusion time (0):
+        this.timeRange = [0, 720];    
 
-        this.showConfidenceInterval = false; 
+        this.showConfidenceInterval = true; 
         this.showBaseModel = false; 
-        this.showDeltaPlot = false;   
+        this.showDeltaPlot = true;   
         
         this.metaInfo = {             
           vitalName: '',
@@ -191,8 +191,8 @@
           <div class="form-group">
             <label class="form-label">Time Range (minutes):</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <!-- Let negative values be allowed -->
-              <input type="number" id="time-min" class="form-input" style="width: 80px;" value="-720">
+          <!-- Time range starts at transfusion time -->
+          <input type="number" id="time-min" class="form-input" style="width: 80px;" value="0">
               <span>to</span>
               <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
               <button id="time-reset" class="btn btn-sm">Reset</button>
@@ -203,13 +203,13 @@
             <label class="form-label">Display Options:</label>
             <div style="display: flex; gap: 20px;">
               <label>
-                <input type="checkbox" id="show-ci"> Show Confidence Interval
+              <input type="checkbox" id="show-ci" checked> Show Confidence Interval
               </label>
               <label>
                 <input type="checkbox" id="show-base"> Show Base Model
               </label>
               <label>
-                <input type="checkbox" id="show-delta"> Show Change from Baseline
+              <input type="checkbox" id="show-delta" checked> Show Change from Baseline
               </label>
             </div>
           </div>
@@ -296,8 +296,8 @@
         });
         
         document.getElementById('time-reset').addEventListener('click', () => {
-          this.timeRange = [-720, 720];
-          document.getElementById('time-min').value = -720;
+          this.timeRange = [0, 720];
+          document.getElementById('time-min').value = 0;
           document.getElementById('time-max').value = 720;
           this.updateChart();
         });
@@ -335,10 +335,10 @@
           this.logDebug('Debug mode enabled via URL parameter');
         }
         
-        // Reflect initial unchecked state
-        document.getElementById('show-ci').checked = false;
+        // Reflect initial state
+        document.getElementById('show-ci').checked = true;
         document.getElementById('show-base').checked = false;
-        document.getElementById('show-delta').checked = false;
+        document.getElementById('show-delta').checked = true;
       }
       
       // Load index data
@@ -1024,20 +1024,37 @@
         
         const ctx = document.getElementById('chart-canvas').getContext('2d');
         
+        // Find min and max values including confidence intervals
         let minY = Infinity;
         let maxY = -Infinity;
         
+        // First pass: scan all datasets for extreme values
         chartData.datasets.forEach(dataset => {
+          // Check if this is a CI dataset by looking at label
+          const isCI = dataset.label && (
+            dataset.label.includes('CI Lower') || 
+            dataset.label.includes('CI Upper')
+          );
+          
           dataset.data.forEach(point => {
             if (point.y !== null && !isNaN(point.y)) {
-              minY = Math.min(minY, point.y);
-              maxY = Math.max(maxY, point.y);
+              // Apply extra weight to CI bounds to ensure they're fully visible
+              if (isCI) {
+                // Add extra padding for confidence intervals
+                minY = Math.min(minY, point.y);
+                maxY = Math.max(maxY, point.y);
+              } else {
+                minY = Math.min(minY, point.y);
+                maxY = Math.max(maxY, point.y);
+              }
             }
           });
         });
         
+        // Calculate appropriate padding
         const range = maxY - minY;
-        const padding = Math.max(range * 0.1, 0.5);
+        // Increase padding to ensure all data points are visible
+        const padding = Math.max(range * 0.15, 0.5);
 
         // If we're in absolute mode, clamp below 0
         if (!this.showDeltaPlot) {
@@ -1057,6 +1074,7 @@
           maxY = 100;
         }
         
+        // Ensure minimum range to prevent cramped axis
         if (maxY - minY < 5) {
           minY = Math.max(0, minY - 2.5);
           maxY = maxY + 2.5;
@@ -1101,12 +1119,19 @@
                 min: minY,
                 max: maxY,
                 ticks: {
+                  // Prevent duplicate labels and ensure integers for cleaner display
                   callback: (value, index, values) => {
-                    // Remove decimals for first & last label
-                    if (index === 0 || index === values.length - 1) {
-                      return parseInt(value);
+                    // Convert to integer for cleaner display
+                    const intValue = parseInt(value);
+                    
+                    // Prevent duplicate labels by checking if this value
+                    // is very close to the previous or next value
+                    if (index > 0 && Math.abs(value - values[index-1].value) < 0.1) {
+                      return null; // Skip this label to avoid duplication
                     }
-                    return value;
+                    
+                    // Return integers for all ticks for consistency
+                    return intValue;
                   }
                 }
               }
