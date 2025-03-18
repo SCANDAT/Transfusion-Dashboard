@@ -1579,17 +1579,17 @@
         const lineRange = maxLineY - minLineY;
         const ciRange = maxCI - minCI;
         
-        // Enhanced padding calculation with more space for CI bands
-        // Use at least 50% padding (25% on each side) or more if needed
-        const paddingFactor = Math.max(0.50, 
-                                      // Increase padding if CI bands are much wider than lines
-                                      dataRange > 2 * lineRange ? 0.60 : 0.50);
+        // More balanced padding calculation - enough for CI bands but not too compressed
+        // Use 15-20% padding instead of 50-60%
+        const paddingFactor = Math.max(0.15, 
+                                      // Slightly increase padding if CI bands are much wider than lines
+                                      dataRange > 2 * lineRange ? 0.20 : 0.15);
         
-        // Apply additional fixed padding for CI bounds to ensure they don't touch the edges
-        const ciExtraPadding = ciRange * 0.15; // 15% extra space around confidence intervals
+        // Apply smaller additional padding for CI bounds
+        const ciExtraPadding = ciRange * 0.05; // 5% extra space around confidence intervals
         
-        // Minimum absolute padding to ensure there's always some space
-        const minAbsolutePadding = 0.5;
+        // Calculate minimum absolute padding as a proportion of the data range
+        const minAbsolutePadding = dataRange * 0.05;
         
         const padding = Math.max(dataRange * paddingFactor + ciExtraPadding, minAbsolutePadding);
         const paddingTop = padding / 2;
