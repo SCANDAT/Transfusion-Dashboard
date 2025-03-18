@@ -1574,26 +1574,21 @@
           });
         });
         
-        // Calculate range of actual data points
+        // Data-driven approach: Use the actual min/max of confidence intervals with minimal padding
+        
+        // Calculate the overall range (distance between highest and lowest point)
         const dataRange = maxY - minY;
-        const lineRange = maxLineY - minLineY;
-        const ciRange = maxCI - minCI;
         
-        // More balanced padding calculation - enough for CI bands but not too compressed
-        // Use 15-20% padding instead of 50-60%
-        const paddingFactor = Math.max(0.15, 
-                                      // Slightly increase padding if CI bands are much wider than lines
-                                      dataRange > 2 * lineRange ? 0.20 : 0.15);
+        // Apply a constant small percentage padding (5% of the data range) to both top and bottom
+        const paddingAmount = dataRange * 0.05;
         
-        // Apply smaller additional padding for CI bounds
-        const ciExtraPadding = ciRange * 0.05; // 5% extra space around confidence intervals
+        // Ensure a minimum padding in case the range is very small
+        const minPadding = 0.05;
+        const actualPadding = Math.max(paddingAmount, minPadding);
         
-        // Calculate minimum absolute padding as a proportion of the data range
-        const minAbsolutePadding = dataRange * 0.05;
-        
-        const padding = Math.max(dataRange * paddingFactor + ciExtraPadding, minAbsolutePadding);
-        const paddingTop = padding / 2;
-        const paddingBottom = padding / 2;
+        // Apply the padding evenly to top and bottom
+        const paddingTop = actualPadding;
+        const paddingBottom = actualPadding;
         
         // Calculate initial bounds with padding
         let yMin = minY - paddingBottom;
