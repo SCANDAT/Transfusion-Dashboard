@@ -1541,6 +1541,8 @@
         // Find min and max values including confidence intervals
         let minY = Infinity;
         let maxY = -Infinity;
+        let minLineY = Infinity;
+        let maxLineY = -Infinity;
         
         // First pass: scan all datasets for extreme values
         chartData.datasets.forEach(dataset => {
@@ -1552,46 +1554,76 @@
           
           dataset.data.forEach(point => {
             if (point.y !== null && !isNaN(point.y)) {
-              // Apply extra weight to CI bounds to ensure they're fully visible
+              // Track both CI bounds and line data separately
               if (isCI) {
-                // Add extra padding for confidence intervals
                 minY = Math.min(minY, point.y);
                 maxY = Math.max(maxY, point.y);
               } else {
                 minY = Math.min(minY, point.y);
                 maxY = Math.max(maxY, point.y);
+                minLineY = Math.min(minLineY, point.y);
+                maxLineY = Math.max(maxLineY, point.y);
               }
             }
           });
         });
         
-        // Calculate appropriate padding
-        const range = maxY - minY;
-        // Increase padding to ensure all data points are visible
-        const padding = Math.max(range * 0.15, 0.5);
-
+        // Calculate range of actual data points
+        const dataRange = maxY - minY;
+        const lineRange = maxLineY - minLineY;
+        
+        // Enhanced padding calculation to ensure plots are centered
+        // Use at least 30% padding (15% on each side) or more if needed
+        const paddingFactor = Math.max(0.30, 
+                                      // Increase padding if CI bands are much wider than lines
+                                      dataRange > 2 * lineRange ? 0.40 : 0.30);
+        
+        const padding = dataRange * paddingFactor;
+        const paddingTop = padding / 2;
+        const paddingBottom = padding / 2;
+        
+        // Calculate initial bounds with padding
+        let yMin = minY - paddingBottom;
+        let yMax = maxY + paddingTop;
+        
         // If we're in absolute mode, clamp below 0
         if (!this.showDeltaPlot) {
-          minY = Math.max(0, minY - padding);
-          maxY = maxY + padding;
+          yMin = Math.max(0, yMin);
+          
+          // Special case for SpO2 in absolute mode
+          if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && yMax > 99) {
+            yMax = 100;
+          }
         } else {
-          // Delta mode => allow negative
-          minY = minY - padding;
-          maxY = maxY + padding;
-          // Force axis to include zero if data are all above/below
-          if (minY > 0) minY = 0;
-          if (maxY < 0) maxY = 0;
-        }
-
-        // Special case for SpO2 in absolute mode
-        if (!this.showDeltaPlot && this.selectedVital && this.selectedVital.trim() === 'SpO2' && maxY > 99) {
-          maxY = 100;
+          // Delta mode - ensure zero is included and centered when appropriate
+          if (minY > 0 && maxY > 0) {
+            // All values positive
+            yMin = -dataRange * 0.15; // Show a bit below zero
+          } else if (minY < 0 && maxY < 0) {
+            // All values negative
+            yMax = dataRange * 0.15; // Show a bit above zero
+          } else {
+            // Mixed positive and negative
+            // Ensure we have symmetric padding around zero if data is approximately symmetric
+            const absMax = Math.max(Math.abs(minY), Math.abs(maxY));
+            if (Math.abs(Math.abs(maxY) - Math.abs(minY)) < dataRange * 0.3) {
+              // Fairly symmetric data
+              yMin = -absMax * 1.15;
+              yMax = absMax * 1.15;
+            }
+          }
         }
         
         // Ensure minimum range to prevent cramped axis
-        if (maxY - minY < 5) {
-          minY = Math.max(0, minY - 2.5);
-          maxY = maxY + 2.5;
+        if (yMax - yMin < 5) {
+          const center = (yMax + yMin) / 2;
+          yMin = center - 2.5;
+          yMax = center + 2.5;
+          
+          // In absolute mode, maintain zero as lower bound
+          if (!this.showDeltaPlot) {
+            yMin = Math.max(0, yMin);
+          }
         }
         
         // Update chart title
