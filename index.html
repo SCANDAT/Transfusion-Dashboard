@@ -1580,15 +1580,18 @@
         const ciRange = maxCI - minCI;
         
         // Enhanced padding calculation with more space for CI bands
-        // Use at least 40% padding (20% on each side) or more if needed
-        const paddingFactor = Math.max(0.40, 
+        // Use at least 50% padding (25% on each side) or more if needed
+        const paddingFactor = Math.max(0.50, 
                                       // Increase padding if CI bands are much wider than lines
-                                      dataRange > 2 * lineRange ? 0.50 : 0.40);
+                                      dataRange > 2 * lineRange ? 0.60 : 0.50);
         
         // Apply additional fixed padding for CI bounds to ensure they don't touch the edges
-        const ciExtraPadding = ciRange * 0.10; // 10% extra space around confidence intervals
+        const ciExtraPadding = ciRange * 0.15; // 15% extra space around confidence intervals
         
-        const padding = dataRange * paddingFactor + ciExtraPadding;
+        // Minimum absolute padding to ensure there's always some space
+        const minAbsolutePadding = 0.5;
+        
+        const padding = Math.max(dataRange * paddingFactor + ciExtraPadding, minAbsolutePadding);
         const paddingTop = padding / 2;
         const paddingBottom = padding / 2;
         
@@ -1684,33 +1687,22 @@
                   display: true,
                   text: this.showDeltaPlot ? this.metaInfo.DeltaYLabel : this.metaInfo.yLabel
                 },
-                min: minY,
-                max: maxY,
+                min: yMin,
+                max: yMax,
+                // Always display at least 3 tick marks, even for SpO2
                 ticks: {
-                  // Improved callback to handle decimals properly and avoid duplicates
+                  // Always ensure a minimum of 3 ticks
+                  count: 5,
+                  // Consistent decimal handling for all values
                   callback: (value, index, values) => {
                     // Store used labels to avoid duplicates
                     if (!this.usedYLabels) this.usedYLabels = new Set();
                     
-                    // Format value intelligently based on range and magnitude
-                    let formattedValue;
+                    // Always use one decimal place for consistency
+                    let formattedValue = value.toFixed(1);
                     
-                    // For small values near zero, use decimal precision to avoid -0 and show small negative values
-                    if (Math.abs(value) < 1) {
-                      formattedValue = value.toFixed(1);
-                      // Avoid -0.0 display
-                      if (formattedValue === "-0.0") formattedValue = "0.0";
-                    } else {
-                      // For values with decimal parts close to .0 or .5, preserve one decimal
-                      const decimal = Math.abs(value) % 1;
-                      if (decimal < 0.1 || (decimal > 0.4 && decimal < 0.6) || decimal > 0.9) {
-                        // Round to 1 decimal for clear half-points or near-integers
-                        formattedValue = value.toFixed(1);
-                      } else {
-                        // Otherwise use integers for cleaner display
-                        formattedValue = value.toFixed(0);
-                      }
-                    }
+                    // Avoid -0.0 display
+                    if (formattedValue === "-0.0") formattedValue = "0.0";
                     
                     // Check if this formatted value would be a duplicate
                     if (this.usedYLabels.has(formattedValue)) {
@@ -1726,7 +1718,9 @@
                     }
                     
                     return formattedValue;
-                  }
+                  },
+                  // Ensure the y-axis is always displayed
+                  display: true
                 }
               }
             },
