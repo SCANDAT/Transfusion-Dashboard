@@ -1544,6 +1544,10 @@
         let minLineY = Infinity;
         let maxLineY = -Infinity;
         
+        // Track CI boundaries specifically
+        let minCI = Infinity;
+        let maxCI = -Infinity;
+        
         // First pass: scan all datasets for extreme values
         chartData.datasets.forEach(dataset => {
           // Check if this is a CI dataset by looking at label
@@ -1554,13 +1558,15 @@
           
           dataset.data.forEach(point => {
             if (point.y !== null && !isNaN(point.y)) {
-              // Track both CI bounds and line data separately
+              // Track all extremes
+              minY = Math.min(minY, point.y);
+              maxY = Math.max(maxY, point.y);
+              
+              // Track CI bounds separately
               if (isCI) {
-                minY = Math.min(minY, point.y);
-                maxY = Math.max(maxY, point.y);
+                minCI = Math.min(minCI, point.y);
+                maxCI = Math.max(maxCI, point.y);
               } else {
-                minY = Math.min(minY, point.y);
-                maxY = Math.max(maxY, point.y);
                 minLineY = Math.min(minLineY, point.y);
                 maxLineY = Math.max(maxLineY, point.y);
               }
@@ -1571,14 +1577,18 @@
         // Calculate range of actual data points
         const dataRange = maxY - minY;
         const lineRange = maxLineY - minLineY;
+        const ciRange = maxCI - minCI;
         
-        // Enhanced padding calculation to ensure plots are centered
-        // Use at least 30% padding (15% on each side) or more if needed
-        const paddingFactor = Math.max(0.30, 
+        // Enhanced padding calculation with more space for CI bands
+        // Use at least 40% padding (20% on each side) or more if needed
+        const paddingFactor = Math.max(0.40, 
                                       // Increase padding if CI bands are much wider than lines
-                                      dataRange > 2 * lineRange ? 0.40 : 0.30);
+                                      dataRange > 2 * lineRange ? 0.50 : 0.40);
         
-        const padding = dataRange * paddingFactor;
+        // Apply additional fixed padding for CI bounds to ensure they don't touch the edges
+        const ciExtraPadding = ciRange * 0.10; // 10% extra space around confidence intervals
+        
+        const padding = dataRange * paddingFactor + ciExtraPadding;
         const paddingTop = padding / 2;
         const paddingBottom = padding / 2;
         
@@ -1598,18 +1608,18 @@
           // Delta mode - ensure zero is included and centered when appropriate
           if (minY > 0 && maxY > 0) {
             // All values positive
-            yMin = -dataRange * 0.15; // Show a bit below zero
+            yMin = -dataRange * 0.20; // Show more below zero
           } else if (minY < 0 && maxY < 0) {
             // All values negative
-            yMax = dataRange * 0.15; // Show a bit above zero
+            yMax = dataRange * 0.20; // Show more above zero
           } else {
             // Mixed positive and negative
             // Ensure we have symmetric padding around zero if data is approximately symmetric
             const absMax = Math.max(Math.abs(minY), Math.abs(maxY));
             if (Math.abs(Math.abs(maxY) - Math.abs(minY)) < dataRange * 0.3) {
               // Fairly symmetric data
-              yMin = -absMax * 1.15;
-              yMax = absMax * 1.15;
+              yMin = -absMax * 1.25;
+              yMax = absMax * 1.25;
             }
           }
         }
@@ -1625,6 +1635,18 @@
             yMin = Math.max(0, yMin);
           }
         }
+        
+        // Round to clean values to avoid awkward tick labels
+        const roundToNearestHalf = (num) => {
+          // To nearest 0.5 for small values, to nearest 1 for larger values
+          const precision = Math.abs(num) < 10 ? 0.5 : 1;
+          return Math.round(num / precision) * precision;
+        };
+        
+        // Round bounds to nice values but preserve the spacing
+        const rawRange = yMax - yMin;
+        yMin = roundToNearestHalf(yMin);
+        yMax = yMin + roundToNearestHalf(rawRange);
         
         // Update chart title
         document.getElementById('chart-title').innerHTML = `
