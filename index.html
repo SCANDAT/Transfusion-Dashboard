@@ -1574,63 +1574,65 @@
           });
         });
         
-        // Data-driven approach: Use the actual min/max of confidence intervals with minimal padding
+        // Data-driven approach: Use actual min/max of confidence intervals with exactly 5% padding
         
-        // Calculate the overall range (distance between highest and lowest point)
+        // Get the original data range
         const dataRange = maxY - minY;
         
-        // Apply a constant small percentage padding (5% of the data range) to both top and bottom
+        // Important: Check if this is SpO2 data which often has very small variations
+        const isSpO2 = this.selectedVital && this.selectedVital.trim() === 'SpO2';
+        
+        // Calculate exact 5% padding of the data range
         const paddingAmount = dataRange * 0.05;
         
-        // Ensure a minimum padding in case the range is very small
-        const minPadding = 0.05;
-        const actualPadding = Math.max(paddingAmount, minPadding);
+        // Apply a much smaller absolute minimum padding for SpO2 in delta mode
+        let minPadding;
+        if (isSpO2 && this.showDeltaPlot) {
+          minPadding = 0.01; // Much smaller minimum for SpO2 delta plots
+        } else {
+          minPadding = 0.05; // Normal minimum for other plots
+        }
         
-        // Apply the padding evenly to top and bottom
-        const paddingTop = actualPadding;
-        const paddingBottom = actualPadding;
+        // Use exact 5% padding unless range is extremely small
+        const paddingTop = Math.max(paddingAmount, minPadding);
+        const paddingBottom = Math.max(paddingAmount, minPadding);
         
-        // Calculate initial bounds with padding
+        // Start with exact min/max of data plus the 5% padding
         let yMin = minY - paddingBottom;
         let yMax = maxY + paddingTop;
         
-        // If we're in absolute mode, clamp below 0
+        // Only apply these special conditions if needed
         if (!this.showDeltaPlot) {
+          // Absolute mode: ensure we don't go below 0
           yMin = Math.max(0, yMin);
           
-          // Special case for SpO2 in absolute mode
-          if (this.selectedVital && this.selectedVital.trim() === 'SpO2' && yMax > 99) {
+          // For absolute SpO2, cap at 100% as maximum physiological value
+          if (isSpO2 && yMax > 99) {
             yMax = 100;
           }
-        } else {
-          // Delta mode - ensure zero is included and centered when appropriate
-          if (minY > 0 && maxY > 0) {
-            // All values positive
-            yMin = -dataRange * 0.20; // Show more below zero
-          } else if (minY < 0 && maxY < 0) {
-            // All values negative
-            yMax = dataRange * 0.20; // Show more above zero
-          } else {
-            // Mixed positive and negative
-            // Ensure we have symmetric padding around zero if data is approximately symmetric
-            const absMax = Math.max(Math.abs(minY), Math.abs(maxY));
-            if (Math.abs(Math.abs(maxY) - Math.abs(minY)) < dataRange * 0.3) {
-              // Fairly symmetric data
-              yMin = -absMax * 1.25;
-              yMax = absMax * 1.25;
-            }
+        } else if (isSpO2) {
+          // For SpO2 delta plots, use a much tighter range - they have very small variations
+          // Only enforce a minimum range that's proportional to the actual data
+          const minSpO2Range = dataRange * 1.5; // Ensure range is at least 1.5x the data range
+          if (yMax - yMin < minSpO2Range) {
+            const center = (yMax + yMin) / 2;
+            yMin = center - (minSpO2Range / 2);
+            yMax = center + (minSpO2Range / 2);
           }
-        }
-        
-        // Ensure minimum range to prevent cramped axis
-        if (yMax - yMin < 5) {
-          const center = (yMax + yMin) / 2;
-          yMin = center - 2.5;
-          yMax = center + 2.5;
+        } else {
+          // For other vital signs in delta mode, ensure zero is always included if data is near zero
+          if (minY > 0 && minY < dataRange * 0.2) {
+            yMin = 0;
+          } else if (maxY < 0 && maxY > -dataRange * 0.2) {
+            yMax = 0;
+          }
           
-          // In absolute mode, maintain zero as lower bound
-          if (!this.showDeltaPlot) {
-            yMin = Math.max(0, yMin);
+          // Apply a minimum range for all other vitals (except SpO2)
+          const minRegularRange = 0.5; // Half a unit minimum range for most vitals
+          if (yMax - yMin < minRegularRange) {
+            const center = (yMax + yMin) / 2;
+            yMin = center - (minRegularRange / 2);
+            yMax = center + (minRegularRange / 2);
           }
         }
         
