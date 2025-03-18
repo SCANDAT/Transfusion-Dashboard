@@ -1665,19 +1665,45 @@
                 min: minY,
                 max: maxY,
                 ticks: {
-                  // Prevent duplicate labels and ensure integers for cleaner display
+                  // Improved callback to handle decimals properly and avoid duplicates
                   callback: (value, index, values) => {
-                    // Convert to integer for cleaner display
-                    const intValue = parseInt(value);
+                    // Store used labels to avoid duplicates
+                    if (!this.usedYLabels) this.usedYLabels = new Set();
                     
-                    // Prevent duplicate labels by checking if this value
-                    // is very close to the previous or next value
-                    if (index > 0 && Math.abs(value - values[index-1].value) < 0.1) {
-                      return null; // Skip this label to avoid duplication
+                    // Format value intelligently based on range and magnitude
+                    let formattedValue;
+                    
+                    // For small values near zero, use decimal precision to avoid -0 and show small negative values
+                    if (Math.abs(value) < 1) {
+                      formattedValue = value.toFixed(1);
+                      // Avoid -0.0 display
+                      if (formattedValue === "-0.0") formattedValue = "0.0";
+                    } else {
+                      // For values with decimal parts close to .0 or .5, preserve one decimal
+                      const decimal = Math.abs(value) % 1;
+                      if (decimal < 0.1 || (decimal > 0.4 && decimal < 0.6) || decimal > 0.9) {
+                        // Round to 1 decimal for clear half-points or near-integers
+                        formattedValue = value.toFixed(1);
+                      } else {
+                        // Otherwise use integers for cleaner display
+                        formattedValue = value.toFixed(0);
+                      }
                     }
                     
-                    // Return integers for all ticks for consistency
-                    return intValue;
+                    // Check if this formatted value would be a duplicate
+                    if (this.usedYLabels.has(formattedValue)) {
+                      return null; // Skip duplicate
+                    }
+                    
+                    // Add to used labels set
+                    this.usedYLabels.add(formattedValue);
+                    
+                    // Clear the set when we reach the end of the axis ticks
+                    if (index === values.length - 1) {
+                      this.usedYLabels.clear();
+                    }
+                    
+                    return formattedValue;
                   }
                 }
               }
