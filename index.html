@@ -57,6 +57,7 @@
     /* Table Styles */
     .stats-table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       margin-bottom: 20px;
       font-size: 0.9em;
@@ -65,6 +66,19 @@
       padding: 8px 12px;
       text-align: left;
       border-bottom: 1px solid #ddd;
+    }
+    /* Fixed column widths for alignment */
+    .stats-table th:first-child, 
+    .stats-table td:first-child {
+      width: 50%;
+    }
+    .stats-table th:nth-child(2), 
+    .stats-table td:nth-child(2) {
+      width: 25%;
+    }
+    .stats-table th:nth-child(3), 
+    .stats-table td:nth-child(3) {
+      width: 25%;
     }
     .stats-table th {
       background-color: #f0f9ff;
@@ -652,21 +666,21 @@
         const tabsContainer = document.createElement('div');
         tabsContainer.className = 'tabs';
         tabsContainer.innerHTML = `
-          <button class="tab-button active" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
-          <button class="tab-button" onclick="openTab(event, 'visualization-tab')">Visualization</button>
+          <button class="tab-button" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
+          <button class="tab-button active" onclick="openTab(event, 'visualization-tab')">Visualization</button>
         `;
         this.container.appendChild(tabsContainer);
         
         // Create tab content containers
         const descriptiveStatsTab = document.createElement('div');
         descriptiveStatsTab.id = 'descriptive-stats-tab';
-        descriptiveStatsTab.className = 'tab-content active';
+        descriptiveStatsTab.className = 'tab-content';
         descriptiveStatsTab.innerHTML = this.createDescriptiveStatsContent();
         this.container.appendChild(descriptiveStatsTab);
         
         const visualizationTab = document.createElement('div');
         visualizationTab.id = 'visualization-tab';
-        visualizationTab.className = 'tab-content';
+        visualizationTab.className = 'tab-content active';
         this.container.appendChild(visualizationTab);
         
         // Create controls (now inside visualization tab)
