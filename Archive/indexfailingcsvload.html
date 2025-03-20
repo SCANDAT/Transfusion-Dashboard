@@ -247,6 +247,22 @@
         this.lastSelectedCompFactor = null;
         this.lastSelectedVital = null;
         
+        // Stats data for descriptive statistics tables
+        this.statsData = {
+          uniquePatientsCount: null,
+          patientSexDistribution: null,
+          patientAgeStats: null, 
+          patientAgeGroups: null,
+          rbcUnitsPerPatient: null,
+          totalTransfusedUnits: null,
+          donorHbDistribution: null,
+          storageDistribution: null,
+          donorSexDistribution: null,
+          donorParityDistribution: null,
+          donationWeekdayDistribution: null
+        };
+        this.statsDataLoaded = false;
+        
         // Initialize dashboard
         this.initialize();
       }
@@ -257,6 +273,15 @@
           // Create UI structure
           this.createUI();
           
+          // Load descriptive stats
+          try {
+            await this.loadDescriptiveStats();
+          } catch (statsError) {
+            console.error('Descriptive stats loading error:', statsError);
+            this.logDebug(`Failed to load descriptive statistics: ${statsError.message}`);
+            // We'll still continue with hardcoded stats if loading fails
+          }
+          
           // Load index data - wrap in try/catch so the rest of the UI still works
           try {
             await this.loadIndexData();
@@ -265,9 +290,6 @@
             this.showError(`Failed to load visualization data: ${loadError.message}. Descriptive Statistics tab is still available.`);
             // Make sure the loading indicator is hidden
             this.hideLoading();
-            
-            // No need to switch to the Descriptive Statistics tab since it's already active
-            // The tab order has been reversed with Descriptive Statistics first and Visualization second
           }
           
         } catch (error) {
@@ -276,375 +298,887 @@
         }
       }
       
+      // New method to load all descriptive statistics CSV files
+      async loadDescriptiveStats() {
+        this.logDebug("Loading descriptive statistics from CSV files...");
+        try {
+          // Define all CSV files to load
+          const statsFiles = [
+            { name: 'uniquePatientsCount', file: 'unique_patients_count.csv' },
+            { name: 'patientSexDistribution', file: 'patient_sex_distribution.csv' },
+            { name: 'patientAgeStats', file: 'patient_age_stats.csv' },
+            { name: 'patientAgeGroups', file: 'patient_age_groups.csv' },
+            { name: 'rbcUnitsPerPatient', file: 'rbc_units_per_patient.csv' },
+            { name: 'totalTransfusedUnits', file: 'total_transfused_units.csv' },
+            { name: 'donorHbDistribution', file: 'donorhb_distribution.csv' },
+            { name: 'storageDistribution', file: 'storage_distribution.csv' },
+            { name: 'donorSexDistribution', file: 'donor_sex_distribution.csv' },
+            { name: 'donorParityDistribution', file: 'donor_parity_distribution.csv' },
+            { name: 'donationWeekdayDistribution', file: 'donation_weekday_distribution.csv' }
+          ];
+          
+          // Load each CSV file
+          for (const statsFile of statsFiles) {
+            this.logDebug(`Loading ${statsFile.file}...`);
+            try {
+              const response = await fetch(`./data/${statsFile.file}`);
+              if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+              }
+              const text = await response.text();
+              
+              // Parse CSV data
+              Papa.parse(text, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                  if (results.errors && results.errors.length > 0) {
+                    this.logDebug(`Warning: CSV parse issues in ${statsFile.file}: ${JSON.stringify(results.errors)}`);
+                  }
+                  this.statsData[statsFile.name] = results.data;
+                  this.logDebug(`Loaded ${results.data.length} rows from ${statsFile.file}`);
+                },
+                error: (error) => {
+                  throw new Error(`Parse error: ${error.message}`);
+                }
+              });
+            } catch (error) {
+              this.logDebug(`Error loading ${statsFile.file}: ${error.message}`);
+              // Continue loading other files even if one fails
+            }
+          }
+          
+          // Mark stats as loaded if we have at least some data
+          const hasAnyData = Object.values(this.statsData).some(data => data && data.length > 0);
+          this.statsDataLoaded = hasAnyData;
+          this.logDebug(`Descriptive statistics loaded: ${this.statsDataLoaded}`);
+          
+        } catch (error) {
+          this.logDebug(`Failed to load descriptive statistics: ${error.message}`);
+          throw error;
+        }
+      }
+      
+      // Utility method for number formatting
+      formatNumber(value) {
+        if (value === undefined || value === null) return '';
+        return new Intl.NumberFormat('en-US').format(value);
+      }
+      
+      // Utility method for percentage formatting
+      formatPercent(value) {
+        if (value === undefined || value === null) return '';
+        return `${parseFloat(value).toFixed(1)}%`;
+      }
+      
       // Create the descriptive statistics content
       createDescriptiveStatsContent() {
+        // If stats data isn't loaded, use hardcoded values
+        if (!this.statsDataLoaded) {
+          this.logDebug("Using hardcoded descriptive statistics");
+          return `
+            <div class="card">
+              <div class="stats-container">
+                <div class="stats-column">
+                  <div class="stats-table-title">Table 1a. Characteristics of Transfused Patients</div>
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Sex</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>Male</td>
+                        <td>4,032</td>
+                        <td>59.9%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Female</td>
+                        <td>2,704</td>
+                        <td>40.1%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Unique patients</td>
+                        <td>6,736</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Age</th>
+                        <th colspan="2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>Mean Age</td>
+                        <td colspan="2">62</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Median Age (IQR)</td>
+                        <td colspan="2">66 (54 - 74)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Age Distribution</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>&lt; 20 years old</td>
+                        <td>56</td>
+                        <td>0.8%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>20 - 29 years old</td>
+                        <td>327</td>
+                        <td>4.9%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>30 - 39 years old</td>
+                        <td>408</td>
+                        <td>6.1%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>40 - 49 years old</td>
+                        <td>516</td>
+                        <td>7.7%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>50 - 59 years old</td>
+                        <td>998</td>
+                        <td>14.8%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>60 - 69 years old</td>
+                        <td>1,781</td>
+                        <td>26.4%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>70 - 79 years old</td>
+                        <td>1,943</td>
+                        <td>28.8%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>&gt; 80 years old</td>
+                        <td>707</td>
+                        <td>10.5%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Unique patients</td>
+                        <td>6,736</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>RBC units received</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>1 unit</td>
+                        <td>3,807</td>
+                        <td>56.5%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>2 units</td>
+                        <td>1,431</td>
+                        <td>21.2%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>3 units</td>
+                        <td>618</td>
+                        <td>9.2%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>4 units</td>
+                        <td>302</td>
+                        <td>4.5%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>5 units</td>
+                        <td>172</td>
+                        <td>2.6%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>6 units</td>
+                        <td>95</td>
+                        <td>1.4%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>7 units</td>
+                        <td>81</td>
+                        <td>1.2%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>8 units</td>
+                        <td>37</td>
+                        <td>0.5%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>9 units</td>
+                        <td>41</td>
+                        <td>0.6%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>&gt;9 units</td>
+                        <td>152</td>
+                        <td>2.3%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Unique patients</td>
+                        <td>6,736</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div class="stats-column">
+                  <div class="stats-table-title">Table 1b. Characteristics of Transfused Blood Components</div>
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Donor Hemoglobin (g/L)</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>&lt; 125</td>
+                        <td>694</td>
+                        <td>4.7%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>125 - 139</td>
+                        <td>5,750</td>
+                        <td>39.2%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>140 - 154</td>
+                        <td>6,469</td>
+                        <td>44.1%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>155 - 169</td>
+                        <td>1,649</td>
+                        <td>11.3%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>&gt; 170</td>
+                        <td>93</td>
+                        <td>0.6%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Transfused RBC units</td>
+                        <td>14,655</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>RBC Storage Time (days)</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>&lt; 10 days</td>
+                        <td>2,601</td>
+                        <td>17.7%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>10-19 days</td>
+                        <td>7,523</td>
+                        <td>51.3%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>20-29 days</td>
+                        <td>3,259</td>
+                        <td>22.2%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>30-39 days</td>
+                        <td>1,096</td>
+                        <td>7.5%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>&gt; 40 days</td>
+                        <td>176</td>
+                        <td>1.2%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Transfused RBC units</td>
+                        <td>14,655</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Donor Sex</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>Male</td>
+                        <td>7,996</td>
+                        <td>54.6%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Female</td>
+                        <td>6,659</td>
+                        <td>45.4%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Transfused RBC units</td>
+                        <td>14,655</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Donor Parity</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>Nulliparous</td>
+                        <td>10,533</td>
+                        <td>71.9%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Parous</td>
+                        <td>4,122</td>
+                        <td>28.1%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Transfused RBC units</td>
+                        <td>14,655</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <table class="stats-table">
+                    <thead>
+                      <tr>
+                        <th>Weekday of donation</th>
+                        <th>Frequency</th>
+                        <th>Relative Frequency</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="italic">
+                        <td>Monday</td>
+                        <td>3,105</td>
+                        <td>21.2%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Tuesday</td>
+                        <td>3,229</td>
+                        <td>22.0%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Wednesday</td>
+                        <td>3,775</td>
+                        <td>25.8%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Thursday</td>
+                        <td>2,716</td>
+                        <td>18.5%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Friday</td>
+                        <td>1,117</td>
+                        <td>7.6%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Saturday</td>
+                        <td>712</td>
+                        <td>4.9%</td>
+                      </tr>
+                      <tr class="italic">
+                        <td>Sunday</td>
+                        <td>1</td>
+                        <td>0.0%</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Transfused RBC units</td>
+                        <td>14,655</td>
+                        <td>100.0%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        
+        // Using loaded stats data
+        this.logDebug("Generating descriptive statistics tables from CSV data");
+        
+        // Extract unique patients count for totals
+        const uniquePatientsCount = this.statsData.uniquePatientsCount && 
+          this.statsData.uniquePatientsCount.length > 0 ? 
+          this.statsData.uniquePatientsCount[0].No_of_Unique_Patients : 6736;
+        
+        // Extract total transfused units count for totals
+        const totalTransfusedUnits = this.statsData.totalTransfusedUnits && 
+          this.statsData.totalTransfusedUnits.length > 0 ? 
+          this.statsData.totalTransfusedUnits[0].No_of_Transfused_Units : 14655;
+        
+        // Generate Patient Sex Distribution table HTML
+        let patientSexHTML = '';
+        if (this.statsData.patientSexDistribution && this.statsData.patientSexDistribution.length > 0) {
+          // Calculate total excluding "U" category
+          const sexData = this.statsData.patientSexDistribution;
+          const definedSexData = sexData.filter(row => row.Patient_Sex !== 'U');
+          
+          // Find "U" category if it exists
+          const undefinedData = sexData.find(row => row.Patient_Sex === 'U');
+          const undefinedCount = undefinedData ? undefinedData.No_of_Patients : 0;
+          
+          // Calculate total of defined categories
+          const definedTotal = definedSexData.reduce((sum, row) => sum + row.No_of_Patients, 0);
+          
+          // Generate rows for each sex category
+          const rows = definedSexData.map(row => {
+            // Calculate proportional distribution of "U" category
+            const proportion = row.No_of_Patients / definedTotal;
+            const adjustedCount = Math.round(row.No_of_Patients + (undefinedCount * proportion));
+            const relativeFreq = (adjustedCount / uniquePatientsCount * 100);
+            
+            // Determine sex label
+            const sexLabel = row.Patient_Sex === 'M' || row.Patient_Sex === 1 ? 'Male' : 
+                           row.Patient_Sex === 'F' || row.Patient_Sex === 2 ? 'Female' : 
+                           row.Patient_Sex;
+            
+            return `
+              <tr class="italic">
+                <td>${sexLabel}</td>
+                <td>${this.formatNumber(adjustedCount)}</td>
+                <td>${this.formatPercent(relativeFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          patientSexHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Patient Sex</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+                <tr class="total-row">
+                  <td>Unique patients</td>
+                  <td>${this.formatNumber(uniquePatientsCount)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Generate Patient Age Stats table HTML
+        let patientAgeStatsHTML = '';
+        if (this.statsData.patientAgeStats && this.statsData.patientAgeStats.length > 0) {
+          const ageStats = this.statsData.patientAgeStats[0];
+          patientAgeStatsHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Patient Age</th>
+                  <th colspan="2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="italic">
+                  <td>Mean Age</td>
+                  <td colspan="2">${Math.round(ageStats.Mean_Age)}</td>
+                </tr>
+                <tr class="italic">
+                  <td>Median Age (IQR)</td>
+                  <td colspan="2">${Math.round(ageStats.Median_Age)} (${Math.round(ageStats.Q1_Age)} - ${Math.round(ageStats.Q3_Age)})</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Generate Patient Age Groups table HTML
+        let patientAgeGroupsHTML = '';
+        if (this.statsData.patientAgeGroups && this.statsData.patientAgeGroups.length > 0) {
+          // Sort age groups correctly
+          const ageOrder = ["<20", "20-", "30-", "40-", "50-", "60-", "70-", "80+"];
+          const sortedAgeGroups = [...this.statsData.patientAgeGroups].sort((a, b) => {
+            const aIdx = ageOrder.findIndex(prefix => a.Age_Group.startsWith(prefix));
+            const bIdx = ageOrder.findIndex(prefix => b.Age_Group.startsWith(prefix));
+            return aIdx - bIdx;
+          });
+          
+          const ageGroupRows = sortedAgeGroups.map(row => {
+            // Add "years old" text for consistency
+            const ageLabel = row.Age_Group.includes("years") ? 
+              row.Age_Group : 
+              row.Age_Group + (row.Age_Group === "80+" ? " years old" : " years old");
+            
+            return `
+              <tr class="italic">
+                <td>${ageLabel}</td>
+                <td>${this.formatNumber(row.COUNT)}</td>
+                <td>${this.formatPercent(row.PERCENT)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          patientAgeGroupsHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Patient Age Distribution</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ageGroupRows}
+                <tr class="total-row">
+                  <td>Unique patients</td>
+                  <td>${this.formatNumber(uniquePatientsCount)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Generate RBC Units Received table HTML
+        let rbcUnitsHTML = '';
+        if (this.statsData.rbcUnitsPerPatient && this.statsData.rbcUnitsPerPatient.length > 0) {
+          const unitRows = this.statsData.rbcUnitsPerPatient.map(row => {
+            // Parse as number to ensure consistent formatting
+            const relFreq = parseFloat(row.Relative_Frequency);
+            
+            return `
+              <tr class="italic">
+                <td>${row.Unit_Category}</td>
+                <td>${this.formatNumber(row.COUNT)}</td>
+                <td>${this.formatPercent(relFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          rbcUnitsHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>RBC units received</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${unitRows}
+                <tr class="total-row">
+                  <td>Unique patients</td>
+                  <td>${this.formatNumber(uniquePatientsCount)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Donor Hemoglobin
+        let donorHbHTML = '';
+        if (this.statsData.donorHbDistribution && this.statsData.donorHbDistribution.length > 0) {
+          // Sort Hb categories correctly
+          const hbOrder = ["<125", "125-139", "140-154", "155-169", ">=170"];
+          const sortedHbData = [...this.statsData.donorHbDistribution].sort((a, b) => {
+            const aIdx = hbOrder.indexOf(a.donorhb_category);
+            const bIdx = hbOrder.indexOf(b.donorhb_category);
+            return aIdx - bIdx;
+          });
+          
+          const hbRows = sortedHbData.map(row => {
+            const relativeFreq = (row.No_of_Transfused_Units / totalTransfusedUnits * 100);
+            
+            return `
+              <tr class="italic">
+                <td>${row.donorhb_category}</td>
+                <td>${this.formatNumber(row.No_of_Transfused_Units)}</td>
+                <td>${this.formatPercent(relativeFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          donorHbHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Donor Hemoglobin (g/L)</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${hbRows}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${this.formatNumber(totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Storage Time
+        let storageHTML = '';
+        if (this.statsData.storageDistribution && this.statsData.storageDistribution.length > 0) {
+          // Sort storage categories correctly
+          const storageOrder = ["<10", "10-19", "20-29", "30-39", ">=40"];
+          const sortedStorageData = [...this.statsData.storageDistribution].sort((a, b) => {
+            const aIdx = storageOrder.indexOf(a.storagecat);
+            const bIdx = storageOrder.indexOf(b.storagecat);
+            return aIdx - bIdx;
+          });
+          
+          const storageRows = sortedStorageData.map(row => {
+            const relativeFreq = (row.No_of_Transfused_Units / totalTransfusedUnits * 100);
+            // Add "days" text for consistency
+            const storageLabel = row.storagecat.includes("days") ? 
+              row.storagecat : 
+              row.storagecat + " days";
+              
+            return `
+              <tr class="italic">
+                <td>${storageLabel}</td>
+                <td>${this.formatNumber(row.No_of_Transfused_Units)}</td>
+                <td>${this.formatPercent(relativeFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          storageHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>RBC Storage Time (days)</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${storageRows}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${this.formatNumber(totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Donor Sex
+        let donorSexHTML = '';
+        if (this.statsData.donorSexDistribution && this.statsData.donorSexDistribution.length > 0) {
+          // Handle "U" category
+          const sexData = this.statsData.donorSexDistribution;
+          const definedSexData = sexData.filter(row => row.donor_sex_label !== 'U');
+          
+          // Find "U" category if it exists
+          const undefinedData = sexData.find(row => row.donor_sex_label === 'U');
+          const undefinedCount = undefinedData ? undefinedData.No_of_Transfused_Units : 0;
+          
+          // Calculate total of defined categories
+          const definedTotal = definedSexData.reduce((sum, row) => sum + row.No_of_Transfused_Units, 0);
+          
+          const sexRows = definedSexData.map(row => {
+            // Calculate proportional distribution of "U" category
+            const proportion = row.No_of_Transfused_Units / definedTotal;
+            const adjustedCount = Math.round(row.No_of_Transfused_Units + (undefinedCount * proportion));
+            const relativeFreq = (adjustedCount / totalTransfusedUnits * 100);
+            
+            // Determine sex label
+            const sexLabel = row.donor_sex_label === 'M' ? 'Male' : 
+                           row.donor_sex_label === 'F' ? 'Female' : 
+                           row.donor_sex_label;
+            
+            return `
+              <tr class="italic">
+                <td>${sexLabel}</td>
+                <td>${this.formatNumber(adjustedCount)}</td>
+                <td>${this.formatPercent(relativeFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          donorSexHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Donor Sex</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sexRows}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${this.formatNumber(totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Donor Parity
+        let donorParityHTML = '';
+        if (this.statsData.donorParityDistribution && this.statsData.donorParityDistribution.length > 0) {
+          const parityRows = this.statsData.donorParityDistribution.map(row => {
+            const relativeFreq = (row.No_of_Transfused_Units / totalTransfusedUnits * 100);
+            const parityLabel = row.donor_parity_label === '0' ? 'Nulliparous' : 
+                              row.donor_parity_label === '1' ? 'Parous' : 
+                              row.donor_parity_label === 'Unknown' ? 'Unknown' :
+                              row.donor_parity_label;
+                              
+            return `
+              <tr class="italic">
+                <td>${parityLabel}</td>
+                <td>${this.formatNumber(row.No_of_Transfused_Units)}</td>
+                <td>${this.formatPercent(relativeFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          donorParityHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Donor Parity</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${parityRows}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${this.formatNumber(totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Weekday of Donation
+        let weekdayHTML = '';
+        if (this.statsData.donationWeekdayDistribution && this.statsData.donationWeekdayDistribution.length > 0) {
+          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          
+          // Sort weekdays correctly
+          const weekdayData = [...this.statsData.donationWeekdayDistribution]
+            .sort((a, b) => a.wdy_donation - b.wdy_donation);
+          
+          const weekdayRows = weekdayData.map(row => {
+            const dayIndex = parseInt(row.wdy_donation) - 1;
+            const dayName = days[dayIndex] || `Day ${row.wdy_donation}`;
+            const relativeFreq = (row.No_of_Transfused_Units / totalTransfusedUnits * 100);
+            
+            return `
+              <tr class="italic">
+                <td>${dayName}</td>
+                <td>${this.formatNumber(row.No_of_Transfused_Units)}</td>
+                <td>${this.formatPercent(relativeFreq)}</td>
+              </tr>
+            `;
+          }).join('');
+          
+          weekdayHTML = `
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Weekday of donation</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${weekdayRows}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${this.formatNumber(totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Combine all tables into the final HTML
         return `
           <div class="card">
             <div class="stats-container">
               <div class="stats-column">
                 <div class="stats-table-title">Table 1a. Characteristics of Transfused Patients</div>
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Patient Sex</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>Male</td>
-                      <td>4,032</td>
-                      <td>59.9%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Female</td>
-                      <td>2,704</td>
-                      <td>40.1%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Unique patients</td>
-                      <td>6,736</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
-                
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Patient Age</th>
-                      <th colspan="2"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>Mean Age</td>
-                      <td colspan="2">62</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Median Age (IQR)</td>
-                      <td colspan="2">66 (54 - 74)</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Patient Age Distribution</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>&lt; 20 years old</td>
-                      <td>56</td>
-                      <td>0.8%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>20 - 29 years old</td>
-                      <td>327</td>
-                      <td>4.9%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>30 - 39 years old</td>
-                      <td>408</td>
-                      <td>6.1%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>40 - 49 years old</td>
-                      <td>516</td>
-                      <td>7.7%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>50 - 59 years old</td>
-                      <td>998</td>
-                      <td>14.8%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>60 - 69 years old</td>
-                      <td>1,781</td>
-                      <td>26.4%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>70 - 79 years old</td>
-                      <td>1,943</td>
-                      <td>28.8%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>&gt; 80 years old</td>
-                      <td>707</td>
-                      <td>10.5%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Unique patients</td>
-                      <td>6,736</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>RBC units received</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>1 unit</td>
-                      <td>3,807</td>
-                      <td>56.5%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>2 units</td>
-                      <td>1,431</td>
-                      <td>21.2%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>3 units</td>
-                      <td>618</td>
-                      <td>9.2%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>4 units</td>
-                      <td>302</td>
-                      <td>4.5%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>5 units</td>
-                      <td>172</td>
-                      <td>2.6%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>6 units</td>
-                      <td>95</td>
-                      <td>1.4%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>7 units</td>
-                      <td>81</td>
-                      <td>1.2%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>8 units</td>
-                      <td>37</td>
-                      <td>0.5%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>9 units</td>
-                      <td>41</td>
-                      <td>0.6%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>&gt;9 units</td>
-                      <td>152</td>
-                      <td>2.3%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Unique patients</td>
-                      <td>6,736</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
+                ${patientSexHTML}
+                ${patientAgeStatsHTML}
+                ${patientAgeGroupsHTML}
+                ${rbcUnitsHTML}
               </div>
               
               <div class="stats-column">
                 <div class="stats-table-title">Table 1b. Characteristics of Transfused Blood Components</div>
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Donor Hemoglobin (g/L)</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>&lt; 125</td>
-                      <td>694</td>
-                      <td>4.7%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>125 - 139</td>
-                      <td>5,750</td>
-                      <td>39.2%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>140 - 154</td>
-                      <td>6,469</td>
-                      <td>44.1%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>155 - 169</td>
-                      <td>1,649</td>
-                      <td>11.3%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>&gt; 170</td>
-                      <td>93</td>
-                      <td>0.6%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Transfused RBC units</td>
-                      <td>14,655</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>RBC Storage Time (days)</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>&lt; 10 days</td>
-                      <td>2,601</td>
-                      <td>17.7%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>10-19 days</td>
-                      <td>7,523</td>
-                      <td>51.3%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>20-29 days</td>
-                      <td>3,259</td>
-                      <td>22.2%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>30-39 days</td>
-                      <td>1,096</td>
-                      <td>7.5%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>&gt; 40 days</td>
-                      <td>176</td>
-                      <td>1.2%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Transfused RBC units</td>
-                      <td>14,655</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Donor Sex</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>Male</td>
-                      <td>7,996</td>
-                      <td>54.6%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Female</td>
-                      <td>6,659</td>
-                      <td>45.4%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Transfused RBC units</td>
-                      <td>14,655</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Donor Parity</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>Nulliparous</td>
-                      <td>10,533</td>
-                      <td>71.9%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Parous</td>
-                      <td>4,122</td>
-                      <td>28.1%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Transfused RBC units</td>
-                      <td>14,655</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table class="stats-table">
-                  <thead>
-                    <tr>
-                      <th>Weekday of donation</th>
-                      <th>Frequency</th>
-                      <th>Relative Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="italic">
-                      <td>Monday</td>
-                      <td>3,105</td>
-                      <td>21.2%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Tuesday</td>
-                      <td>3,229</td>
-                      <td>22.0%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Wednesday</td>
-                      <td>3,775</td>
-                      <td>25.8%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Thursday</td>
-                      <td>2,716</td>
-                      <td>18.5%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Friday</td>
-                      <td>1,117</td>
-                      <td>7.6%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Saturday</td>
-                      <td>712</td>
-                      <td>4.9%</td>
-                    </tr>
-                    <tr class="italic">
-                      <td>Sunday</td>
-                      <td>1</td>
-                      <td>0.0%</td>
-                    </tr>
-                    <tr class="total-row">
-                      <td>Transfused RBC units</td>
-                      <td>14,655</td>
-                      <td>100.0%</td>
-                    </tr>
-                  </tbody>
-                </table>
+                ${donorHbHTML}
+                ${storageHTML}
+                ${donorSexHTML}
+                ${donorParityHTML}
+                ${weekdayHTML}
               </div>
             </div>
           </div>
@@ -666,21 +1200,21 @@
         const tabsContainer = document.createElement('div');
         tabsContainer.className = 'tabs';
         tabsContainer.innerHTML = `
-          <button class="tab-button" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
-          <button class="tab-button active" onclick="openTab(event, 'visualization-tab')">Visualization</button>
+          <button class="tab-button active" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
+          <button class="tab-button" onclick="openTab(event, 'visualization-tab')">Visualization</button>
         `;
         this.container.appendChild(tabsContainer);
         
         // Create tab content containers
         const descriptiveStatsTab = document.createElement('div');
         descriptiveStatsTab.id = 'descriptive-stats-tab';
-        descriptiveStatsTab.className = 'tab-content';
+        descriptiveStatsTab.className = 'tab-content active';
         descriptiveStatsTab.innerHTML = this.createDescriptiveStatsContent();
         this.container.appendChild(descriptiveStatsTab);
         
         const visualizationTab = document.createElement('div');
         visualizationTab.id = 'visualization-tab';
-        visualizationTab.className = 'tab-content active';
+        visualizationTab.className = 'tab-content';
         this.container.appendChild(visualizationTab);
         
         // Create controls (now inside visualization tab)
@@ -1425,7 +1959,7 @@
           // Build the CI dataset(s) if user wants it and data is valid
           if (hasValidMainData) {
             if (this.showConfidenceInterval && hasValidCIData) {
-              // The “lower boundary” dataset (no fill)
+              // The "lower boundary" dataset (no fill)
               const lowerCIDataset = {
                 label: `${categoryLabel} (CI Lower)`,
                 data: sortedRows.map(row => ({
@@ -1439,7 +1973,7 @@
                 tension: 0.3
               };
               
-              // The “upper boundary” dataset (fill down to the lower)
+              // The "upper boundary" dataset (fill down to the lower)
               const upperCIDataset = {
                 label: `${categoryLabel} (CI Upper)`,
                 data: sortedRows.map(row => ({
@@ -1453,7 +1987,7 @@
                 tension: 0.3
               };
               
-              // Then the main “Full” line itself
+              // Then the main "Full" line itself
               const mainLineDataset = {
                 label: `${categoryLabel} (Full)`,
                 data: sortedRows.map(row => ({
