@@ -217,6 +217,16 @@ body {
     text-align: center; 
     margin-bottom: 20px; 
   }
+  
+  .dashboard-description {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  
+  .dashboard-description p {
+    line-height: 1.5;
+  }
   .controls { 
     margin-bottom: 20px; 
   }
