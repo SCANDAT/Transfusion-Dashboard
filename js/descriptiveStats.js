@@ -446,10 +446,10 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     const labels = filteredData.map(row => row.Patient_Sex);
     const values = filteredData.map(row => row.No_of_Patients);
     
-    // Color palette
+    // Color palette with swapped colors (pink for M, blue for F)
     const backgroundColors = [
-      'rgba(54, 162, 235, 0.7)',
-      'rgba(255, 99, 132, 0.7)',
+      'rgba(255, 99, 132, 0.7)',  // Pink
+      'rgba(54, 162, 235, 0.7)',  // Blue
       'rgba(255, 206, 86, 0.7)',
       'rgba(75, 192, 192, 0.7)',
       'rgba(153, 102, 255, 0.7)'
@@ -842,10 +842,10 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     const labels = filteredData.map(row => row.donor_sex_label);
     const values = filteredData.map(row => row.No_of_Transfused_Units);
     
-    // Colors for male/female
+    // Colors for male/female (swapped - pink for M, blue for F)
     const backgroundColors = [
-      'rgba(54, 162, 235, 0.7)',
-      'rgba(255, 99, 132, 0.7)'
+      'rgba(255, 99, 132, 0.7)',  // Pink
+      'rgba(54, 162, 235, 0.7)'   // Blue
     ];
     
     const ctx = document.getElementById(canvasId).getContext('2d');
