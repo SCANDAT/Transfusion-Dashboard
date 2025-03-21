@@ -16,6 +16,7 @@ The application follows a modular architecture with clear separation of concerns
 ```
 transfusion-dashboard/
 ├── index.html              # Main HTML entry point
+├── serve.py                # Local development server with CORS support
 ├── css/
 │   └── styles.css          # Extracted styles for all components
 ├── js/
@@ -187,5 +188,17 @@ The modular architecture makes it easy to extend existing visualizations or add 
 - The application attempts to handle both uppercase and lowercase file paths
 - Error handling includes user-friendly messages and detailed console logs
 - Responsive design adapts to different screen sizes
+- A local development server (serve.py) is provided to avoid CORS issues when testing locally
+
+## Development Utilities
+
+### Local Development Server (serve.py)
+
+The project includes a Python-based local development server to facilitate testing:
+- Serves files from the project directory with proper CORS headers
+- Helps avoid cross-origin restrictions when loading CSV files locally
+- Simple to use: run `python serve.py` and open `http://localhost:8000` in a browser
+
+This server is particularly useful for testing CSV data loading and visualization features that would otherwise be blocked by browser security restrictions when opening HTML files directly.
 
 This architecture is designed to be modular, maintainable, and extensible, supporting future development while maintaining a clear separation of concerns.

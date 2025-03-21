@@ -318,10 +318,19 @@ function createOrUpdatePlotPair(state, vitalParam, data) {
 function updateLoessPlot(state, vitalParam, data) {
   const ctx = document.getElementById(`loess-chart-${vitalParam}`).getContext('2d');
   
+  // Debug: Log data structure before preparing chart data
+  state.logDebug(`Preparing LOESS chart data for ${vitalParam} with ${data.data.length} rows`);
+  
   const chartData = prepareLoessChartData(
     data,
     state.timeRange
   );
+  
+  if (chartData) {
+    state.logDebug(`LOESS chart data prepared successfully with ${chartData.datasets[0].data.length} points`);
+  } else {
+    state.logDebug(`Failed to prepare LOESS chart data - null or empty result`);
+  }
   
   if (state.charts[`loess-${vitalParam}`]) {
     state.charts[`loess-${vitalParam}`].destroy();
@@ -469,17 +478,29 @@ async function loadLoessData(vitalParam, fileCase, logDebug) {
             return;
           }
           
+          // Debug: Log the first row to see its structure
+          if (results.data.length > 0) {
+            logDebug(`LOESS data first row example: ${JSON.stringify(results.data[0])}`);
+            logDebug(`Available columns: ${Object.keys(results.data[0]).join(', ')}`);
+          }
+          
           // Filter to just this vital parameter
           const filteredData = results.data.filter(row => 
             row.VitalParam && row.VitalParam.trim() === vitalParam
           );
           
           if (filteredData.length === 0) {
+            logDebug(`No rows matched vital parameter "${vitalParam}". Available parameters: ${[...new Set(results.data.map(row => row.VitalParam))].join(', ')}`);
             reject(new Error(`No LOESS data found for ${vitalParam}`));
             return;
           }
           
           logDebug(`Parsed ${filteredData.length} rows of LOESS data for ${vitalParam}`);
+          
+          // Debug: Log a sample of the filtered data
+          if (filteredData.length > 0) {
+            logDebug(`LOESS filtered data sample: TimeFromTransfusion=${filteredData[0].TimeFromTransfusion}, PredVal_Full=${filteredData[0].PredVal_Full}`);
+          }
           
           // Extract metadata from the first row
           const firstRow = filteredData[0];
@@ -648,12 +669,12 @@ function prepareLoessChartData(data, timeRange) {
   // Sort by time
   const sortedData = _.sortBy(filteredData, 'TimeFromTransfusion');
   
-  // Z-Score line
+  // Z-Score line - using PredVal_Full instead of ZScore which doesn't exist
   const dataset = {
     label: 'Z-Score',
     data: sortedData.map(row => ({
       x: row.TimeFromTransfusion,
-      y: row.ZScore
+      y: row.PredVal_Full
     })),
     borderColor: 'rgb(124, 58, 237)', // Purple for LOESS
     backgroundColor: 'rgba(124, 58, 237, 0.2)',
