@@ -346,17 +346,107 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
   }
   
   /**
+   * Redistribute 'U' (undefined) values proportionally to other categories
+   * @param {Array} data - The array of category data
+   * @param {string} categoryField - Field name for the category
+   * @param {string} countField - Field name for the count
+   * @returns {Array} The data with 'U' values redistributed
+   */
+  function redistributeUndefinedValues(data, categoryField, countField) {
+    // Clone the original data to avoid modifying it directly
+    const processedData = JSON.parse(JSON.stringify(data));
+    
+    // Find the 'U' row if it exists
+    const uRow = processedData.find(row => row[categoryField] === 'U');
+    if (!uRow) return processedData; // No 'U' row found
+    
+    // Calculate total count excluding 'U'
+    const relevantRows = processedData.filter(row => row[categoryField] !== 'U');
+    const totalExcludingU = relevantRows.reduce((sum, row) => sum + row[countField], 0);
+    
+    // If there are no other categories or total is 0, just return the original data
+    if (totalExcludingU === 0 || relevantRows.length === 0) return processedData;
+    
+    // Calculate distribution ratios and redistribute 'U' counts
+    const uCount = uRow[countField];
+    let remainingToDistribute = uCount;
+    
+    // Distribute proportionally, ensuring whole numbers
+    for (let i = 0; i < relevantRows.length; i++) {
+      const row = relevantRows[i];
+      const ratio = row[countField] / totalExcludingU;
+      
+      // If this is the last row, give it all remaining counts to ensure total stays the same
+      if (i === relevantRows.length - 1) {
+        row[countField] += remainingToDistribute;
+      } else {
+        // Calculate share with rounding to whole number
+        const share = Math.round(uCount * ratio);
+        row[countField] += share;
+        remainingToDistribute -= share;
+      }
+    }
+    
+    // Return the data without the 'U' row
+    return processedData.filter(row => row[categoryField] !== 'U');
+  }
+  
+  /**
+   * Rename category labels according to a mapping
+   * @param {Array} data - The array of category data
+   * @param {string} categoryField - Field name for the category
+   * @param {Object} labelMap - Mapping from original labels to new labels
+   * @returns {Array} The data with renamed categories
+   */
+  function renameCategories(data, categoryField, labelMap) {
+    return data.map(row => {
+      const newRow = {...row};
+      if (labelMap[row[categoryField]]) {
+        newRow[categoryField] = labelMap[row[categoryField]];
+      }
+      return newRow;
+    });
+  }
+  
+  /**
+   * Sort data by a custom order for categories
+   * @param {Array} data - The array of category data
+   * @param {string} categoryField - Field name for the category
+   * @param {Array} sortOrder - Array of category values in desired sort order
+   * @returns {Array} The sorted data
+   */
+  function sortByCustomOrder(data, categoryField, sortOrder) {
+    return [...data].sort((a, b) => {
+      const indexA = sortOrder.indexOf(a[categoryField]);
+      const indexB = sortOrder.indexOf(b[categoryField]);
+      
+      // If category not in sort order, put it at the end
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      
+      return indexA - indexB;
+    });
+  }
+  
+  /**
    * Generate HTML content for the descriptive statistics tab
    * @param {Object} statsData - Object containing all the descriptive statistics data
    * @returns {string} HTML content for the descriptive statistics tab
    */
   function createDescriptiveStatsContent(statsData) {
-    // Patient sex distribution HTML
+    // Process Patient sex distribution
     let patientSexHtml = '';
     let totalPatients = statsData.uniquePatientsCount;
     
     if (statsData.patientSexDistribution.length > 0) {
-      statsData.patientSexDistribution.forEach(row => {
+      // Redistribute 'U' values
+      const processedSexData = redistributeUndefinedValues(
+        statsData.patientSexDistribution, 
+        'Patient_Sex', 
+        'No_of_Patients'
+      );
+      
+      processedSexData.forEach(row => {
         if (row.Patient_Sex && row.Patient_Sex !== 'Total') {
           const percent = (row.No_of_Patients / totalPatients * 100).toFixed(1);
           patientSexHtml += `
@@ -391,10 +481,56 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
       `;
     }
     
-    // Patient age groups HTML
+    // Patient age groups HTML - Reorder and rename categories
     let ageGroupsHtml = '';
     if (statsData.patientAgeGroups.length > 0) {
-      statsData.patientAgeGroups.forEach(row => {
+      // Define the mapping for age group renaming
+      const ageGroupMap = {
+        '<20': '<20 years',
+        '20-': '20-29 years',
+        '30-': '30-39 years',
+        '40-': '40-49 years',
+        '50-': '50-59 years',
+        '60-': '60-69 years',
+        '70-': '70-79 years',
+        '80+': '80 years or older'
+      };
+      
+      // Define the custom sort order for age groups
+      const ageGroupSortOrder = [
+        '<20 years',
+        '20-29 years',
+        '30-39 years',
+        '40-49 years',
+        '50-59 years',
+        '60-69 years',
+        '70-79 years',
+        '80 years or older'
+      ];
+      
+      // Process the age groups data
+      const processedAgeGroups = redistributeUndefinedValues(
+        statsData.patientAgeGroups,
+        'Age_Group',
+        'COUNT'
+      );
+      
+      // Rename the categories
+      const renamedAgeGroups = renameCategories(
+        processedAgeGroups,
+        'Age_Group',
+        ageGroupMap
+      );
+      
+      // Sort by the custom order
+      const sortedAgeGroups = sortByCustomOrder(
+        renamedAgeGroups,
+        'Age_Group',
+        ageGroupSortOrder
+      );
+      
+      // Generate the HTML
+      sortedAgeGroups.forEach(row => {
         ageGroupsHtml += `
           <tr class="italic">
             <td>${row.Age_Group}</td>
@@ -408,7 +544,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     // RBC units per patient HTML
     let rbcUnitsHtml = '';
     if (statsData.rbcUnitsPerPatient.length > 0) {
-      statsData.rbcUnitsPerPatient.forEach(row => {
+      // Process for any potential 'U' values
+      const processedRbcUnits = redistributeUndefinedValues(
+        statsData.rbcUnitsPerPatient,
+        'Unit_Category',
+        'COUNT'
+      );
+      
+      processedRbcUnits.forEach(row => {
         rbcUnitsHtml += `
           <tr class="italic">
             <td>${row.Unit_Category}</td>
@@ -419,11 +562,48 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
       });
     }
     
-    // Donor hemoglobin distribution HTML
+    // Donor hemoglobin distribution HTML - Reorder and rename categories
     let donorhbHtml = '';
     if (statsData.donorhbDistribution.length > 0) {
       const totalUnits = statsData.totalTransfusedUnits;
-      statsData.donorhbDistribution.forEach(row => {
+      
+      // Define the mapping for hemoglobin category renaming
+      const hbCategoryMap = {
+        '>=170': '170 or higher'
+      };
+      
+      // Define the custom sort order for hemoglobin categories
+      const hbSortOrder = [
+        '<125',
+        '125-139',
+        '140-154',
+        '155-169',
+        '170 or higher'
+      ];
+      
+      // Process the hemoglobin data
+      const processedHbData = redistributeUndefinedValues(
+        statsData.donorhbDistribution,
+        'donorhb_category',
+        'No_of_Transfused_Units'
+      );
+      
+      // Rename the categories
+      const renamedHbData = renameCategories(
+        processedHbData,
+        'donorhb_category',
+        hbCategoryMap
+      );
+      
+      // Sort by the custom order
+      const sortedHbData = sortByCustomOrder(
+        renamedHbData,
+        'donorhb_category',
+        hbSortOrder
+      );
+      
+      // Generate the HTML
+      sortedHbData.forEach(row => {
         const percent = (row.No_of_Transfused_Units / totalUnits * 100).toFixed(1);
         donorhbHtml += `
           <tr class="italic">
@@ -435,11 +615,52 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
       });
     }
     
-    // Storage distribution HTML
+    // Storage distribution HTML - Reorder and rename categories
     let storageHtml = '';
     if (statsData.storageDistribution.length > 0) {
       const totalUnits = statsData.totalTransfusedUnits;
-      statsData.storageDistribution.forEach(row => {
+      
+      // Define the mapping for storage category renaming
+      const storageCategoryMap = {
+        '<10': '<10 days',
+        '10-19': '10-19 days',
+        '20-29': '20-29 days',
+        '30-39': '30-39 days',
+        '>=40': '40 days or more'
+      };
+      
+      // Define the custom sort order for storage categories
+      const storageSortOrder = [
+        '<10 days',
+        '10-19 days',
+        '20-29 days',
+        '30-39 days',
+        '40 days or more'
+      ];
+      
+      // Process the storage data
+      const processedStorageData = redistributeUndefinedValues(
+        statsData.storageDistribution,
+        'storagecat',
+        'No_of_Transfused_Units'
+      );
+      
+      // Rename the categories
+      const renamedStorageData = renameCategories(
+        processedStorageData,
+        'storagecat',
+        storageCategoryMap
+      );
+      
+      // Sort by the custom order
+      const sortedStorageData = sortByCustomOrder(
+        renamedStorageData,
+        'storagecat',
+        storageSortOrder
+      );
+      
+      // Generate the HTML
+      sortedStorageData.forEach(row => {
         const percent = (row.No_of_Transfused_Units / totalUnits * 100).toFixed(1);
         storageHtml += `
           <tr class="italic">
@@ -455,7 +676,15 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     let donorSexHtml = '';
     if (statsData.donorSexDistribution.length > 0) {
       const totalUnits = statsData.totalTransfusedUnits;
-      statsData.donorSexDistribution.forEach(row => {
+      
+      // Process the donor sex data to redistribute 'U' values
+      const processedDonorSexData = redistributeUndefinedValues(
+        statsData.donorSexDistribution,
+        'donor_sex_label',
+        'No_of_Transfused_Units'
+      );
+      
+      processedDonorSexData.forEach(row => {
         if (row.donor_sex_label && row.donor_sex_label !== 'Total') {
           const percent = (row.No_of_Transfused_Units / totalUnits * 100).toFixed(1);
           donorSexHtml += `
@@ -473,7 +702,15 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     let donorParityHtml = '';
     if (statsData.donorParityDistribution.length > 0) {
       const totalUnits = statsData.totalTransfusedUnits;
-      statsData.donorParityDistribution.forEach(row => {
+      
+      // Process the donor parity data to redistribute any 'U' values
+      const processedDonorParityData = redistributeUndefinedValues(
+        statsData.donorParityDistribution,
+        'donor_parity_label',
+        'No_of_Transfused_Units'
+      );
+      
+      processedDonorParityData.forEach(row => {
         const label = row.donor_parity_label === 0 ? 'Nulliparous' : 'Parous';
         const percent = (row.No_of_Transfused_Units / totalUnits * 100).toFixed(1);
         donorParityHtml += `
@@ -492,7 +729,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
       const totalUnits = statsData.totalTransfusedUnits;
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       
-      statsData.donationWeekdayDistribution.forEach(row => {
+      // Process the weekday data to redistribute any 'U' values
+      const processedWeekdayData = redistributeUndefinedValues(
+        statsData.donationWeekdayDistribution,
+        'wdy_donation',
+        'No_of_Transfused_Units'
+      );
+      
+      processedWeekdayData.forEach(row => {
         const dayIndex = row.wdy_donation - 1; // Adjust for 0-based array
         const dayName = days[dayIndex] || `Day ${row.wdy_donation}`;
         const percent = (row.No_of_Transfused_Units / totalUnits * 100).toFixed(1);
