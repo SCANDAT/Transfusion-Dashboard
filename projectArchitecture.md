@@ -17,12 +17,13 @@ The application follows a modular architecture with clear separation of concerns
 transfusion-dashboard/
 ├── index.html              # Main HTML entry point
 ├── css/
-│   └── styles.css          # Extracted styles
+│   └── styles.css          # Extracted styles for all components
 ├── js/
 │   ├── utils.js            # Utility functions used across modules
 │   ├── descriptiveStats.js # Descriptive statistics functionality
-│   ├── visualization.js    # RBC transfusions visualization
-│   ├── componentFactors.js # RBC component factors functionality
+│   ├── visualization.js    # Core visualization functionality (used by component factors)
+│   ├── componentFactors.js # RBC component factors visualization (donor, storage factors)
+│   ├── transfusions.js     # RBC transfusions visualization (transfusion effects)
 │   └── dashboard.js        # Main controller class
 └── data/
     └── *.csv               # Data files
@@ -54,7 +55,7 @@ Key functions:
 
 #### 3. Visualization Module (`visualization.js`)
 
-Handles the "RBC Transfusions" tab:
+Handles the core visualization functionality:
 - Creates visualization controls UI
 - Loads and processes time-series data
 - Prepares data for Chart.js
@@ -64,18 +65,36 @@ Key functions:
 - `loadVisualizationData()`
 - `prepareChartData()`
 - `renderChart()`
+- `createComparisonTags()`
 
 #### 4. Component Factors Module (`componentFactors.js`)
 
 Manages the "RBC Component Factors" tab:
-- Currently contains placeholder functionality
-- Designed for future extension
+- Provides UI for selecting vital parameters and component factors
+- Uses the visualization module for chart rendering
+- Shows effects of donor and storage factors on vital parameters
 
 Key functions:
 - `createRbcComponentFactorsContent()`
 - `initializeRbcComponentFactors()`
 
-#### 5. Utilities Module (`utils.js`)
+#### 5. Transfusions Module (`transfusions.js`)
+
+Handles the "RBC Transfusions" tab:
+- Creates a multi-parameter selection interface
+- Supports simultaneous display of multiple vital parameters
+- Shows transfusion effects with paired standard and LOESS plots
+- Provides time range and display option controls
+
+Key functions:
+- `createRbcTransfusionsContent()`
+- `initializeRbcTransfusions()`
+- `loadVitalParameterData()`
+- `createOrUpdatePlotPair()`
+- `prepareTransfusionChartData()`
+- `renderTransfusionChart()`
+
+#### 6. Utilities Module (`utils.js`)
 
 Common utilities shared across modules:
 - Tab navigation
@@ -94,10 +113,11 @@ Key functions:
 1. User loads the application
 2. Dashboard initializes and creates the UI structure
 3. Descriptive statistics are loaded from CSV files
-4. Index data is loaded for visualization options
-5. User interacts with tabs and controls
-6. Appropriate module processes the selections
-7. Visualizations are updated based on user input
+4. Index data is loaded for visualization options 
+5. Component factors and transfusions tabs are initialized
+6. User interacts with tabs and controls
+7. Appropriate module processes the selections
+8. Visualizations are updated based on user input
 
 ## CSV Data Processing
 
@@ -106,16 +126,30 @@ The application handles several types of CSV files:
 - Transfusion unit statistics
 - Donor characteristics
 - Time-series data for vital parameters
+- LOESS analysis data
 
 Files are loaded using the `safeFetch()` utility which attempts multiple path variations to handle case sensitivity issues. CSV parsing is done with PapaParse library.
 
-## Visualization Pipeline
+## Visualization Pipelines
+
+### Component Factors Visualization
 
 1. User selects vital parameter and component factor
 2. Data is loaded via `loadVisualizationData()`
 3. Data is processed via `prepareChartData()`
 4. Chart is rendered via `renderChart()`
 5. User can filter by comparison values and adjust display options
+
+### Transfusions Visualization
+
+1. User selects one or more vital parameters via button interface
+2. For each selected parameter:
+   - Transfusion data is loaded via `loadTransfusionData()`
+   - LOESS data is loaded via `loadLoessData()`
+   - Data is processed via `prepareTransfusionChartData()` and `prepareLoessChartData()`
+   - Charts are rendered via `renderTransfusionChart()` and `renderLoessChart()`
+3. User can adjust time range and display options
+4. All selected parameter charts update simultaneously
 
 ## Extension Points
 
@@ -133,12 +167,12 @@ To support new CSV formats:
 2. Extend the dashboard initialization to load and process the new data
 3. Create appropriate UI controls and visualization components
 
-### Enhancing the RBC Component Factors Tab
+### Adding New Visualization Features
 
-The componentFactors.js module is designed as a placeholder for future extension:
-1. Implement the placeholder functions
-2. Add specific visualizations for component factor analysis
-3. Connect to the dashboard via the existing initialization hooks
+The modular architecture makes it easy to extend existing visualizations or add new ones:
+1. To add new visualization modes, extend the appropriate module (transfusions.js or componentFactors.js)
+2. To add support for new chart types, create new rendering functions in the respective module
+3. To add new data transformations, implement new prepare functions following the established patterns
 
 ## Technical Dependencies
 

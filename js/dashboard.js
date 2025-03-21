@@ -100,6 +100,14 @@ class TransfusionDashboard {
           this.logDebug(`Failed to initialize RBC Component Factors tab: ${compFactorsError.message}`);
         }
         
+        // Initialize the RBC Transfusions tab
+        try {
+          initializeRbcTransfusions('rbc-transfusions-tab', this.fileCase, this.logDebug.bind(this));
+        } catch (transfusionsError) {
+          console.error('RBC Transfusions initialization error:', transfusionsError);
+          this.logDebug(`Failed to initialize RBC Transfusions tab: ${transfusionsError.message}`);
+        }
+        
       } catch (error) {
         console.error('Initialization error:', error);
         this.showError(`Failed to initialize dashboard: ${error.message}`);
@@ -119,13 +127,13 @@ class TransfusionDashboard {
       `;
       this.container.appendChild(header);
       
-      // Create tab navigation
+      // Create tab navigation (with swapped tab names to correct previous naming inconsistency)
       const tabsContainer = document.createElement('div');
       tabsContainer.className = 'tabs';
       tabsContainer.innerHTML = `
         <button class="tab-button active" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
-        <button class="tab-button" onclick="openTab(event, 'rbc-transfusions-tab')">RBC Transfusions</button>
         <button class="tab-button" onclick="openTab(event, 'rbc-component-factors-tab')">RBC Component Factors</button>
+        <button class="tab-button" onclick="openTab(event, 'rbc-transfusions-tab')">RBC Transfusions</button>
       `;
       this.container.appendChild(tabsContainer);
       
@@ -136,36 +144,38 @@ class TransfusionDashboard {
       descriptiveStatsTab.innerHTML = '<div class="loading">Loading descriptive statistics...</div>';
       this.container.appendChild(descriptiveStatsTab);
       
-      // RBC Transfusions tab (renamed from Visualization)
-      const rbcTransfusionsTab = document.createElement('div');
-      rbcTransfusionsTab.id = 'rbc-transfusions-tab';
-      rbcTransfusionsTab.className = 'tab-content';
-      this.container.appendChild(rbcTransfusionsTab);
+      // RBC Component Factors tab (previously incorrectly named "RBC Transfusions")
+      // This tab shows component factors (donor, storage) effects on vital parameters
+      const rbcComponentFactorsTab = document.createElement('div');
+      rbcComponentFactorsTab.id = 'rbc-component-factors-tab';
+      rbcComponentFactorsTab.className = 'tab-content';
+      this.container.appendChild(rbcComponentFactorsTab);
       
-      // Create controls (now inside RBC Transfusions tab)
+      // Create controls (now inside RBC Component Factors tab)
       const controls = document.createElement('div');
       controls.className = 'card controls';
       controls.innerHTML = createVisualizationControls();
-      rbcTransfusionsTab.appendChild(controls);
+      rbcComponentFactorsTab.appendChild(controls);
       
       // Create chart area
       const chartCard = document.createElement('div');
       chartCard.className = 'card';
       chartCard.innerHTML = createChartArea();
-      rbcTransfusionsTab.appendChild(chartCard);
+      rbcComponentFactorsTab.appendChild(chartCard);
       
       // Info card for Vital Parameters and RBC factors
       const infoCard = document.createElement('div');
       infoCard.className = 'card';
       infoCard.innerHTML = createInfoCard();
-      rbcTransfusionsTab.appendChild(infoCard);
+      rbcComponentFactorsTab.appendChild(infoCard);
       
-      // RBC Component Factors tab (new)
-      const rbcComponentFactorsTab = document.createElement('div');
-      rbcComponentFactorsTab.id = 'rbc-component-factors-tab';
-      rbcComponentFactorsTab.className = 'tab-content';
-      rbcComponentFactorsTab.innerHTML = createRbcComponentFactorsContent();
-      this.container.appendChild(rbcComponentFactorsTab);
+      // RBC Transfusions tab (new correct naming)
+      // This tab shows transfusion effects on vital parameters
+      const rbcTransfusionsTab = document.createElement('div');
+      rbcTransfusionsTab.id = 'rbc-transfusions-tab';
+      rbcTransfusionsTab.className = 'tab-content';
+      rbcTransfusionsTab.innerHTML = createRbcTransfusionsContent();
+      this.container.appendChild(rbcTransfusionsTab);
       
       // Add event listeners
       this.addEventListeners();
@@ -676,8 +686,13 @@ class TransfusionDashboard {
      * Show a loading indicator
      */
     showLoading() {
+      // Create a loading indicator if it doesn't already exist
       if (!this.loadingElement) {
-        this.loadingElement = showLoading(this.container);
+        const loadingElement = document.createElement('div');
+        loadingElement.className = 'loading';
+        loadingElement.textContent = 'Loading data...';
+        this.container.appendChild(loadingElement);
+        this.loadingElement = loadingElement;
       }
     }
     
@@ -685,8 +700,11 @@ class TransfusionDashboard {
      * Hide the loading indicator
      */
     hideLoading() {
-      hideLoading(this.loadingElement);
-      this.loadingElement = null;
+      // Check if loadingElement exists before removing it
+      if (this.loadingElement) {
+        this.loadingElement.remove();
+        this.loadingElement = null;
+      }
     }
     
     /**
