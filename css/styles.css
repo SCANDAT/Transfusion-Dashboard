@@ -1,0 +1,211 @@
+/* Main Layout */
+body { 
+    font-family: system-ui, sans-serif; 
+    margin: 0; 
+    padding: 20px; 
+    background: #f5f5f5; 
+  }
+  .container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+  }
+  .card { 
+    background: white; 
+    border-radius: 8px; 
+    padding: 20px; 
+    margin-bottom: 20px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+  }
+  
+  /* Tab Navigation Styles */
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+  .tab-button {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    margin-right: 10px;
+  }
+  .tab-button:hover {
+    color: #3b82f6;
+  }
+  .tab-button.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  
+  /* Table Styles */
+  .stats-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+  }
+  .stats-table th, .stats-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  /* Fixed column widths for alignment */
+  .stats-table th:first-child, 
+  .stats-table td:first-child {
+    width: 50%;
+  }
+  .stats-table th:nth-child(2), 
+  .stats-table td:nth-child(2) {
+    width: 25%;
+  }
+  .stats-table th:nth-child(3), 
+  .stats-table td:nth-child(3) {
+    width: 25%;
+  }
+  .stats-table th {
+    background-color: #f0f9ff;
+    font-weight: 600;
+  }
+  .stats-table tr:last-child td {
+    border-bottom: none;
+  }
+  .stats-table tr.total-row {
+    border-top: 2px solid #ddd;
+    font-weight: 600;
+  }
+  .stats-table tr.section-header {
+    background-color: #f0f9ff;
+    font-weight: 600;
+  }
+  .stats-table tr.italic td:first-child {
+    font-style: italic;
+  }
+  .stats-table-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .stats-column {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  /* Header and Layout Components */
+  .header { 
+    text-align: center; 
+    margin-bottom: 20px; 
+  }
+  .controls { 
+    margin-bottom: 20px; 
+  }
+  .row { 
+    display: flex; 
+    gap: 20px; 
+    flex-wrap: wrap; 
+  }
+  .col { 
+    flex: 1; 
+    min-width: 300px; 
+  }
+  
+  /* Form Elements */
+  .form-group { 
+    margin-bottom: 15px; 
+  }
+  .form-label { 
+    display: block; 
+    margin-bottom: 5px; 
+    font-weight: 500; 
+  }
+  .form-select, .form-input { 
+    width: 100%; 
+    padding: 8px; 
+    border-radius: 4px; 
+    border: 1px solid #ddd; 
+  }
+  .btn { 
+    background: #3b82f6; 
+    color: white; 
+    border: none; 
+    padding: 8px 16px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+  }
+  .btn:hover { 
+    background: #2563eb; 
+  }
+  .btn-sm { 
+    padding: 4px 8px; 
+    font-size: 0.9em; 
+  }
+  
+  /* Chart and Visualization Elements */
+  .chart-container { 
+    position: relative; 
+    height: 400px; 
+    width: 100%; 
+  }
+  .tag { 
+    display: inline-block; 
+    padding: 4px 8px; 
+    border-radius: 16px; 
+    margin-right: 5px; 
+    margin-bottom: 5px; 
+    cursor: pointer; 
+  }
+  .tag.active { 
+    background: #3b82f6; 
+    color: white; 
+  }
+  .tag:not(.active) { 
+    background: #e5e7eb; 
+  }
+  .info { 
+    padding: 10px; 
+    background: #f0f9ff; 
+    border-radius: 4px; 
+    margin-bottom: 10px; 
+  }
+  
+  /* Status and Feedback Elements */
+  .loading { 
+    text-align: center; 
+    padding: 50px; 
+    font-size: 18px; 
+    color: #666; 
+  }
+  .error { 
+    background: #fee2e2; 
+    color: #b91c1c; 
+    padding: 15px; 
+    border-radius: 6px; 
+    margin-bottom: 20px; 
+  }
+  .debug-info { 
+    font-family: monospace; 
+    font-size: 12px; 
+    background: #f8fafc; 
+    padding: 10px; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 4px; 
+    margin-top: 10px; 
+    white-space: pre-wrap; 
+  }
