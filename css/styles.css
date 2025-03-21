@@ -218,14 +218,19 @@ body {
     margin-bottom: 20px; 
   }
   
+  .scandat-highlight {
+    color: #8B0000; /* Dark red color */
+  }
+  
   .dashboard-description {
     max-width: 800px;
     margin: 0 auto;
-    text-align: left;
+    text-align: justify;
   }
   
   .dashboard-description p {
     line-height: 1.5;
+    margin: 0;
   }
   .controls { 
     margin-bottom: 20px; 

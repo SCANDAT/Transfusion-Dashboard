@@ -122,9 +122,9 @@ class TransfusionDashboard {
       const header = document.createElement('div');
       header.className = 'header';
       header.innerHTML = `
-        <h1>The SCANDAT ICU Transfusion Data Dashboard</h1>
+        <h1>The <span class="scandat-highlight">SCANDAT</span> ICU Transfusion Data Dashboard</h1>
         <div class="dashboard-description">
-          <p>This interactive dashboard visualizes the SCANDAT research group’s analysis of 14,655 RBC transfusions in 6,736 ICU patients from four Stockholm-region hospitals (January 2014 – November 2018). It examines how vital parameters change following transfusion and investigates whether variations in RBC component factors alter these trajectories.</p>
+          <p>This interactive dashboard visualizes the SCANDAT research group's analysis of 14,655 RBC transfusions in 6,736 ICU patients from four Stockholm-region hospitals (January 2014 – November 2018). It examines how vital parameters change following transfusion and investigates whether variations in RBC component factors alter these trajectories.</p>
         </div>
       `;
       this.container.appendChild(header);
