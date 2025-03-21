@@ -1429,7 +1429,6 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     return `
       <div class="card">
         <div class="stats-table-header">
-          <h2>Descriptive Statistics</h2>
           <button id="expand-all-charts-btn" class="expand-all-btn">Expand All Charts</button>
         </div>
         

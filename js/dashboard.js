@@ -122,18 +122,18 @@ class TransfusionDashboard {
       const header = document.createElement('div');
       header.className = 'header';
       header.innerHTML = `
-        <h1>Transfusion Data Visualization Dashboard</h1>
-        <p>Displaying time-series data after blood transfusion</p>
+        <h1>SCANDAT ICU Transfusion Data Dashboard</h1>
+        <p>This Dashboard is an interactive tool for communicating and visualizing the findings of the SCANDAT research group's analysis of 14,655 Red Blood Cell (RBC) transfusions administered to 6,736 unique patients in four Intensive Care Units (ICU) in the Stockholm region of Sweden between January 2014 and November 2018</p>
       `;
       this.container.appendChild(header);
       
-      // Create tab navigation (with swapped tab names to correct previous naming inconsistency)
+      // Create tab navigation with new tab names and order
       const tabsContainer = document.createElement('div');
       tabsContainer.className = 'tabs';
       tabsContainer.innerHTML = `
         <button class="tab-button active" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
-        <button class="tab-button" onclick="openTab(event, 'rbc-component-factors-tab')">RBC Component Factors</button>
-        <button class="tab-button" onclick="openTab(event, 'rbc-transfusions-tab')">RBC Transfusions</button>
+        <button class="tab-button" onclick="openTab(event, 'rbc-transfusions-tab')">RBC Transfusion Effects</button>
+        <button class="tab-button" onclick="openTab(event, 'rbc-component-factors-tab')">Component Factor Effects</button>
       `;
       this.container.appendChild(tabsContainer);
       
