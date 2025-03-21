@@ -317,6 +317,9 @@ class TransfusionDashboard {
       const descriptiveStatsTab = document.getElementById('descriptive-stats-tab');
       if (descriptiveStatsTab) {
         descriptiveStatsTab.innerHTML = createDescriptiveStatsContent(this.statsData);
+        
+        // Initialize the descriptive statistics charts after setting the content
+        initializeDescriptiveStatsCharts(this.statsData);
       }
     }
     

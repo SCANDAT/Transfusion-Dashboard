@@ -1,5 +1,7 @@
 /**
  * Descriptive statistics functionality for the Transfusion Dashboard
+ * 
+ * Includes data loading, processing, and visualization capabilities
  */
 
 /**
@@ -429,11 +431,683 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
   }
   
   /**
-   * Generate HTML content for the descriptive statistics tab
+   * Generate chart for patient sex distribution
+   * @param {Array} data - Patient sex distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @returns {Chart} The created chart instance
+   */
+  function createPatientSexChart(data, canvasId) {
+    // Process data for the chart
+    const processedData = redistributeUndefinedValues(data, 'Patient_Sex', 'No_of_Patients');
+    
+    // Filter out any total rows
+    const filteredData = processedData.filter(row => row.Patient_Sex !== 'Total');
+    
+    const labels = filteredData.map(row => row.Patient_Sex);
+    const values = filteredData.map(row => row.No_of_Patients);
+    
+    // Color palette
+    const backgroundColors = [
+      'rgba(54, 162, 235, 0.7)',
+      'rgba(255, 99, 132, 0.7)',
+      'rgba(255, 206, 86, 0.7)',
+      'rgba(75, 192, 192, 0.7)',
+      'rgba(153, 102, 255, 0.7)'
+    ];
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: backgroundColors.slice(0, labels.length),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${context.label}: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Patient Sex Distribution',
+            font: {
+              size: 16
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for patient age groups
+   * @param {Array} data - Patient age groups data
+   * @param {string} canvasId - ID of the canvas element
+   * @returns {Chart} The created chart instance
+   */
+  function createPatientAgeGroupsChart(data, canvasId) {
+    // Define the mapping for age group renaming
+    const ageGroupMap = {
+      '<20': '<20 years',
+      '20-': '20-29 years',
+      '30-': '30-39 years',
+      '40-': '40-49 years',
+      '50-': '50-59 years',
+      '60-': '60-69 years',
+      '70-': '70-79 years',
+      '80+': '80 years or older'
+    };
+    
+    // Define the custom sort order for age groups
+    const ageGroupSortOrder = [
+      '<20 years',
+      '20-29 years',
+      '30-39 years',
+      '40-49 years',
+      '50-59 years',
+      '60-69 years',
+      '70-79 years',
+      '80 years or older'
+    ];
+    
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'Age_Group', 'COUNT');
+    const renamedData = renameCategories(processedData, 'Age_Group', ageGroupMap);
+    const sortedData = sortByCustomOrder(renamedData, 'Age_Group', ageGroupSortOrder);
+    
+    const labels = sortedData.map(row => row.Age_Group);
+    const values = sortedData.map(row => row.COUNT);
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Number of Patients',
+          data: values,
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `Patients: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Patient Age Distribution',
+            font: {
+              size: 16
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Number of Patients'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Age Group'
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for RBC units per patient
+   * @param {Array} data - RBC units per patient data
+   * @param {string} canvasId - ID of the canvas element
+   * @returns {Chart} The created chart instance
+   */
+  function createRbcUnitsChart(data, canvasId) {
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'Unit_Category', 'COUNT');
+    
+    const labels = processedData.map(row => row.Unit_Category);
+    const values = processedData.map(row => row.COUNT);
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Number of Patients',
+          data: values,
+          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `Patients: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'RBC Units Received Per Patient',
+            font: {
+              size: 16
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Number of RBC Units'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Number of Patients'
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for donor hemoglobin distribution
+   * @param {Array} data - Donor hemoglobin distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @param {number} totalUnits - Total number of transfused units
+   * @returns {Chart} The created chart instance
+   */
+  function createDonorHbChart(data, canvasId, totalUnits) {
+    // Define the mapping for hemoglobin category renaming
+    const hbCategoryMap = {
+      '>=170': '170 or higher'
+    };
+    
+    // Define the custom sort order for hemoglobin categories
+    const hbSortOrder = [
+      '<125',
+      '125-139',
+      '140-154',
+      '155-169',
+      '170 or higher'
+    ];
+    
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'donorhb_category', 'No_of_Transfused_Units');
+    const renamedData = renameCategories(processedData, 'donorhb_category', hbCategoryMap);
+    const sortedData = sortByCustomOrder(renamedData, 'donorhb_category', hbSortOrder);
+    
+    const labels = sortedData.map(row => row.donorhb_category);
+    const values = sortedData.map(row => row.No_of_Transfused_Units);
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Number of Units',
+          data: values,
+          backgroundColor: 'rgba(255, 159, 64, 0.7)',
+          borderColor: 'rgba(255, 159, 64, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const percentage = Math.round((value / totalUnits) * 100);
+                return `Units: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Donor Hemoglobin Distribution',
+            font: {
+              size: 16
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Hemoglobin (g/L)'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Number of RBC Units'
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for storage distribution
+   * @param {Array} data - Storage distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @param {number} totalUnits - Total number of transfused units
+   * @returns {Chart} The created chart instance
+   */
+  function createStorageChart(data, canvasId, totalUnits) {
+    // Define the mapping for storage category renaming
+    const storageCategoryMap = {
+      '<10': '<10 days',
+      '10-19': '10-19 days',
+      '20-29': '20-29 days',
+      '30-39': '30-39 days',
+      '>=40': '40 days or more'
+    };
+    
+    // Define the custom sort order for storage categories
+    const storageSortOrder = [
+      '<10 days',
+      '10-19 days',
+      '20-29 days',
+      '30-39 days',
+      '40 days or more'
+    ];
+    
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'storagecat', 'No_of_Transfused_Units');
+    const renamedData = renameCategories(processedData, 'storagecat', storageCategoryMap);
+    const sortedData = sortByCustomOrder(renamedData, 'storagecat', storageSortOrder);
+    
+    const labels = sortedData.map(row => row.storagecat);
+    const values = sortedData.map(row => row.No_of_Transfused_Units);
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Number of Units',
+          data: values,
+          backgroundColor: 'rgba(153, 102, 255, 0.7)',
+          borderColor: 'rgba(153, 102, 255, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const percentage = Math.round((value / totalUnits) * 100);
+                return `Units: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'RBC Storage Time Distribution',
+            font: {
+              size: 16
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Storage Time'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Number of RBC Units'
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for donor sex distribution
+   * @param {Array} data - Donor sex distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @param {number} totalUnits - Total number of transfused units
+   * @returns {Chart} The created chart instance
+   */
+  function createDonorSexChart(data, canvasId, totalUnits) {
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'donor_sex_label', 'No_of_Transfused_Units');
+    
+    // Filter out total rows
+    const filteredData = processedData.filter(row => row.donor_sex_label !== 'Total');
+    
+    const labels = filteredData.map(row => row.donor_sex_label);
+    const values = filteredData.map(row => row.No_of_Transfused_Units);
+    
+    // Colors for male/female
+    const backgroundColors = [
+      'rgba(54, 162, 235, 0.7)',
+      'rgba(255, 99, 132, 0.7)'
+    ];
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: backgroundColors.slice(0, labels.length),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const percentage = Math.round((value / totalUnits) * 100);
+                return `${context.label}: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Donor Sex Distribution',
+            font: {
+              size: 16
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for donor parity distribution
+   * @param {Array} data - Donor parity distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @param {number} totalUnits - Total number of transfused units
+   * @returns {Chart} The created chart instance
+   */
+  function createDonorParityChart(data, canvasId, totalUnits) {
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'donor_parity_label', 'No_of_Transfused_Units');
+    
+    // Map numeric values to readable labels
+    const labels = processedData.map(row => row.donor_parity_label === 0 ? 'Nulliparous' : 'Parous');
+    const values = processedData.map(row => row.No_of_Transfused_Units);
+    
+    const backgroundColors = [
+      'rgba(255, 206, 86, 0.7)',
+      'rgba(75, 192, 192, 0.7)'
+    ];
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: backgroundColors.slice(0, labels.length),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const percentage = Math.round((value / totalUnits) * 100);
+                return `${context.label}: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Donor Parity Distribution',
+            font: {
+              size: 16
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Generate chart for donation weekday distribution
+   * @param {Array} data - Donation weekday distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @param {number} totalUnits - Total number of transfused units
+   * @returns {Chart} The created chart instance
+   */
+  function createWeekdayChart(data, canvasId, totalUnits) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    // Process the data
+    const processedData = redistributeUndefinedValues(data, 'wdy_donation', 'No_of_Transfused_Units');
+    
+    // Sort by day of week and create labels
+    const sortedData = [...processedData].sort((a, b) => a.wdy_donation - b.wdy_donation);
+    const dayNames = sortedData.map(row => days[row.wdy_donation - 1] || `Day ${row.wdy_donation}`);
+    const values = sortedData.map(row => row.No_of_Transfused_Units);
+    
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: dayNames,
+        datasets: [{
+          label: 'Number of Units',
+          data: values,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const percentage = Math.round((value / totalUnits) * 100);
+                return `Units: ${formatNumber(value)} (${percentage}%)`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Donation Weekday Distribution',
+            font: {
+              size: 16
+            }
+          }
+        },
+        scales: {
+          r: {
+            angleLines: {
+              display: true
+            },
+            suggestedMin: 0
+          }
+        }
+      }
+    });
+  }
+  
+  /**
+   * Initialize chart toggle functionality for a table
+   * @param {string} tableId - ID of the table element
+   * @param {string} chartId - ID of the chart container
+   * @param {string} canvasId - ID of the chart canvas
+   * @param {Function} chartFunction - Function to create the chart
+   * @param {Array} data - Data for the chart
+   * @param {Object} additionalParams - Additional parameters for the chart function
+   */
+  function initializeChartToggle(tableId, chartId, canvasId, chartFunction, data, additionalParams = {}) {
+    const table = document.getElementById(tableId);
+    const chartContainer = document.getElementById(chartId);
+    const toggleBtn = document.getElementById(`${tableId}-toggle`);
+    let chart = null;
+    
+    toggleBtn.addEventListener('click', function() {
+      const isExpanded = chartContainer.classList.contains('expanded');
+      
+      if (isExpanded) {
+        // Collapse chart
+        chartContainer.classList.remove('expanded');
+        toggleBtn.classList.remove('active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        // Expand chart
+        chartContainer.classList.add('expanded');
+        toggleBtn.classList.add('active');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        
+        // Create chart if it doesn't exist
+        if (!chart) {
+          chart = chartFunction(data, canvasId, ...Object.values(additionalParams));
+        }
+      }
+    });
+    
+    // Download functionality
+    const downloadBtn = document.getElementById(`${chartId}-download`);
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function() {
+        if (!chart) return;
+        
+        const canvas = document.getElementById(canvasId);
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `${canvasId}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+  }
+  
+  /**
+   * Setup toggle to expand/collapse all charts
+   * @param {string} buttonId - ID of the expand all button
+   * @param {Array} toggleBtnIds - Array of IDs of all toggle buttons
+   */
+  function setupExpandAllButton(buttonId, toggleBtnIds) {
+    const expandAllBtn = document.getElementById(buttonId);
+    let allExpanded = false;
+    
+    expandAllBtn.addEventListener('click', function() {
+      allExpanded = !allExpanded;
+      
+      // Update button state
+      if (allExpanded) {
+        expandAllBtn.classList.add('active');
+        expandAllBtn.textContent = 'Collapse All Charts';
+      } else {
+        expandAllBtn.classList.remove('active');
+        expandAllBtn.textContent = 'Expand All Charts';
+      }
+      
+      // Toggle all charts
+      toggleBtnIds.forEach(id => {
+        const toggleBtn = document.getElementById(id);
+        const chartId = toggleBtn.getAttribute('data-target');
+        const chartContainer = document.getElementById(chartId);
+        const isCurrentlyExpanded = chartContainer.classList.contains('expanded');
+        
+        if (allExpanded !== isCurrentlyExpanded) {
+          toggleBtn.click();
+        }
+      });
+    });
+  }
+  
+  /**
+   * Generate HTML content for the descriptive statistics tab with charts
    * @param {Object} statsData - Object containing all the descriptive statistics data
    * @returns {string} HTML content for the descriptive statistics tab
    */
   function createDescriptiveStatsContent(statsData) {
+    // Create an array to collect toggle button IDs for the expand all functionality
+    const toggleBtnIds = [];
     // Process Patient sex distribution
     let patientSexHtml = '';
     let totalPatients = statsData.uniquePatientsCount;
@@ -754,10 +1428,25 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     // Combine all HTML sections for the final output
     return `
       <div class="card">
+        <div class="stats-table-header">
+          <h2>Descriptive Statistics</h2>
+          <button id="expand-all-charts-btn" class="expand-all-btn">Expand All Charts</button>
+        </div>
+        
         <div class="stats-container">
           <div class="stats-column">
             <div class="stats-table-title">Table 1a. Characteristics of Transfused Patients</div>
-            <table class="stats-table">
+            
+            <!-- Patient Sex Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Patient Sex Distribution</h3>
+              <div class="chart-toggle">
+                <button id="patient-sex-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="patient-sex-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="patient-sex-table" class="stats-table">
               <thead>
                 <tr>
                   <th>Patient Sex</th>
@@ -774,6 +1463,12 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="patient-sex-chart-container" class="stat-chart-container">
+              <canvas id="patient-sex-chart"></canvas>
+              <div class="chart-controls">
+                <button id="patient-sex-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
             
             <table class="stats-table">
               <thead>
@@ -787,7 +1482,16 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               </tbody>
             </table>
   
-            <table class="stats-table">
+            <!-- Patient Age Distribution Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Patient Age Distribution</h3>
+              <div class="chart-toggle">
+                <button id="patient-age-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="patient-age-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="patient-age-table" class="stats-table">
               <thead>
                 <tr>
                   <th>Patient Age Distribution</th>
@@ -804,8 +1508,23 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="patient-age-chart-container" class="stat-chart-container">
+              <canvas id="patient-age-chart"></canvas>
+              <div class="chart-controls">
+                <button id="patient-age-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
   
-            <table class="stats-table">
+            <!-- RBC Units per Patient Table and Chart -->
+            <div class="stats-table-header">
+              <h3>RBC Units Received</h3>
+              <div class="chart-toggle">
+                <button id="rbc-units-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="rbc-units-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="rbc-units-table" class="stats-table">
               <thead>
                 <tr>
                   <th>RBC units received</th>
@@ -822,11 +1541,27 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="rbc-units-chart-container" class="stat-chart-container">
+              <canvas id="rbc-units-chart"></canvas>
+              <div class="chart-controls">
+                <button id="rbc-units-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
           </div>
           
           <div class="stats-column">
             <div class="stats-table-title">Table 1b. Characteristics of Transfused Blood Components</div>
-            <table class="stats-table">
+            
+            <!-- Donor Hemoglobin Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donor Hemoglobin Distribution</h3>
+              <div class="chart-toggle">
+                <button id="donor-hb-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-hb-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="donor-hb-table" class="stats-table">
               <thead>
                 <tr>
                   <th>Donor Hemoglobin (g/L)</th>
@@ -843,8 +1578,23 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="donor-hb-chart-container" class="stat-chart-container">
+              <canvas id="donor-hb-chart"></canvas>
+              <div class="chart-controls">
+                <button id="donor-hb-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
   
-            <table class="stats-table">
+            <!-- Storage Distribution Table and Chart -->
+            <div class="stats-table-header">
+              <h3>RBC Storage Time Distribution</h3>
+              <div class="chart-toggle">
+                <button id="storage-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="storage-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="storage-table" class="stats-table">
               <thead>
                 <tr>
                   <th>RBC Storage Time (days)</th>
@@ -861,8 +1611,23 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="storage-chart-container" class="stat-chart-container">
+              <canvas id="storage-chart"></canvas>
+              <div class="chart-controls">
+                <button id="storage-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
   
-            <table class="stats-table">
+            <!-- Donor Sex Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donor Sex Distribution</h3>
+              <div class="chart-toggle">
+                <button id="donor-sex-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-sex-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="donor-sex-table" class="stats-table">
               <thead>
                 <tr>
                   <th>Donor Sex</th>
@@ -879,8 +1644,23 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="donor-sex-chart-container" class="stat-chart-container">
+              <canvas id="donor-sex-chart"></canvas>
+              <div class="chart-controls">
+                <button id="donor-sex-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
   
-            <table class="stats-table">
+            <!-- Donor Parity Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donor Parity Distribution</h3>
+              <div class="chart-toggle">
+                <button id="donor-parity-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-parity-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="donor-parity-table" class="stats-table">
               <thead>
                 <tr>
                   <th>Donor Parity</th>
@@ -897,8 +1677,23 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="donor-parity-chart-container" class="stat-chart-container">
+              <canvas id="donor-parity-chart"></canvas>
+              <div class="chart-controls">
+                <button id="donor-parity-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
   
-            <table class="stats-table">
+            <!-- Weekday Distribution Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donation Weekday Distribution</h3>
+              <div class="chart-toggle">
+                <button id="weekday-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="weekday-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="weekday-table" class="stats-table">
               <thead>
                 <tr>
                   <th>Weekday of donation</th>
@@ -915,8 +1710,370 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
                 </tr>
               </tbody>
             </table>
+            <div id="weekday-chart-container" class="stat-chart-container">
+              <canvas id="weekday-chart"></canvas>
+              <div class="chart-controls">
+                <button id="weekday-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     `;
+    
+    // Add all toggle button IDs for the expand all button functionality
+    toggleBtnIds.push(
+      'patient-sex-table-toggle',
+      'patient-age-table-toggle',
+      'rbc-units-table-toggle',
+      'donor-hb-table-toggle',
+      'storage-table-toggle',
+      'donor-sex-table-toggle',
+      'donor-parity-table-toggle',
+      'weekday-table-toggle'
+    );
+    
+    const html = `
+      <div class="card">
+        <div class="stats-table-header">
+          <h2>Descriptive Statistics</h2>
+          <button id="expand-all-charts-btn" class="expand-all-btn">Expand All Charts</button>
+        </div>
+        
+        <div class="stats-container">
+          <div class="stats-column">
+            <div class="stats-table-title">Table 1a. Characteristics of Transfused Patients</div>
+            
+            <!-- Patient Sex Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Patient Sex Distribution</h3>
+              <div class="chart-toggle">
+                <button id="patient-sex-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="patient-sex-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="patient-sex-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>Patient Sex</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${patientSexHtml}
+                <tr class="total-row">
+                  <td>Unique patients</td>
+                  <td>${formatNumber(statsData.uniquePatientsCount)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="patient-sex-chart-container" class="stat-chart-container">
+              <canvas id="patient-sex-chart"></canvas>
+              <div class="chart-controls">
+                <button id="patient-sex-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+            
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Patient Age</th>
+                  <th colspan="2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ageStatsHtml}
+              </tbody>
+            </table>
+  
+            <!-- Patient Age Distribution Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Patient Age Distribution</h3>
+              <div class="chart-toggle">
+                <button id="patient-age-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="patient-age-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="patient-age-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>Patient Age Distribution</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ageGroupsHtml}
+                <tr class="total-row">
+                  <td>Unique patients</td>
+                  <td>${formatNumber(statsData.uniquePatientsCount)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="patient-age-chart-container" class="stat-chart-container">
+              <canvas id="patient-age-chart"></canvas>
+              <div class="chart-controls">
+                <button id="patient-age-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+  
+            <!-- RBC Units per Patient Table and Chart -->
+            <div class="stats-table-header">
+              <h3>RBC Units Received</h3>
+              <div class="chart-toggle">
+                <button id="rbc-units-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="rbc-units-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="rbc-units-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>RBC units received</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rbcUnitsHtml}
+                <tr class="total-row">
+                  <td>Unique patients</td>
+                  <td>${formatNumber(statsData.uniquePatientsCount)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="rbc-units-chart-container" class="stat-chart-container">
+              <canvas id="rbc-units-chart"></canvas>
+              <div class="chart-controls">
+                <button id="rbc-units-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="stats-column">
+            <div class="stats-table-title">Table 1b. Characteristics of Transfused Blood Components</div>
+            
+            <!-- Donor Hemoglobin Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donor Hemoglobin Distribution</h3>
+              <div class="chart-toggle">
+                <button id="donor-hb-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-hb-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="donor-hb-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>Donor Hemoglobin (g/L)</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${donorhbHtml}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${formatNumber(statsData.totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="donor-hb-chart-container" class="stat-chart-container">
+              <canvas id="donor-hb-chart"></canvas>
+              <div class="chart-controls">
+                <button id="donor-hb-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+  
+            <!-- Storage Distribution Table and Chart -->
+            <div class="stats-table-header">
+              <h3>RBC Storage Time Distribution</h3>
+              <div class="chart-toggle">
+                <button id="storage-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="storage-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="storage-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>RBC Storage Time (days)</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${storageHtml}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${formatNumber(statsData.totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="storage-chart-container" class="stat-chart-container">
+              <canvas id="storage-chart"></canvas>
+              <div class="chart-controls">
+                <button id="storage-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+  
+            <!-- Donor Sex Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donor Sex Distribution</h3>
+              <div class="chart-toggle">
+                <button id="donor-sex-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-sex-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="donor-sex-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>Donor Sex</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${donorSexHtml}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${formatNumber(statsData.totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="donor-sex-chart-container" class="stat-chart-container">
+              <canvas id="donor-sex-chart"></canvas>
+              <div class="chart-controls">
+                <button id="donor-sex-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+  
+            <!-- Donor Parity Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donor Parity Distribution</h3>
+              <div class="chart-toggle">
+                <button id="donor-parity-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-parity-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="donor-parity-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>Donor Parity</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${donorParityHtml}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${formatNumber(statsData.totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="donor-parity-chart-container" class="stat-chart-container">
+              <canvas id="donor-parity-chart"></canvas>
+              <div class="chart-controls">
+                <button id="donor-parity-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+  
+            <!-- Weekday Distribution Table and Chart -->
+            <div class="stats-table-header">
+              <h3>Donation Weekday Distribution</h3>
+              <div class="chart-toggle">
+                <button id="weekday-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="weekday-chart-container">
+                  <span class="chart-icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <table id="weekday-table" class="stats-table">
+              <thead>
+                <tr>
+                  <th>Weekday of donation</th>
+                  <th>Frequency</th>
+                  <th>Relative Frequency</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${weekdayHtml}
+                <tr class="total-row">
+                  <td>Transfused RBC units</td>
+                  <td>${formatNumber(statsData.totalTransfusedUnits)}</td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="weekday-chart-container" class="stat-chart-container">
+              <canvas id="weekday-chart"></canvas>
+              <div class="chart-controls">
+                <button id="weekday-chart-container-download" class="chart-download-btn">Download Chart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    return html;
+  }
+
+  /**
+   * Initialize all chart toggles and the expand all button
+   * @param {Object} statsData - Object containing all the descriptive statistics data
+   */
+  function initializeDescriptiveStatsCharts(statsData) {
+    const totalUnits = statsData.totalTransfusedUnits;
+    
+    // Initialize each chart toggle
+    initializeChartToggle('patient-sex-table', 'patient-sex-chart-container', 'patient-sex-chart', 
+                         createPatientSexChart, statsData.patientSexDistribution);
+    
+    initializeChartToggle('patient-age-table', 'patient-age-chart-container', 'patient-age-chart', 
+                         createPatientAgeGroupsChart, statsData.patientAgeGroups);
+    
+    initializeChartToggle('rbc-units-table', 'rbc-units-chart-container', 'rbc-units-chart', 
+                         createRbcUnitsChart, statsData.rbcUnitsPerPatient);
+    
+    initializeChartToggle('donor-hb-table', 'donor-hb-chart-container', 'donor-hb-chart', 
+                         createDonorHbChart, statsData.donorhbDistribution, { totalUnits });
+    
+    initializeChartToggle('storage-table', 'storage-chart-container', 'storage-chart', 
+                         createStorageChart, statsData.storageDistribution, { totalUnits });
+    
+    initializeChartToggle('donor-sex-table', 'donor-sex-chart-container', 'donor-sex-chart', 
+                         createDonorSexChart, statsData.donorSexDistribution, { totalUnits });
+    
+    initializeChartToggle('donor-parity-table', 'donor-parity-chart-container', 'donor-parity-chart', 
+                         createDonorParityChart, statsData.donorParityDistribution, { totalUnits });
+    
+    initializeChartToggle('weekday-table', 'weekday-chart-container', 'weekday-chart', 
+                         createWeekdayChart, statsData.donationWeekdayDistribution, { totalUnits });
+    
+    // Initialize the expand all button
+    const toggleBtnIds = [
+      'patient-sex-table-toggle',
+      'patient-age-table-toggle',
+      'rbc-units-table-toggle',
+      'donor-hb-table-toggle',
+      'storage-table-toggle',
+      'donor-sex-table-toggle',
+      'donor-parity-table-toggle',
+      'weekday-table-toggle'
+    ];
+    
+    setupExpandAllButton('expand-all-charts-btn', toggleBtnIds);
   }

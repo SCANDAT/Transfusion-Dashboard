@@ -313,3 +313,98 @@ body {
     margin-top: 10px; 
     white-space: pre-wrap; 
   }
+  
+  /* Descriptive Statistics Chart Styles */
+  .chart-toggle {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+  }
+  
+  .chart-toggle-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+  }
+  
+  .chart-toggle-btn:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  .chart-toggle-btn.active {
+    color: white;
+    background-color: #3b82f6;
+  }
+  
+  .chart-icon {
+    font-size: 16px;
+  }
+  
+  .stat-chart-container {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease-out;
+    margin: 0 0 15px 0;
+    background-color: #f9fafb;
+    border-radius: 4px;
+  }
+  
+  .stat-chart-container.expanded {
+    height: 300px;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .chart-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  
+  .chart-download-btn {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .chart-download-btn:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+  }
+  
+  .stats-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .expand-all-btn {
+    background: none;
+    border: 1px solid #3b82f6;
+    color: #3b82f6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  
+  .expand-all-btn:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  .expand-all-btn.active {
+    background-color: #3b82f6;
+    color: white;
+  }
