@@ -484,11 +484,7 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             }
           },
           title: {
-            display: true,
-            text: 'Patient Sex Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         }
       }
@@ -566,11 +562,7 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'Patient Age Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         },
         scales: {
@@ -635,11 +627,7 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'RBC Units Received Per Patient',
-            font: {
-              size: 16
-            }
+            display: false
           }
         },
         scales: {
@@ -721,11 +709,7 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'Donor Hemoglobin Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         },
         scales: {
@@ -811,11 +795,7 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'RBC Storage Time Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         },
         scales: {
@@ -888,11 +868,7 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'Donor Sex Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         }
       }
@@ -914,9 +890,10 @@ function createPatientAgeGroupsChart(data, canvasId) {
     const labels = processedData.map(row => row.donor_parity_label === 0 ? 'Nulliparous' : 'Parous');
     const values = processedData.map(row => row.No_of_Transfused_Units);
     
+    // Use same color scheme as donor sex chart - blue for nulliparous, red for parous
     const backgroundColors = [
-      'rgba(170, 15, 25, 0.8)',   // Dark red for nulliparous
-      'rgba(120, 15, 25, 0.8)'    // Slightly lighter red for parous
+      'rgba(25, 80, 150, 0.8)',   // Dark blue for nulliparous (like male)
+      'rgba(170, 15, 25, 0.8)'    // Dark red for parous (like female)
     ];
     
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -947,11 +924,7 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'Donor Parity Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         }
       }
@@ -960,6 +933,13 @@ function createPatientAgeGroupsChart(data, canvasId) {
   
   /**
    * Generate chart for donation weekday distribution
+   * @param {Array} data - Donation weekday distribution data
+   * @param {string} canvasId - ID of the canvas element
+   * @param {number} totalUnits - Total number of transfused units
+   * @returns {Chart} The created chart instance
+   */
+  /**
+   * Generate chart for donation weekday distribution as a bar chart
    * @param {Array} data - Donation weekday distribution data
    * @param {string} canvasId - ID of the canvas element
    * @param {number} totalUnits - Total number of transfused units
@@ -978,23 +958,25 @@ function createPatientAgeGroupsChart(data, canvasId) {
     
     const ctx = document.getElementById(canvasId).getContext('2d');
     return new Chart(ctx, {
-      type: 'radar',
+      type: 'bar',
       data: {
         labels: dayNames,
         datasets: [{
           label: 'Number of Units',
           data: values,
-          backgroundColor: 'rgba(170, 15, 25, 0.2)', // Darker blood red with transparency
+          backgroundColor: 'rgba(170, 15, 25, 0.8)', // Darker blood red
           borderColor: 'rgba(170, 15, 25, 1)',
-          borderWidth: 2,
-          pointBackgroundColor: 'rgba(170, 15, 25, 1)',
-          pointRadius: 4
+          borderWidth: 1
         }]
       },
       options: {
+        indexAxis: 'y', // Horizontal bar chart with weekdays on y-axis
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            display: false // Remove legend
+          },
           tooltip: {
             callbacks: {
               label: function(context) {
@@ -1005,19 +987,21 @@ function createPatientAgeGroupsChart(data, canvasId) {
             }
           },
           title: {
-            display: true,
-            text: 'Donation Weekday Distribution',
-            font: {
-              size: 16
-            }
+            display: false
           }
         },
         scales: {
-          r: {
-            angleLines: {
-              display: true
-            },
-            suggestedMin: 0
+          x: {
+            title: {
+              display: true,
+              text: 'Number of Units'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Weekday'
+            }
           }
         }
       }

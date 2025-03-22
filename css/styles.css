@@ -838,7 +838,7 @@ p {
   cursor: pointer;
   transition: all var(--transition-normal);
   position: absolute;
-  bottom: var(--space-sm);
+  top: var(--space-sm);
   right: var(--space-sm);
   z-index: 100;
   box-shadow: var(--shadow-sm);
