@@ -446,10 +446,10 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     const labels = filteredData.map(row => row.Patient_Sex);
     const values = filteredData.map(row => row.No_of_Patients);
     
-    // Color palette with swapped colors (pink for M, blue for F)
+    // Color palette with dark red for F, dark blue for M
     const backgroundColors = [
-      'rgba(255, 99, 132, 0.7)',  // Pink
-      'rgba(54, 162, 235, 0.7)',  // Blue
+      'rgba(170, 15, 25, 0.8)',   // Dark red (female)
+      'rgba(25, 80, 150, 0.8)',   // Dark blue (male)
       'rgba(255, 206, 86, 0.7)',
       'rgba(75, 192, 192, 0.7)',
       'rgba(153, 102, 255, 0.7)'
@@ -501,7 +501,7 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
    * @param {string} canvasId - ID of the canvas element
    * @returns {Chart} The created chart instance
    */
-  function createPatientAgeGroupsChart(data, canvasId) {
+function createPatientAgeGroupsChart(data, canvasId) {
     // Define the mapping for age group renaming
     const ageGroupMap = {
       '<20': '<20 years',
@@ -542,8 +542,8 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         datasets: [{
           label: 'Number of Patients',
           data: values,
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
-          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(170, 15, 25, 0.8)', // Darker blood red
+          borderColor: 'rgba(170, 15, 25, 1)',
           borderWidth: 1
         }]
       },
@@ -552,6 +552,9 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            display: false // Remove legend
+          },
           tooltip: {
             callbacks: {
               label: function(context) {
@@ -609,8 +612,8 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         datasets: [{
           label: 'Number of Patients',
           data: values,
-          backgroundColor: 'rgba(75, 192, 192, 0.7)',
-          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(170, 15, 25, 0.8)', // Darker blood red
+          borderColor: 'rgba(170, 15, 25, 1)',
           borderWidth: 1
         }]
       },
@@ -618,6 +621,9 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            display: false // Remove legend
+          },
           tooltip: {
             callbacks: {
               label: function(context) {
@@ -693,8 +699,8 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         datasets: [{
           label: 'Number of Units',
           data: values,
-          backgroundColor: 'rgba(255, 159, 64, 0.7)',
-          borderColor: 'rgba(255, 159, 64, 1)',
+          backgroundColor: 'rgba(170, 15, 25, 0.8)', // Darker blood red
+          borderColor: 'rgba(170, 15, 25, 1)',
           borderWidth: 1
         }]
       },
@@ -702,6 +708,9 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            display: false // Remove legend
+          },
           tooltip: {
             callbacks: {
               label: function(context) {
@@ -780,8 +789,8 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         datasets: [{
           label: 'Number of Units',
           data: values,
-          backgroundColor: 'rgba(153, 102, 255, 0.7)',
-          borderColor: 'rgba(153, 102, 255, 1)',
+          backgroundColor: 'rgba(170, 15, 25, 0.8)', // Darker blood red
+          borderColor: 'rgba(170, 15, 25, 1)',
           borderWidth: 1
         }]
       },
@@ -789,6 +798,9 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            display: false // Remove legend
+          },
           tooltip: {
             callbacks: {
               label: function(context) {
@@ -842,10 +854,10 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     const labels = filteredData.map(row => row.donor_sex_label);
     const values = filteredData.map(row => row.No_of_Transfused_Units);
     
-    // Colors for male/female (swapped - pink for M, blue for F)
+    // Colors for male/female (dark red for F, dark blue for M)
     const backgroundColors = [
-      'rgba(255, 99, 132, 0.7)',  // Pink
-      'rgba(54, 162, 235, 0.7)'   // Blue
+      'rgba(170, 15, 25, 0.8)',   // Dark red (female)
+      'rgba(25, 80, 150, 0.8)'    // Dark blue (male)
     ];
     
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -903,8 +915,8 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     const values = processedData.map(row => row.No_of_Transfused_Units);
     
     const backgroundColors = [
-      'rgba(255, 206, 86, 0.7)',
-      'rgba(75, 192, 192, 0.7)'
+      'rgba(170, 15, 25, 0.8)',   // Dark red for nulliparous
+      'rgba(120, 15, 25, 0.8)'    // Slightly lighter red for parous
     ];
     
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -972,10 +984,10 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
         datasets: [{
           label: 'Number of Units',
           data: values,
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(170, 15, 25, 0.2)', // Darker blood red with transparency
+          borderColor: 'rgba(170, 15, 25, 1)',
           borderWidth: 2,
-          pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+          pointBackgroundColor: 'rgba(170, 15, 25, 1)',
           pointRadius: 4
         }]
       },
@@ -1027,40 +1039,36 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
     const toggleBtn = document.getElementById(`${tableId}-toggle`);
     let chart = null;
     
-    toggleBtn.addEventListener('click', function() {
-      const isExpanded = chartContainer.classList.contains('expanded');
+  toggleBtn.addEventListener('click', function() {
+    const isExpanded = chartContainer.classList.contains('expanded');
+    
+    if (isExpanded) {
+      // Collapse chart
+      chartContainer.classList.remove('expanded');
+      toggleBtn.classList.remove('active');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+    } else {
+      // Expand chart
+      chartContainer.classList.add('expanded');
+      toggleBtn.classList.add('active');
+      toggleBtn.setAttribute('aria-expanded', 'true');
       
-      if (isExpanded) {
-        // Collapse chart
-        chartContainer.classList.remove('expanded');
-        toggleBtn.classList.remove('active');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      } else {
-        // Expand chart
-        chartContainer.classList.add('expanded');
-        toggleBtn.classList.add('active');
-        toggleBtn.setAttribute('aria-expanded', 'true');
-        
-        // Create chart if it doesn't exist
-        if (!chart) {
-          chart = chartFunction(data, canvasId, ...Object.values(additionalParams));
-        }
+      // Create chart if it doesn't exist
+      if (!chart) {
+        chart = chartFunction(data, canvasId, ...Object.values(additionalParams));
       }
+    }
     });
     
-    // Download functionality
+    // Download functionality using SVG
     const downloadBtn = document.getElementById(`${chartId}-download`);
     if (downloadBtn) {
       downloadBtn.addEventListener('click', function() {
         if (!chart) return;
         
-        const canvas = document.getElementById(canvasId);
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `${canvasId}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Use the SVG export function from utils.js
+        const filename = canvasId.replace(/-/g, '_');
+        exportChartAsSVG(chart, filename);
       });
     }
   }
@@ -1441,7 +1449,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>Patient Sex Distribution</h3>
               <div class="chart-toggle">
                 <button id="patient-sex-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="patient-sex-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1465,7 +1477,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="patient-sex-chart-container" class="stat-chart-container">
               <canvas id="patient-sex-chart"></canvas>
               <div class="chart-controls">
-                <button id="patient-sex-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="patient-sex-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
             
@@ -1486,7 +1505,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>Patient Age Distribution</h3>
               <div class="chart-toggle">
                 <button id="patient-age-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="patient-age-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1510,7 +1533,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="patient-age-chart-container" class="stat-chart-container">
               <canvas id="patient-age-chart"></canvas>
               <div class="chart-controls">
-                <button id="patient-age-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="patient-age-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
   
@@ -1519,7 +1549,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>RBC Units Received</h3>
               <div class="chart-toggle">
                 <button id="rbc-units-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="rbc-units-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1543,7 +1577,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="rbc-units-chart-container" class="stat-chart-container">
               <canvas id="rbc-units-chart"></canvas>
               <div class="chart-controls">
-                <button id="rbc-units-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="rbc-units-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
           </div>
@@ -1556,7 +1597,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>Donor Hemoglobin Distribution</h3>
               <div class="chart-toggle">
                 <button id="donor-hb-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-hb-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1580,7 +1625,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="donor-hb-chart-container" class="stat-chart-container">
               <canvas id="donor-hb-chart"></canvas>
               <div class="chart-controls">
-                <button id="donor-hb-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="donor-hb-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
   
@@ -1589,7 +1641,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>RBC Storage Time Distribution</h3>
               <div class="chart-toggle">
                 <button id="storage-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="storage-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1613,7 +1669,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="storage-chart-container" class="stat-chart-container">
               <canvas id="storage-chart"></canvas>
               <div class="chart-controls">
-                <button id="storage-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="storage-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
   
@@ -1622,7 +1685,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>Donor Sex Distribution</h3>
               <div class="chart-toggle">
                 <button id="donor-sex-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-sex-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1646,7 +1713,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="donor-sex-chart-container" class="stat-chart-container">
               <canvas id="donor-sex-chart"></canvas>
               <div class="chart-controls">
-                <button id="donor-sex-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="donor-sex-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
   
@@ -1655,7 +1729,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>Donor Parity Distribution</h3>
               <div class="chart-toggle">
                 <button id="donor-parity-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="donor-parity-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1679,7 +1757,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="donor-parity-chart-container" class="stat-chart-container">
               <canvas id="donor-parity-chart"></canvas>
               <div class="chart-controls">
-                <button id="donor-parity-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="donor-parity-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
   
@@ -1688,7 +1773,11 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
               <h3>Donation Weekday Distribution</h3>
               <div class="chart-toggle">
                 <button id="weekday-table-toggle" class="chart-toggle-btn" aria-expanded="false" data-target="weekday-chart-container">
-                  <span class="chart-icon">📊</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1712,7 +1801,14 @@ async function loadPatientSexDistribution(fileCase, logDebug) {
             <div id="weekday-chart-container" class="stat-chart-container">
               <canvas id="weekday-chart"></canvas>
               <div class="chart-controls">
-                <button id="weekday-chart-container-download" class="chart-download-btn">Download Chart</button>
+                <button id="weekday-chart-container-download" class="chart-download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  SVG
+                </button>
               </div>
             </div>
           </div>
