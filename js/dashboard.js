@@ -1,5 +1,6 @@
 /**
  * Main dashboard class for the Transfusion Dashboard
+ * Enhanced with Tesla × Apple × Stripe × TED Design System
  */
 class TransfusionDashboard {
     /**
@@ -8,6 +9,9 @@ class TransfusionDashboard {
      */
     constructor(containerId) {
       this.container = document.getElementById(containerId);
+      
+      // Apply theme settings from localStorage or system preference
+      applyTheme();
       
       // State variables
       this.fileCase = 'unknown';    
@@ -41,6 +45,9 @@ class TransfusionDashboard {
       // Keep track of previous vital & factor
       this.lastSelectedCompFactor = null;
       this.lastSelectedVital = null;
+      
+      // Charts collection for SVG export
+      this.charts = {};
       
       // Descriptive statistics data
       this.statsData = {

@@ -1,5 +1,6 @@
 /**
  * Visualization tab functionality for the Transfusion Dashboard
+ * Enhanced with Tesla × Apple × Stripe × TED Design System
  */
 
 /**
@@ -25,38 +26,42 @@ function createVisualizationControls() {
       
       <div class="form-group">
         <label class="form-label">Time Range (minutes):</label>
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: var(--space-md);">
           <input type="number" id="time-min" class="form-input" style="width: 80px;" value="0">
           <span>to</span>
           <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
-          <button id="time-reset" class="btn btn-sm">Reset</button>
+          <button id="time-reset" class="btn btn-sm btn-outline">Reset</button>
         </div>
       </div>
       
       <div class="form-group">
         <label class="form-label">Display Options:</label>
-        <div style="display: flex; gap: 20px;">
-          <label>
-            <input type="checkbox" id="show-ci" checked> Show Confidence Interval
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg); margin-top: var(--space-xs);">
+          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
+            <input type="checkbox" id="show-ci" checked> 
+            <span>Show Confidence Interval</span>
           </label>
-          <label>
-            <input type="checkbox" id="show-base"> Show Base Model
+          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
+            <input type="checkbox" id="show-base"> 
+            <span>Show Base Model</span>
           </label>
-          <label>
-            <input type="checkbox" id="show-delta" checked> Show Change from Baseline
+          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
+            <input type="checkbox" id="show-delta" checked> 
+            <span>Show Change from Baseline</span>
           </label>
         </div>
       </div>
       
       <div class="form-group">
         <label class="form-label">Comparison Values:</label>
-        <div id="comparison-tags"></div>
+        <div id="comparison-tags" style="margin-top: var(--space-xs);"></div>
       </div>
       
-      <div id="debug-container" style="display: none;">
+      <div id="debug-container" style="display: none; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
         <div class="form-group">
-          <label>
-            <input type="checkbox" id="debug-mode"> Enable Debug Mode
+          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
+            <input type="checkbox" id="debug-mode"> 
+            <span>Enable Debug Mode</span>
           </label>
         </div>
         <div id="debug-output" class="debug-info" style="display: none;"></div>
@@ -70,9 +75,18 @@ function createVisualizationControls() {
    */
   function createChartArea() {
     return `
-      <div id="chart-title" class="header" style="margin-bottom: 10px;"></div>
-      <div id="model-descriptions" class="info" style="margin-bottom: 10px;"></div>
+      <div id="chart-title" class="header" style="margin-bottom: var(--space-md);"></div>
+      <div id="model-descriptions" class="info" style="margin-bottom: var(--space-md);"></div>
       <div id="chart-container" class="chart-container">
+        <div class="chart-actions">
+          <button id="export-svg-btn" class="chart-action-btn" title="Export as SVG">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+        </div>
         <canvas id="chart-canvas"></canvas>
       </div>
     `;
@@ -278,25 +292,90 @@ function createVisualizationControls() {
   }
   
   /**
-   * Get color for a comparison value
+   * Get color for a comparison value with enhanced Stripe-inspired gradients
    * @param {any} value - The comparison value
    * @param {Array} comparisonValues - All available comparison values
    * @param {number} index - Index for alternative coloring
-   * @returns {Object} Object with line and area colors
+   * @returns {Object} Object with line, area colors and gradient
    */
   function getLineColor(value, comparisonValues, index = 0) {
+    // Tesla × Apple × Stripe × TED Design System colors
     const colors = [
-      {line: 'rgb(31, 119, 180)', area: 'rgba(31, 119, 180, 0.2)'},
-      {line: 'rgb(255, 127, 14)', area: 'rgba(255, 127, 14, 0.2)'},
-      {line: 'rgb(44, 160, 44)', area: 'rgba(44, 160, 44, 0.2)'},
-      {line: 'rgb(214, 39, 40)', area: 'rgba(214, 39, 40, 0.2)'},
-      {line: 'rgb(148, 103, 189)', area: 'rgba(148, 103, 189, 0.2)'},
-      {line: 'rgb(140, 86, 75)', area: 'rgba(140, 86, 75, 0.2)'},
-      {line: 'rgb(227, 119, 194)', area: 'rgba(227, 119, 194, 0.2)'}
+      // Stripe-inspired purple gradient
+      {
+        line: 'rgb(99, 91, 255)', // --stripe-purple
+        area: 'rgba(99, 91, 255, 0.15)',
+        gradient: {
+          start: 'rgba(99, 91, 255, 0.7)',
+          end: 'rgba(156, 98, 255, 0.7)'
+        }
+      },
+      // Tesla-inspired red gradient
+      {
+        line: 'rgb(232, 33, 39)', // --tesla-red
+        area: 'rgba(232, 33, 39, 0.15)',
+        gradient: {
+          start: 'rgba(232, 33, 39, 0.7)',
+          end: 'rgba(255, 75, 89, 0.7)'
+        }
+      },
+      // Apple-inspired blue gradient
+      {
+        line: 'rgb(10, 132, 255)', // --apple-blue
+        area: 'rgba(10, 132, 255, 0.15)',
+        gradient: {
+          start: 'rgba(10, 132, 255, 0.7)',
+          end: 'rgba(96, 165, 250, 0.7)'
+        }
+      },
+      // TED-inspired red gradient
+      {
+        line: 'rgb(230, 43, 30)', // --ted-red
+        area: 'rgba(230, 43, 30, 0.15)',
+        gradient: {
+          start: 'rgba(230, 43, 30, 0.7)',
+          end: 'rgba(255, 91, 68, 0.7)'
+        }
+      },
+      // Green gradient
+      {
+        line: 'rgb(16, 185, 129)', // --color-success
+        area: 'rgba(16, 185, 129, 0.15)',
+        gradient: {
+          start: 'rgba(16, 185, 129, 0.7)',
+          end: 'rgba(5, 150, 105, 0.7)'
+        }
+      },
+      // Orange gradient  
+      {
+        line: 'rgb(245, 158, 11)', // --color-warning
+        area: 'rgba(245, 158, 11, 0.15)',
+        gradient: {
+          start: 'rgba(245, 158, 11, 0.7)',
+          end: 'rgba(217, 119, 6, 0.7)'
+        }
+      },
+      // Purple gradient
+      {
+        line: 'rgb(139, 92, 246)', // --chart-color-6
+        area: 'rgba(139, 92, 246, 0.15)',
+        gradient: {
+          start: 'rgba(139, 92, 246, 0.7)',
+          end: 'rgba(124, 58, 237, 0.7)'
+        }
+      }
     ];
     
     if (value === null) {
-      return {line: 'rgb(0, 0, 0)', area: 'rgba(0, 0, 0, 0.1)'};
+      // Reference value gets a neutral gradient
+      return {
+        line: 'rgb(75, 85, 99)',
+        area: 'rgba(75, 85, 99, 0.15)',
+        gradient: {
+          start: 'rgba(75, 85, 99, 0.5)',
+          end: 'rgba(107, 114, 128, 0.5)'
+        }
+      };
     }
     
     const valueIndex = comparisonValues.indexOf(value);
@@ -635,7 +714,8 @@ function createVisualizationControls() {
     
     const usedYLabels = new Set();
     
-    return new Chart(ctx, {
+    // Create enhanced chart with modern styling
+    const chart = new Chart(ctx, {
       type: 'line',
       data: {
         datasets: chartData.datasets
@@ -647,23 +727,45 @@ function createVisualizationControls() {
           mode: 'nearest',
           intersect: false
         },
+        animation: {
+          duration: 800,
+          easing: 'easeOutQuart'
+        },
         scales: {
           x: {
             type: 'linear',
             title: {
               display: true,
-              text: 'Time From Transfusion (minutes)'
+              text: 'Time From Transfusion (minutes)',
+              font: {
+                family: "'Inter', sans-serif",
+                size: 12,
+                weight: 500
+              },
+              color: 'var(--text-secondary)'
             },
             min: timeRange[0],
-            max: timeRange[1]
+            max: timeRange[1],
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            }
           },
           y: {
             title: {
               display: true,
-              text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel
+              text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel,
+              font: {
+                family: "'Inter', sans-serif",
+                size: 12,
+                weight: 500
+              },
+              color: 'var(--text-secondary)'
             },
             min: yMin,
             max: yMax,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
             ticks: {
               count: 5,
               callback: (value, index, values) => {
@@ -688,7 +790,8 @@ function createVisualizationControls() {
                 
                 return formattedValue;
               },
-              display: true
+              display: true,
+              color: 'var(--text-secondary)'
             }
           }
         },
@@ -697,13 +800,32 @@ function createVisualizationControls() {
             display: true,
             position: 'bottom',
             labels: {
+              font: {
+                family: "'Inter', sans-serif",
+                size: 12
+              },
+              color: 'var(--text-primary)',
               filter: function(legendItem) {
-                // Hide "CI Upper" from legend
-                return !legendItem.text.includes('CI Upper');
-              }
+                // Hide "CI Upper" and "CI Lower" from legend
+                return !legendItem.text.includes('CI Upper') && !legendItem.text.includes('CI Lower');
+              },
+              padding: 15
             }
           },
           tooltip: {
+            backgroundColor: 'var(--bg-card)',
+            titleFont: {
+              family: "'Inter', sans-serif",
+              size: 13,
+              weight: 600
+            },
+            bodyFont: {
+              family: "'Inter', sans-serif",
+              size: 12
+            },
+            borderColor: 'var(--border-subtle)',
+            borderWidth: 1,
+            padding: 10,
             callbacks: {
               label: function(context) {
                 return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
@@ -713,4 +835,15 @@ function createVisualizationControls() {
         }
       }
     });
+    
+    // Add SVG export button functionality
+    const exportSvgBtn = document.getElementById('export-svg-btn');
+    if (exportSvgBtn) {
+      exportSvgBtn.onclick = function() {
+        const filename = `${metaInfo.vitalName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_by_${metaInfo.compName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+        exportChartAsSVG(chart, filename);
+      };
+    }
+    
+    return chart;
   }
