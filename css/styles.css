@@ -154,7 +154,7 @@ body {
   border-radius: var(--radius-full);
   padding: 5px;
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.25);  /* Increased border opacity for better visibility in dark mode */
   transition: all var(--transition-normal);
   cursor: pointer;
   width: 44px;
@@ -162,6 +162,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Subtle glow in dark mode to make it more visible */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1), var(--shadow-md);
 }
 
 .theme-toggle:hover {
@@ -184,6 +186,13 @@ body {
 .theme-toggle .moon-icon {
   opacity: 1;
   transform: scale(1);
+  /* Make the moon icon white in dark mode for better visibility */
+  color: #ffffff;
+}
+
+.light-theme .theme-toggle {
+  border: 1px solid var(--border-subtle); /* Reset to original border in light mode */
+  box-shadow: var(--shadow-md); /* Reset to original shadow in light mode */
 }
 
 .light-theme .theme-toggle .sun-icon {
@@ -194,6 +203,7 @@ body {
 .light-theme .theme-toggle .moon-icon {
   opacity: 0;
   transform: scale(0.5);
+  filter: none; /* Reset the brightness filter in light mode */
 }
 
 /* Container and Layout */
