@@ -241,7 +241,7 @@ p {
 
 .scandat-highlight {
   color: var(--accent-highlight);
-  font-weight: 400;
+  font-weight: bold;
 }
 
 /* Card and Section Styling */
