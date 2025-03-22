@@ -2155,4 +2155,13 @@ function createPatientAgeGroupsChart(data, canvasId) {
     ];
     
     setupExpandAllButton('expand-all-charts-btn', toggleBtnIds);
+    
+    // Automatically expand all charts on page load
+    setTimeout(() => {
+      // Find and click the "Expand All Charts" button to expand all charts
+      const expandAllBtn = document.getElementById('expand-all-charts-btn');
+      if (expandAllBtn) {
+        expandAllBtn.click();
+      }
+    }, 500); // Small delay to ensure all charts are fully initialized
   }

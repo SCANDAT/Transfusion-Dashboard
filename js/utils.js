@@ -397,17 +397,14 @@ function toggleTheme() {
 }
 
 /**
- * Check and apply saved theme or system preference
+ * Always apply dark theme regardless of saved preferences
  */
 function applyTheme() {
   const body = document.body;
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  
-  if (savedTheme === 'light') {
-    body.classList.add('light-theme');
-  } else if (savedTheme === null && !prefersDarkScheme.matches) {
-    // If no saved preference and system prefers light
-    body.classList.add('light-theme');
+  // Remove light theme if it's present
+  if (body.classList.contains('light-theme')) {
+    body.classList.remove('light-theme');
   }
+  // Store dark theme in localStorage for consistency
+  localStorage.setItem('theme', 'dark');
 }
