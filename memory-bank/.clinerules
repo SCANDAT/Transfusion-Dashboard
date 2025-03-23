@@ -18,8 +18,22 @@ When implementing or modifying visualizations:
 - Chart configuration should follow established patterns in `visualization.js`
 - Chart colors should use the design system variables
 - Always include appropriate axes labels and legends
-- Support both dark and light theme rendering
+- Support both dark and light theme rendering using conditional styling
 - Consider SVG export quality in all visualization work
+- Implement theme-aware styling with `document.body.classList.contains('light-theme')` checks
+
+### Dark Mode Chart Implementation
+
+When working with charts that must support dark mode:
+- Use conditional styling to adjust based on current theme: 
+  `document.body.classList.contains('light-theme') ? lightValue : darkValue`
+- Increase line thickness in dark mode (3px) compared to light mode (2px)
+- Increase grid line opacity in dark mode (15%) compared to light mode (5%)
+- Brighten colors specifically for dark mode to ensure visibility
+- Use higher opacity for fill areas in dark mode (25% vs 15%)
+- Ensure text elements (labels, ticks, legends) have sufficient contrast
+- Apply consistent font size increases for better readability (13px for axes)
+- Follow these patterns in all chart types across the application
 
 ### Module Extensions
 
@@ -66,6 +80,9 @@ When extending or modifying modules:
 - Chart configurations must balance aesthetics and data clarity
 - Complex datasets may require performance optimization
 - SVG export quality must be maintained for publication use
+- Dark mode requires specific attention to contrast and visibility
+- Utilize conditional styling to ensure charts are equally readable in both themes
+- Test all chart types in both dark and light mode after modifications
 
 ### Responsive Design
 

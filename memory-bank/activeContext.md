@@ -10,11 +10,25 @@ The Transfusion Dashboard project appears to be in active development with a foc
 
 ## Recent Changes
 
-As this is the initial memory bank setup, specific recent changes are not documented. The project appears to be established with key architecture and design decisions in place, including:
+Recent improvements have been made to enhance chart visibility in dark mode throughout the dashboard:
 
-- Defined modular structure with clear responsibilities
-- Comprehensive design system with dark/light theme support
-- Data loading and visualization patterns
+- **Enhanced Chart Visibility**: Improved contrast and readability of all chart elements in dark mode by:
+  - Increasing brightness of chart lines and areas
+  - Implementing thicker lines in dark mode (3px vs 2px in light mode)
+  - Enhancing grid line visibility with increased opacity (15% vs 5%)
+  - Making axis labels, tick values, and legends more readable
+  - Ensuring consistent styling across all chart types
+
+- **Theme-Aware Conditional Styling**: Implemented checks for dark/light theme to dynamically adjust:
+  - Color brightness
+  - Line thickness
+  - Fill opacity
+  - Text contrast
+
+- **Standardized Improvements**: Applied consistent styling across all visualization components:
+  - Main visualization charts
+  - Component Factor Effects charts
+  - RBC Transfusions charts (both standard and LOESS analysis)
 
 ## Active Decisions
 
@@ -27,14 +41,15 @@ Several key technical and design decisions are guiding current development:
 
 ## Next Steps
 
-Based on the project documentation, logical next steps appear to be:
+Based on the project documentation and recent work, logical next steps appear to be:
 
-1. **Visualization Refinement**: Enhancing chart capabilities and interactivity
+1. **Further Visualization Refinement**: Additional enhancements to chart capabilities and interactivity
 2. **Performance Optimization**: Ensuring efficient data processing for larger datasets
 3. **Error Handling Improvements**: Robust handling of edge cases in data loading and processing
-4. **Export Functionality**: Implementing high-quality SVG export for research publications
-5. **Responsive Design Implementation**: Ensuring proper function across different device sizes
-6. **User Testing**: Validating the interface with target users (medical researchers, ICU clinicians)
+4. **Export Functionality**: Ensuring high-quality SVG export for research publications works well in both themes
+5. **Additional Theme Improvements**: Review other UI elements for potential dark mode enhancement
+6. **Responsive Design Implementation**: Ensuring proper function across different device sizes
+7. **User Testing**: Validating the improved dark mode interface with target users
 
 ## Open Questions
 
