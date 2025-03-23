@@ -24,6 +24,15 @@ Based on the available project documentation and structure, the Transfusion Dash
    - ✅ Transfusions visualization
    - ✅ CSV data loading and parsing
    - ✅ Error handling with fallback options
+   - ✅ Dark mode chart visibility improvements
+
+4. **Visualization Enhancements**
+   - ✅ Enhanced chart contrast in dark mode
+   - ✅ Improved grid line visibility in dark mode (15% opacity vs 5%)
+   - ✅ Thicker lines in dark mode (3px main lines, 2.5px dashed lines)
+   - ✅ Better text contrast for labels and legends
+   - ✅ Brighter color palette automatically applied in dark mode
+   - ✅ Consistent styling across all chart types
 
 4. **Development Environment**
    - ✅ Local development server with CORS support
@@ -31,16 +40,18 @@ Based on the available project documentation and structure, the Transfusion Dash
 
 ## Work in Progress
 
-Without specific progress information beyond the architectural documentation, the following items are likely in progress or planned:
+Based on recent improvements and architectural documentation, the following items are in progress or planned:
 
 1. **Visualization Refinement**
+   - ✅ Improved dark mode chart visibility
    - 🔄 Advanced chart interactions
    - 🔄 Additional visualization types
    - 🔄 Performance optimizations for larger datasets
 
 2. **User Experience**
+   - ✅ Enhanced theme-aware conditional styling
    - 🔄 Responsive design implementation
-   - 🔄 Accessibility improvements
+   - 🔄 Further accessibility improvements
    - 🔄 User feedback integration
 
 3. **Documentation**
@@ -50,7 +61,7 @@ Without specific progress information beyond the architectural documentation, th
 
 ## Known Issues
 
-Without specific issue tracking information, the following are common challenges that may exist:
+Based on observations and recent work, the following issues have been identified or addressed:
 
 1. **Data Processing**
    - Potential performance challenges with larger datasets
@@ -58,6 +69,7 @@ Without specific issue tracking information, the following are common challenges
    - Browser compatibility considerations
 
 2. **Visualization**
+   - ✅ Low contrast in dark mode charts (RESOLVED)
    - Chart rendering optimizations for complex datasets
    - SVG export quality and compatibility
    - Responsive behavior on various screen sizes
