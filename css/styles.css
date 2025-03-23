@@ -572,6 +572,10 @@ p {
   border: 1px solid var(--border-subtle);
 }
 
+.chart-container-large {
+  height: 800px; /* Double the height of the original chart */
+}
+
 .chart-actions {
   position: absolute;
   top: var(--space-xs);
@@ -943,6 +947,113 @@ p {
 .col { 
   flex: 1; 
   min-width: 300px; 
+}
+
+/* Component Factor Effects Tab - Compact Layout */
+.compact-controls {
+  padding: var(--space-md);
+}
+
+.controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.controls-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.controls-col {
+  flex: 1;
+  min-width: 300px;
+}
+
+.form-group.compact {
+  margin-bottom: var(--space-sm);
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  cursor: pointer;
+}
+
+.available-options {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: var(--space-sm);
+}
+
+.available-options-toggle {
+  background: var(--bg-card-secondary);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.available-options-content {
+  padding: var(--space-md);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.available-options.expanded .available-options-content {
+  max-height: 500px;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+.available-options.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.compact-list {
+  margin: 0;
+  padding-left: var(--space-md);
+  font-size: 0.9rem;
+  column-count: 2;
+  column-gap: var(--space-md);
+}
+
+.compact-list li {
+  margin-bottom: var(--space-xs);
+}
+
+.comparison-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.compact-model-descriptions {
+  font-size: 0.85rem;
+  padding: var(--space-sm) var(--space-md);
+  max-height: 70px;
+  overflow-y: auto;
 }
 
 /* Responsive Design */
