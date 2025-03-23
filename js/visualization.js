@@ -9,56 +9,95 @@
  */
 function createVisualizationControls() {
     return `
-      <div class="row">
-        <div class="col">
-          <div class="form-group">
-            <label class="form-label">Vital Parameter:</label>
-            <select id="vital-select" class="form-select"></select>
+      <div class="controls-panel">
+        <div class="controls-main">
+          <div class="controls-row">
+            <div class="controls-col">
+              <div class="form-group compact">
+                <label class="form-label">Vital Parameter:</label>
+                <select id="vital-select" class="form-select"></select>
+              </div>
+            </div>
+            <div class="controls-col">
+              <div class="form-group compact">
+                <label class="form-label">RBC Component Factor:</label>
+                <select id="factor-select" class="form-select"></select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="controls-row">
+            <div class="controls-col">
+              <div class="form-group compact">
+                <label class="form-label">Time Range (minutes):</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <input type="number" id="time-min" class="form-input" style="width: 80px;" value="0">
+                  <span>to</span>
+                  <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
+                  <button id="time-reset" class="btn btn-sm btn-outline">Reset</button>
+                </div>
+              </div>
+            </div>
+            <div class="controls-col">
+              <div class="form-group compact">
+                <label class="form-label">Display Options:</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="show-ci" checked> 
+                    <span>Show Confidence Interval</span>
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="show-base"> 
+                    <span>Show Base Model</span>
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="show-delta" checked> 
+                    <span>Show Change from Baseline</span>
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col">
-          <div class="form-group">
-            <label class="form-label">RBC Component Factor:</label>
-            <select id="factor-select" class="form-select"></select>
+        
+        <div class="available-options">
+          <div class="available-options-toggle">Available Parameters & Factors <span class="toggle-icon">▼</span></div>
+          <div class="available-options-content">
+            <div class="row">
+              <div class="col">
+                <p><strong>Vital Parameters:</strong></p>
+                <ul class="compact-list">
+                  <li>Mean Arterial Pressure (mmHg)</li>
+                  <li>Systolic Blood Pressure (mmHg)</li>
+                  <li>Diastolic Blood Pressure (mmHg)</li>
+                  <li>Heart Rate (bpm)</li>
+                  <li>Fraction of Inspired Oxygen (%)</li>
+                  <li>Peripheral Capillary Oxygen Saturation (%)</li>
+                  <li>Minute Ventilation (L/min)</li>
+                </ul>
+              </div>
+              <div class="col">
+                <p><strong>RBC Component Factors:</strong></p>
+                <ul class="compact-list">
+                  <li>Donor Hemoglobin (g/L)</li>
+                  <li>Donor Parity (parous or nulliparous)</li>
+                  <li>Donor Sex (male or female)</li>
+                  <li>RBC Component Storage Time (days)</li>
+                  <li>Weekday of Donation</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
-      <div class="form-group">
-        <label class="form-label">Time Range (minutes):</label>
-        <div style="display: flex; align-items: center; gap: var(--space-md);">
-          <input type="number" id="time-min" class="form-input" style="width: 80px;" value="0">
-          <span>to</span>
-          <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
-          <button id="time-reset" class="btn btn-sm btn-outline">Reset</button>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">Display Options:</label>
-        <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg); margin-top: var(--space-xs);">
-          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
-            <input type="checkbox" id="show-ci" checked> 
-            <span>Show Confidence Interval</span>
-          </label>
-          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
-            <input type="checkbox" id="show-base"> 
-            <span>Show Base Model</span>
-          </label>
-          <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
-            <input type="checkbox" id="show-delta" checked> 
-            <span>Show Change from Baseline</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="form-group">
+      <div class="form-group compact">
         <label class="form-label">Comparison Values:</label>
-        <div id="comparison-tags" style="margin-top: var(--space-xs);"></div>
+        <div id="comparison-tags" class="comparison-tags-container"></div>
       </div>
       
       <div id="debug-container" style="display: none; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
-        <div class="form-group">
+        <div class="form-group compact">
           <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
             <input type="checkbox" id="debug-mode"> 
             <span>Enable Debug Mode</span>
@@ -69,15 +108,15 @@ function createVisualizationControls() {
     `;
   }
   
-  /**
+/**
    * Create the HTML content for the chart area
    * @returns {string} HTML content for the chart area
    */
 function createChartArea() {
   return `
-    <div id="chart-title" class="header" style="margin-bottom: var(--space-md);"></div>
-    <div id="model-descriptions" class="info" style="margin-bottom: var(--space-md);"></div>
-    <div id="chart-container" class="chart-container">
+    <div id="chart-title" class="header" style="margin-bottom: 8px;"></div>
+    <div id="model-descriptions" class="info compact-model-descriptions" style="margin-bottom: 8px;"></div>
+    <div id="chart-container" class="chart-container chart-container-large">
       <div class="chart-actions">
         <button id="export-svg-btn" class="chart-action-btn" title="Export as SVG">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

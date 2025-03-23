@@ -100,12 +100,24 @@ class TransfusionDashboard {
         }
         
         // Initialize the RBC Component Factors tab
-        try {
-          initializeRbcComponentFactors('rbc-component-factors-tab', this.fileCase, this.logDebug.bind(this));
-        } catch (compFactorsError) {
-          console.error('RBC Component Factors initialization error:', compFactorsError);
-          this.logDebug(`Failed to initialize RBC Component Factors tab: ${compFactorsError.message}`);
-        }
+      try {
+        initializeRbcComponentFactors('rbc-component-factors-tab', this.fileCase, this.logDebug.bind(this));
+        
+        // Initialize the collapsible Available Parameters & Factors section
+        setTimeout(() => {
+          const availableOptionsToggle = document.querySelector('#rbc-component-factors-tab .available-options-toggle');
+          const availableOptions = document.querySelector('#rbc-component-factors-tab .available-options');
+          
+          if (availableOptionsToggle && availableOptions) {
+            availableOptionsToggle.addEventListener('click', () => {
+              availableOptions.classList.toggle('expanded');
+            });
+          }
+        }, 500); // Short delay to ensure elements are in the DOM
+      } catch (compFactorsError) {
+        console.error('RBC Component Factors initialization error:', compFactorsError);
+        this.logDebug(`Failed to initialize RBC Component Factors tab: ${compFactorsError.message}`);
+      }
         
         // Initialize the RBC Transfusions tab
         try {
@@ -601,14 +613,14 @@ class TransfusionDashboard {
           <h2>${this.showDeltaPlot ? 'Change in ' : ''}${this.metaInfo.vitalName} by ${this.metaInfo.compName}</h2>
         `;
         
-        // Model descriptions
+        // Model descriptions - more compact format
         document.getElementById('model-descriptions').innerHTML = `
-          <div style="display: flex; justify-content: center; gap: 20px;">
-            <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
-              <span style="font-weight: bold;">Base Model:</span> Base Model: A mixed-effects model with a random intercept for patient ID that adjusts for time from transfusion (natural cubic spline with fixed knots at -660, -360, -60, 0, 60, 360, and 660 minutes), patient age and time spent in the ICU prior to transfusion (natural cubic splines with three percentile-based knots), RBC transfusion count, patient sex, and ICU ward name
+          <div class="compact-model-content">
+            <div class="model-item">
+              <span class="model-title">Base Model:</span> Mixed-effects model with random intercept for patient ID, adjusting for time from transfusion, patient age, ICU time prior to transfusion, RBC count, patient sex, and ICU ward
             </div>
-            <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
-              <span style="font-weight: bold;">Fully Adjusted Model:</span> A mixed-effects model containing all base model variables as well as cumulative crystalloid fluids and vasopressors administered (in ml) in the last 1 and 24 hours prior to transfusion (natural cubic splines with three percentile-based knots), and a binary variable for whether sedatives were administered in the last 1 and 24 hours prior to transfusion 
+            <div class="model-item">
+              <span class="model-title">Fully Adjusted Model:</span> Includes all base model variables plus cumulative crystalloid fluids, vasopressors (1/24h prior), and sedatives administration (1/24h prior)
             </div>
           </div>
         `;
