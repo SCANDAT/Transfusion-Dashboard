@@ -299,81 +299,85 @@ function createVisualizationControls() {
    * @returns {Object} Object with line, area colors and gradient
    */
   function getLineColor(value, comparisonValues, index = 0) {
+    // Check if we're in dark mode to adjust color brightness
+    const isDarkMode = !document.body.classList.contains('light-theme');
+    
     // Tesla × Apple × Stripe × TED Design System colors
+    // Enhanced for better visibility in dark mode
     const colors = [
       // Stripe-inspired purple gradient
       {
-        line: 'rgb(99, 91, 255)', // --stripe-purple
-        area: 'rgba(99, 91, 255, 0.15)',
+        line: 'rgb(133, 125, 255)', // Brightened --stripe-purple for dark mode
+        area: isDarkMode ? 'rgba(133, 125, 255, 0.25)' : 'rgba(99, 91, 255, 0.15)',
         gradient: {
-          start: 'rgba(99, 91, 255, 0.7)',
-          end: 'rgba(156, 98, 255, 0.7)'
+          start: isDarkMode ? 'rgba(133, 125, 255, 0.7)' : 'rgba(99, 91, 255, 0.7)',
+          end: isDarkMode ? 'rgba(170, 140, 255, 0.7)' : 'rgba(156, 98, 255, 0.7)'
         }
       },
       // Tesla-inspired red gradient
       {
-        line: 'rgb(232, 33, 39)', // --tesla-red
-        area: 'rgba(232, 33, 39, 0.15)',
+        line: 'rgb(255, 75, 80)', // Brightened --tesla-red for dark mode
+        area: isDarkMode ? 'rgba(255, 75, 80, 0.25)' : 'rgba(232, 33, 39, 0.15)',
         gradient: {
-          start: 'rgba(232, 33, 39, 0.7)',
-          end: 'rgba(255, 75, 89, 0.7)'
+          start: isDarkMode ? 'rgba(255, 75, 80, 0.7)' : 'rgba(232, 33, 39, 0.7)',
+          end: isDarkMode ? 'rgba(255, 115, 125, 0.7)' : 'rgba(255, 75, 89, 0.7)'
         }
       },
       // Apple-inspired blue gradient
       {
-        line: 'rgb(10, 132, 255)', // --apple-blue
-        area: 'rgba(10, 132, 255, 0.15)',
+        line: 'rgb(64, 156, 255)', // Brightened --apple-blue for dark mode
+        area: isDarkMode ? 'rgba(64, 156, 255, 0.25)' : 'rgba(10, 132, 255, 0.15)',
         gradient: {
-          start: 'rgba(10, 132, 255, 0.7)',
-          end: 'rgba(96, 165, 250, 0.7)'
+          start: isDarkMode ? 'rgba(64, 156, 255, 0.7)' : 'rgba(10, 132, 255, 0.7)',
+          end: isDarkMode ? 'rgba(128, 187, 255, 0.7)' : 'rgba(96, 165, 250, 0.7)'
         }
       },
       // TED-inspired red gradient
       {
-        line: 'rgb(230, 43, 30)', // --ted-red
-        area: 'rgba(230, 43, 30, 0.15)',
+        line: 'rgb(255, 91, 68)', // Brightened --ted-red for dark mode
+        area: isDarkMode ? 'rgba(255, 91, 68, 0.25)' : 'rgba(230, 43, 30, 0.15)',
         gradient: {
-          start: 'rgba(230, 43, 30, 0.7)',
-          end: 'rgba(255, 91, 68, 0.7)'
+          start: isDarkMode ? 'rgba(255, 91, 68, 0.7)' : 'rgba(230, 43, 30, 0.7)',
+          end: isDarkMode ? 'rgba(255, 120, 100, 0.7)' : 'rgba(255, 91, 68, 0.7)'
         }
       },
       // Green gradient
       {
-        line: 'rgb(16, 185, 129)', // --color-success
-        area: 'rgba(16, 185, 129, 0.15)',
+        line: 'rgb(45, 212, 156)', // Brightened --color-success for dark mode
+        area: isDarkMode ? 'rgba(45, 212, 156, 0.25)' : 'rgba(16, 185, 129, 0.15)',
         gradient: {
-          start: 'rgba(16, 185, 129, 0.7)',
-          end: 'rgba(5, 150, 105, 0.7)'
+          start: isDarkMode ? 'rgba(45, 212, 156, 0.7)' : 'rgba(16, 185, 129, 0.7)',
+          end: isDarkMode ? 'rgba(56, 225, 170, 0.7)' : 'rgba(5, 150, 105, 0.7)'
         }
       },
       // Orange gradient  
       {
-        line: 'rgb(245, 158, 11)', // --color-warning
-        area: 'rgba(245, 158, 11, 0.15)',
+        line: 'rgb(250, 180, 50)', // Brightened --color-warning for dark mode
+        area: isDarkMode ? 'rgba(250, 180, 50, 0.25)' : 'rgba(245, 158, 11, 0.15)',
         gradient: {
-          start: 'rgba(245, 158, 11, 0.7)',
-          end: 'rgba(217, 119, 6, 0.7)'
+          start: isDarkMode ? 'rgba(250, 180, 50, 0.7)' : 'rgba(245, 158, 11, 0.7)',
+          end: isDarkMode ? 'rgba(255, 200, 85, 0.7)' : 'rgba(217, 119, 6, 0.7)'
         }
       },
       // Purple gradient
       {
-        line: 'rgb(139, 92, 246)', // --chart-color-6
-        area: 'rgba(139, 92, 246, 0.15)',
+        line: 'rgb(160, 120, 255)', // Brightened --chart-color-6 for dark mode
+        area: isDarkMode ? 'rgba(160, 120, 255, 0.25)' : 'rgba(139, 92, 246, 0.15)',
         gradient: {
-          start: 'rgba(139, 92, 246, 0.7)',
-          end: 'rgba(124, 58, 237, 0.7)'
+          start: isDarkMode ? 'rgba(160, 120, 255, 0.7)' : 'rgba(139, 92, 246, 0.7)',
+          end: isDarkMode ? 'rgba(180, 140, 255, 0.7)' : 'rgba(124, 58, 237, 0.7)'
         }
       }
     ];
     
     if (value === null) {
-      // Reference value gets a neutral gradient
+      // Reference value gets a neutral gradient - brightened for dark mode
       return {
-        line: 'rgb(75, 85, 99)',
-        area: 'rgba(75, 85, 99, 0.15)',
+        line: isDarkMode ? 'rgb(160, 166, 178)' : 'rgb(75, 85, 99)',
+        area: isDarkMode ? 'rgba(160, 166, 178, 0.25)' : 'rgba(75, 85, 99, 0.15)', 
         gradient: {
-          start: 'rgba(75, 85, 99, 0.5)',
-          end: 'rgba(107, 114, 128, 0.5)'
+          start: isDarkMode ? 'rgba(160, 166, 178, 0.5)' : 'rgba(75, 85, 99, 0.5)',
+          end: isDarkMode ? 'rgba(180, 185, 195, 0.5)' : 'rgba(107, 114, 128, 0.5)'
         }
       };
     }
@@ -531,7 +535,7 @@ function createVisualizationControls() {
             })),
             borderColor: color.line,
             backgroundColor: color.line,
-            borderWidth: 2,
+            borderWidth: document.body.classList.contains('light-theme') ? 2 : 3, // Thicker lines in dark mode
             tension: 0.3,
             fill: false,
             pointRadius: 0
@@ -552,7 +556,7 @@ function createVisualizationControls() {
             })),
             borderColor: color.line,
             backgroundColor: color.line,
-            borderWidth: 2,
+            borderWidth: document.body.classList.contains('light-theme') ? 2 : 3, // Thicker lines in dark mode
             tension: 0.3,
             fill: false,
             pointRadius: 0
@@ -574,7 +578,7 @@ function createVisualizationControls() {
           })),
           borderColor: color.line,
           backgroundColor: color.line,
-          borderWidth: 1.5,
+          borderWidth: document.body.classList.contains('light-theme') ? 1.5 : 2.5, // Thicker lines for dark mode
           borderDash: [5, 5],
           tension: 0.3,
           fill: false,
@@ -739,7 +743,7 @@ function createVisualizationControls() {
               text: 'Time From Transfusion (minutes)',
               font: {
                 family: "'Inter', sans-serif",
-                size: 12,
+                size: 13, // Slightly larger for better readability
                 weight: 500
               },
               color: 'var(--text-secondary)'
@@ -747,7 +751,15 @@ function createVisualizationControls() {
             min: timeRange[0],
             max: timeRange[1],
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
+              // Higher opacity grid lines for better visibility in dark mode
+              color: document.body.classList.contains('light-theme') ? 
+                    'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
+            },
+            ticks: {
+              font: {
+                size: 11 // Slightly larger tick font
+              },
+              color: 'var(--text-secondary)'
             }
           },
           y: {
@@ -756,7 +768,7 @@ function createVisualizationControls() {
               text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel,
               font: {
                 family: "'Inter', sans-serif",
-                size: 12,
+                size: 13, // Slightly larger for better readability
                 weight: 500
               },
               color: 'var(--text-secondary)'
@@ -764,7 +776,9 @@ function createVisualizationControls() {
             min: yMin,
             max: yMax,
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
+              // Higher opacity grid lines for better visibility in dark mode
+              color: document.body.classList.contains('light-theme') ? 
+                     'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
             },
             ticks: {
               count: 5,

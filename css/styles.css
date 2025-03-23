@@ -12,11 +12,11 @@
   --bg-main: #0a0a0a;
   --bg-card: #141414;
   --bg-card-hover: #1c1c1c;
-  --bg-card-secondary: rgba(255, 255, 255, 0.03);
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --bg-card-secondary: rgba(255, 255, 255, 0.05); /* Slightly increased contrast */
+  --border-subtle: rgba(255, 255, 255, 0.12); /* Enhanced border visibility */
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.65);
-  --text-tertiary: rgba(255, 255, 255, 0.45);
+  --text-secondary: rgba(255, 255, 255, 0.78); /* Increased opacity for better readability */
+  --text-tertiary: rgba(255, 255, 255, 0.6); /* Increased opacity for better readability */
   
   /* Brand Accent Colors */
   --accent-highlight: #E82127;
