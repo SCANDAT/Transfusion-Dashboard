@@ -769,7 +769,8 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
               size: 13, // Slightly larger for better readability
               weight: 500
             },
-            color: 'var(--text-secondary)'
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)' // Enhanced contrast for dark mode
           },
           min: timeRange[0],
           max: timeRange[1],
@@ -780,9 +781,11 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
           },
           ticks: {
             font: {
-              size: 11 // Slightly larger tick font
+              size: 11, // Slightly larger tick font
+              weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
             },
-            color: 'var(--text-secondary)'
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)' // Enhanced contrast for dark mode
           }
         },
         y: {
@@ -794,7 +797,8 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
               size: 13, // Slightly larger for better readability
               weight: 500
             },
-            color: 'var(--text-secondary)'
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)' // Enhanced contrast for dark mode
           },
           min: yMin,
           max: yMax,
@@ -804,10 +808,12 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
                   'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
           },
           ticks: {
-            color: 'var(--text-secondary)',
             font: {
-              size: 11
-            }
+              size: 11,
+              weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+            },
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)' // Enhanced contrast for dark mode
           }
         }
       },
@@ -816,13 +822,40 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
           display: true,
           position: 'bottom',
           labels: {
+            font: {
+              family: "'Inter', sans-serif",
+              size: 12,
+              weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+            },
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Maximum contrast for legend
             filter: function(legendItem) {
               // Hide "CI Upper" from legend
               return !legendItem.text.includes('CI Upper');
-            }
+            },
+            boxWidth: document.body.classList.contains('light-theme') ? 12 : 15 // Larger color boxes in dark mode
           }
         },
         tooltip: {
+          backgroundColor: document.body.classList.contains('light-theme') ? 
+                           'var(--bg-card)' : 'rgba(30, 30, 30, 0.95)', // Darker in dark mode for contrast
+          titleFont: {
+            family: "'Inter', sans-serif",
+            size: 13,
+            weight: 600
+          },
+          bodyFont: {
+            family: "'Inter', sans-serif",
+            size: 12
+          },
+          borderColor: document.body.classList.contains('light-theme') ? 
+                      'var(--border-subtle)' : 'rgba(255, 255, 255, 0.2)', // More visible border in dark mode
+          borderWidth: 1,
+          padding: 10,
+          titleColor: document.body.classList.contains('light-theme') ? 
+                      'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Better title contrast
+          bodyColor: document.body.classList.contains('light-theme') ? 
+                     'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)', // Better body text contrast
           callbacks: {
             label: function(context) {
               return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
@@ -914,7 +947,8 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
               size: 13, // Slightly larger for better readability
               weight: 500
             },
-            color: 'var(--text-secondary)'
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)' // Enhanced contrast for dark mode
           },
           min: timeRange[0],
           max: timeRange[1],
@@ -925,9 +959,11 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
           },
           ticks: {
             font: {
-              size: 11 // Slightly larger tick font
+              size: 11, // Slightly larger tick font
+              weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
             },
-            color: 'var(--text-secondary)'
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)' // Enhanced contrast for dark mode
           }
         },
         y: {
@@ -939,7 +975,8 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
               size: 13, // Slightly larger for better readability
               weight: 500
             },
-            color: 'var(--text-secondary)'
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)' // Enhanced contrast for dark mode
           },
           min: yMin,
           max: yMax,
@@ -949,19 +986,50 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
                   'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
           },
           ticks: {
-            color: 'var(--text-secondary)',
             font: {
-              size: 11
-            }
+              size: 11,
+              weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+            },
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)' // Enhanced contrast for dark mode
           }
         }
       },
       plugins: {
         legend: {
           display: true,
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            font: {
+              family: "'Inter', sans-serif",
+              size: 12,
+              weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+            },
+            color: document.body.classList.contains('light-theme') ? 
+                   'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Maximum contrast for legend
+            boxWidth: document.body.classList.contains('light-theme') ? 12 : 15 // Larger color boxes in dark mode
+          }
         },
         tooltip: {
+          backgroundColor: document.body.classList.contains('light-theme') ? 
+                           'var(--bg-card)' : 'rgba(30, 30, 30, 0.95)', // Darker in dark mode for contrast
+          titleFont: {
+            family: "'Inter', sans-serif",
+            size: 13,
+            weight: 600
+          },
+          bodyFont: {
+            family: "'Inter', sans-serif",
+            size: 12
+          },
+          borderColor: document.body.classList.contains('light-theme') ? 
+                      'var(--border-subtle)' : 'rgba(255, 255, 255, 0.2)', // More visible border in dark mode
+          borderWidth: 1,
+          padding: 10,
+          titleColor: document.body.classList.contains('light-theme') ? 
+                      'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Better title contrast
+          bodyColor: document.body.classList.contains('light-theme') ? 
+                     'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)', // Better body text contrast
           callbacks: {
             label: function(context) {
               return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
