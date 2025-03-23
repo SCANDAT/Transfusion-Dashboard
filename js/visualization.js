@@ -735,118 +735,136 @@ function createVisualizationControls() {
           duration: 800,
           easing: 'easeOutQuart'
         },
-        scales: {
-          x: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Time From Transfusion (minutes)',
-              font: {
-                family: "'Inter', sans-serif",
-                size: 13, // Slightly larger for better readability
-                weight: 500
+          scales: {
+            x: {
+              type: 'linear',
+              title: {
+                display: true,
+                text: 'Time From Transfusion (minutes)',
+                font: {
+                  family: "'Inter', sans-serif",
+                  size: 13, // Slightly larger for better readability
+                  weight: 500
+                },
+                color: document.body.classList.contains('light-theme') ? 
+                       'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)' // Enhanced contrast for dark mode
               },
-              color: 'var(--text-secondary)'
-            },
-            min: timeRange[0],
-            max: timeRange[1],
-            grid: {
-              // Higher opacity grid lines for better visibility in dark mode
-              color: document.body.classList.contains('light-theme') ? 
-                    'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
-            },
-            ticks: {
-              font: {
-                size: 11 // Slightly larger tick font
+              min: timeRange[0],
+              max: timeRange[1],
+              grid: {
+                // Higher opacity grid lines for better visibility in dark mode
+                color: document.body.classList.contains('light-theme') ? 
+                      'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
               },
-              color: 'var(--text-secondary)'
+              ticks: {
+                font: {
+                  size: 11, // Slightly larger tick font
+                  weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+                },
+                color: document.body.classList.contains('light-theme') ? 
+                       'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)' // Enhanced contrast for dark mode
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel,
+                font: {
+                  family: "'Inter', sans-serif",
+                  size: 13, // Slightly larger for better readability
+                  weight: 500
+                },
+                color: document.body.classList.contains('light-theme') ? 
+                       'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)' // Enhanced contrast for dark mode
+              },
+              min: yMin,
+              max: yMax,
+              grid: {
+                // Higher opacity grid lines for better visibility in dark mode
+                color: document.body.classList.contains('light-theme') ? 
+                       'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
+              },
+              ticks: {
+                count: 5,
+                callback: (value, index, values) => {
+                  // Always use one decimal place for consistency
+                  let formattedValue = value.toFixed(1);
+                  
+                  // Avoid -0.0 display
+                  if (formattedValue === "-0.0") formattedValue = "0.0";
+                  
+                  // Check if this formatted value would be a duplicate
+                  if (usedYLabels.has(formattedValue)) {
+                    return null; // Skip duplicate
+                  }
+                  
+                  // Add to used labels set
+                  usedYLabels.add(formattedValue);
+                  
+                  // Clear the set when we reach the end of the axis ticks
+                  if (index === values.length - 1) {
+                    usedYLabels.clear();
+                  }
+                  
+                  return formattedValue;
+                },
+                display: true,
+                font: {
+                  size: 11,
+                  weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+                },
+                color: document.body.classList.contains('light-theme') ? 
+                       'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)' // Enhanced contrast for dark mode
+              }
             }
           },
-          y: {
-            title: {
+          plugins: {
+            legend: {
               display: true,
-              text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel,
-              font: {
+              position: 'bottom',
+              labels: {
+                font: {
+                  family: "'Inter', sans-serif",
+                  size: 12,
+                  weight: document.body.classList.contains('light-theme') ? 400 : 500 // Bolder in dark mode
+                },
+                color: document.body.classList.contains('light-theme') ? 
+                       'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Maximum contrast for legend
+                filter: function(legendItem) {
+                  // Hide "CI Upper" and "CI Lower" from legend
+                  return !legendItem.text.includes('CI Upper') && !legendItem.text.includes('CI Lower');
+                },
+                padding: 15,
+                boxWidth: document.body.classList.contains('light-theme') ? 12 : 15 // Larger color boxes in dark mode
+              }
+            },
+            tooltip: {
+              backgroundColor: document.body.classList.contains('light-theme') ? 
+                               'var(--bg-card)' : 'rgba(30, 30, 30, 0.95)', // Darker in dark mode for contrast
+              titleFont: {
                 family: "'Inter', sans-serif",
-                size: 13, // Slightly larger for better readability
-                weight: 500
+                size: 13,
+                weight: 600
               },
-              color: 'var(--text-secondary)'
-            },
-            min: yMin,
-            max: yMax,
-            grid: {
-              // Higher opacity grid lines for better visibility in dark mode
-              color: document.body.classList.contains('light-theme') ? 
-                     'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
-            },
-            ticks: {
-              count: 5,
-              callback: (value, index, values) => {
-                // Always use one decimal place for consistency
-                let formattedValue = value.toFixed(1);
-                
-                // Avoid -0.0 display
-                if (formattedValue === "-0.0") formattedValue = "0.0";
-                
-                // Check if this formatted value would be a duplicate
-                if (usedYLabels.has(formattedValue)) {
-                  return null; // Skip duplicate
-                }
-                
-                // Add to used labels set
-                usedYLabels.add(formattedValue);
-                
-                // Clear the set when we reach the end of the axis ticks
-                if (index === values.length - 1) {
-                  usedYLabels.clear();
-                }
-                
-                return formattedValue;
-              },
-              display: true,
-              color: 'var(--text-secondary)'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              font: {
+              bodyFont: {
                 family: "'Inter', sans-serif",
                 size: 12
               },
-              color: 'var(--text-primary)',
-              filter: function(legendItem) {
-                // Hide "CI Upper" and "CI Lower" from legend
-                return !legendItem.text.includes('CI Upper') && !legendItem.text.includes('CI Lower');
-              },
-              padding: 15
-            }
-          },
-          tooltip: {
-            backgroundColor: 'var(--bg-card)',
-            titleFont: {
-              family: "'Inter', sans-serif",
-              size: 13,
-              weight: 600
-            },
-            bodyFont: {
-              family: "'Inter', sans-serif",
-              size: 12
-            },
-            borderColor: 'var(--border-subtle)',
-            borderWidth: 1,
-            padding: 10,
-            callbacks: {
-              label: function(context) {
-                return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
+              borderColor: document.body.classList.contains('light-theme') ? 
+                          'var(--border-subtle)' : 'rgba(255, 255, 255, 0.2)', // More visible border in dark mode
+              borderWidth: 1,
+              padding: 10,
+              titleColor: document.body.classList.contains('light-theme') ? 
+                          'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Better title contrast
+              bodyColor: document.body.classList.contains('light-theme') ? 
+                         'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)', // Better body text contrast
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
+                }
               }
             }
           }
-        }
       }
     });
     
