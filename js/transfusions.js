@@ -721,6 +721,23 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
   let yMin = minY - padding;
   let yMax = maxY + padding;
   
+  // Create SVG export button if it doesn't exist
+  const chartContainer = document.getElementById(`chart-${vitalParam}`).parentNode;
+  if (!chartContainer.querySelector('.chart-actions')) {
+    const chartActions = document.createElement('div');
+    chartActions.className = 'chart-actions';
+    chartActions.innerHTML = `
+      <button class="chart-action-btn" title="Export as SVG">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </button>
+    `;
+    chartContainer.appendChild(chartActions);
+  }
+  
   // Draw red vertical line at time 0 (transfusion time)
   const verticalLinePlugin = {
     id: 'verticalLine',
@@ -748,7 +765,8 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
     }
   };
   
-  return new Chart(ctx, {
+  // Create the chart
+  const chart = new Chart(ctx, {
     type: 'line',
     data: chartData,
     options: {
@@ -866,6 +884,17 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
     },
     plugins: [verticalLinePlugin]
   });
+  
+  // Add SVG export button functionality
+  const exportBtn = chartContainer.querySelector('.chart-action-btn');
+  if (exportBtn) {
+    exportBtn.onclick = function() {
+      const filename = `${metaInfo.vitalName ? metaInfo.vitalName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'transfusion'}_chart`;
+      exportChartAsSVG(chart, filename);
+    };
+  }
+  
+  return chart;
 }
 
 /**
@@ -899,6 +928,23 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
   let yMin = minY - padding;
   let yMax = maxY + padding;
   
+  // Create SVG export button if it doesn't exist
+  const chartContainer = document.getElementById(`loess-chart-${vitalParam}`).parentNode;
+  if (!chartContainer.querySelector('.chart-actions')) {
+    const chartActions = document.createElement('div');
+    chartActions.className = 'chart-actions';
+    chartActions.innerHTML = `
+      <button class="chart-action-btn" title="Export as SVG">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </button>
+    `;
+    chartContainer.appendChild(chartActions);
+  }
+  
   // Draw red vertical line at time 0 (transfusion time)
   const verticalLinePlugin = {
     id: 'verticalLine',
@@ -926,7 +972,8 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
     }
   };
   
-  return new Chart(ctx, {
+  // Create the chart
+  const chart = new Chart(ctx, {
     type: 'line',
     data: chartData,
     options: {
@@ -1040,6 +1087,17 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
     },
     plugins: [verticalLinePlugin]
   });
+  
+  // Add SVG export button functionality
+  const exportBtn = chartContainer.querySelector('.chart-action-btn');
+  if (exportBtn) {
+    exportBtn.onclick = function() {
+      const filename = `${metaInfo.vitalName ? metaInfo.vitalName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'loess'}_analysis`;
+      exportChartAsSVG(chart, filename);
+    };
+  }
+  
+  return chart;
 }
 
 /**
