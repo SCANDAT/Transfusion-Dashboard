@@ -763,18 +763,52 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
           type: 'linear',
           title: {
             display: true,
-            text: 'Time From Transfusion (minutes)'
+            text: 'Time From Transfusion (minutes)',
+            font: {
+              family: "'Inter', sans-serif",
+              size: 13, // Slightly larger for better readability
+              weight: 500
+            },
+            color: 'var(--text-secondary)'
           },
           min: timeRange[0],
-          max: timeRange[1]
+          max: timeRange[1],
+          grid: {
+            // Higher opacity grid lines for better visibility in dark mode
+            color: document.body.classList.contains('light-theme') ? 
+                  'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
+          },
+          ticks: {
+            font: {
+              size: 11 // Slightly larger tick font
+            },
+            color: 'var(--text-secondary)'
+          }
         },
         y: {
           title: {
             display: true,
-            text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel
+            text: showDeltaPlot ? metaInfo.DeltaYLabel : metaInfo.yLabel,
+            font: {
+              family: "'Inter', sans-serif",
+              size: 13, // Slightly larger for better readability
+              weight: 500
+            },
+            color: 'var(--text-secondary)'
           },
           min: yMin,
-          max: yMax
+          max: yMax,
+          grid: {
+            // Higher opacity grid lines for better visibility in dark mode
+            color: document.body.classList.contains('light-theme') ? 
+                  'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
+          },
+          ticks: {
+            color: 'var(--text-secondary)',
+            font: {
+              size: 11
+            }
+          }
         }
       },
       plugins: {
@@ -874,18 +908,52 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
           type: 'linear',
           title: {
             display: true,
-            text: 'Time From Transfusion (minutes)'
+            text: 'Time From Transfusion (minutes)',
+            font: {
+              family: "'Inter', sans-serif",
+              size: 13, // Slightly larger for better readability
+              weight: 500
+            },
+            color: 'var(--text-secondary)'
           },
           min: timeRange[0],
-          max: timeRange[1]
+          max: timeRange[1],
+          grid: {
+            // Higher opacity grid lines for better visibility in dark mode
+            color: document.body.classList.contains('light-theme') ? 
+                  'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
+          },
+          ticks: {
+            font: {
+              size: 11 // Slightly larger tick font
+            },
+            color: 'var(--text-secondary)'
+          }
         },
         y: {
           title: {
             display: true,
-            text: metaInfo.yLabel
+            text: metaInfo.yLabel,
+            font: {
+              family: "'Inter', sans-serif",
+              size: 13, // Slightly larger for better readability
+              weight: 500
+            },
+            color: 'var(--text-secondary)'
           },
           min: yMin,
-          max: yMax
+          max: yMax,
+          grid: {
+            // Higher opacity grid lines for better visibility in dark mode
+            color: document.body.classList.contains('light-theme') ? 
+                  'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.15)'
+          },
+          ticks: {
+            color: 'var(--text-secondary)',
+            font: {
+              size: 11
+            }
+          }
         }
       },
       plugins: {
