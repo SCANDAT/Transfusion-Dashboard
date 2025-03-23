@@ -77,7 +77,7 @@ function createRbcComponentFactorsContent() {
     <div class="card">
       <div id="chart-title" class="header" style="margin-bottom: 8px;"></div>
       <div id="model-descriptions" class="info compact-model-descriptions" style="margin-bottom: 8px;"></div>
-      <div id="chart-container" class="chart-container chart-container-large">
+      <div id="chart-container" class="chart-container chart-container-large" style="height: 640px;">
         <canvas id="chart-canvas"></canvas>
       </div>
     </div>
