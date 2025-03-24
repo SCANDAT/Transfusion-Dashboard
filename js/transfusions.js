@@ -323,7 +323,8 @@ function updateLoessPlot(state, vitalParam, data) {
   
   const chartData = prepareLoessChartData(
     data,
-    state.timeRange
+    state.timeRange,
+    state.showConfidenceInterval
   );
   
   if (chartData) {
@@ -499,7 +500,7 @@ async function loadLoessData(vitalParam, fileCase, logDebug) {
           
           // Debug: Log a sample of the filtered data
           if (filteredData.length > 0) {
-            logDebug(`LOESS filtered data sample: TimeFromTransfusion=${filteredData[0].TimeFromTransfusion}, PredVal_Full=${filteredData[0].PredVal_Full}`);
+            logDebug(`LOESS filtered data sample: TimeFromTransfusion=${filteredData[0].TimeFromTransfusion}, Pred=${filteredData[0].Pred}, LCL=${filteredData[0].LCL}, UCL=${filteredData[0].UCL}`);
           }
           
           // Extract metadata from the first row
@@ -653,9 +654,10 @@ function prepareTransfusionChartData(data, timeRange, showDeltaPlot, showConfide
  * Prepare LOESS data for Chart.js
  * @param {Object} data - The LOESS data
  * @param {Array} timeRange - Time range [min, max]
+ * @param {boolean} showConfidenceInterval - Whether to show confidence interval
  * @returns {Object|null} Processed chart data or null if no data available
  */
-function prepareLoessChartData(data, timeRange) {
+function prepareLoessChartData(data, timeRange, showConfidenceInterval) {
   if (!data.data || data.data.length === 0) return null;
   
   // Filter data by time range
@@ -669,23 +671,70 @@ function prepareLoessChartData(data, timeRange) {
   // Sort by time
   const sortedData = _.sortBy(filteredData, 'TimeFromTransfusion');
   
-  // Z-Score line - using PredVal_Full instead of ZScore which doesn't exist
-  const dataset = {
+  // Create datasets array
+  const datasets = [];
+  
+  // Base colors for LOESS plot
+  const colors = {
+    line: 'rgb(124, 58, 237)', // Purple for LOESS
+    area: document.body.classList.contains('light-theme') ? 
+          'rgba(124, 58, 237, 0.15)' : 'rgba(124, 58, 237, 0.25)' // More visible in dark mode
+  };
+  
+  // Check for confidence interval data
+  const hasValidCIData = sortedData.some(row => 
+    row.LCL !== null && row.LCL !== undefined &&
+    row.UCL !== null && row.UCL !== undefined
+  );
+  
+  // Add confidence interval datasets if enabled and data exists
+  if (showConfidenceInterval && hasValidCIData) {
+    // Lower CI boundary (no fill)
+    datasets.push({
+      label: 'CI Lower',
+      data: sortedData.map(row => ({
+        x: row.TimeFromTransfusion,
+        y: row.LCL
+      })),
+      borderColor: 'transparent',
+      backgroundColor: 'transparent',
+      pointRadius: 0,
+      fill: false,
+      tension: 0.3
+    });
+    
+    // Upper CI boundary (fill to lower)
+    datasets.push({
+      label: 'CI Upper',
+      data: sortedData.map(row => ({
+        x: row.TimeFromTransfusion,
+        y: row.UCL
+      })),
+      borderColor: 'transparent',
+      backgroundColor: colors.area,
+      pointRadius: 0,
+      fill: '-1', // fill to the previous dataset
+      tension: 0.3
+    });
+  }
+  
+  // Add main prediction line
+  datasets.push({
     label: 'Z-Score',
     data: sortedData.map(row => ({
       x: row.TimeFromTransfusion,
-      y: row.PredVal_Full
+      y: row.Pred
     })),
-    borderColor: 'rgb(124, 58, 237)', // Purple for LOESS
-    backgroundColor: 'rgba(124, 58, 237, 0.2)',
-    borderWidth: 2,
+    borderColor: colors.line,
+    backgroundColor: colors.line,
+    borderWidth: document.body.classList.contains('light-theme') ? 2 : 3, // Thicker in dark mode
     tension: 0.3,
     fill: false,
     pointRadius: 0
-  };
+  });
   
   return {
-    datasets: [dataset]
+    datasets: datasets
   };
 }
 
@@ -848,8 +897,8 @@ function renderTransfusionChart(ctx, chartData, metaInfo, timeRange, showDeltaPl
             color: document.body.classList.contains('light-theme') ? 
                    'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Maximum contrast for legend
             filter: function(legendItem) {
-              // Hide "CI Upper" from legend
-              return !legendItem.text.includes('CI Upper');
+              // Hide "CI Upper" and "CI Lower" from legend
+              return !legendItem.text.includes('CI Upper') && !legendItem.text.includes('CI Lower');
             },
             boxWidth: document.body.classList.contains('light-theme') ? 12 : 15 // Larger color boxes in dark mode
           }
@@ -1054,6 +1103,10 @@ function renderLoessChart(ctx, chartData, metaInfo, timeRange, vitalParam) {
             },
             color: document.body.classList.contains('light-theme') ? 
                    'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Maximum contrast for legend
+            filter: function(legendItem) {
+              // Hide "CI Upper" and "CI Lower" from legend
+              return !legendItem.text.includes('CI Upper') && !legendItem.text.includes('CI Lower');
+            },
             boxWidth: document.body.classList.contains('light-theme') ? 12 : 15 // Larger color boxes in dark mode
           }
         },
