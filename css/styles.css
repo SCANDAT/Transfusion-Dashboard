@@ -288,8 +288,9 @@ p {
 }
 
 .dashboard-description {
+  width: fit-content;
   margin: 0 auto var(--space-xl) auto;
-  text-align: justify;
+  text-align: center;
   color: var(--text-secondary);
   line-height: 1.8;
 }
@@ -1170,8 +1171,9 @@ p {
   }
   
 .dashboard-description {
+  width: fit-content;
   margin: 0 auto var(--space-xl) auto;
-  text-align: justify;
+  text-align: center;
   color: var(--text-secondary);
   line-height: 1.8;
 }
