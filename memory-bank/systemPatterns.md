@@ -95,6 +95,51 @@ UI interaction and data changes implement an informal observer pattern:
 - Visualization updates based on selection changes
 - Chart updates in response to data changes
 
+### Theme Architecture Pattern
+
+The application implements a theme system based on CSS variables and class toggling:
+
+```mermaid
+flowchart TD
+    Toggle[Theme Toggle Event] --> ThemeClass[Add/Remove .light-theme class]
+    ThemeClass --> CSSVars[CSS Variables Updated]
+    CSSVars --> Components[Component Styling]
+    ThemeClass --> JSDetection[JavaScript Theme Detection]
+    JSDetection --> ConditionalStyling[Conditional Rendering Logic]
+    ConditionalStyling --> Charts[Chart.js Configurations]
+    
+    subgraph Theme Detection
+        JSDetection
+    end
+    
+    subgraph Theme Application
+        Components
+        Charts
+    end
+```
+
+#### Implementation Details
+
+The theme system follows these implementation patterns:
+
+1. **CSS Theme Definition**:
+   - Default dark theme defined in `:root` with CSS variables
+   - Light theme override variables defined in `.light-theme` class
+
+2. **Theme Toggle Mechanism**:
+   - Theme toggle button triggers class addition/removal
+   - `themeChanged` event dispatched to notify components
+
+3. **Theme Detection in JavaScript**:
+   - Components use `document.body.classList.contains('light-theme')` to detect current theme
+   - Conditional logic applies appropriate styling based on theme
+   - Chart.js configurations adapt colors, line weights, and contrast
+
+4. **Theme-Aware Components**:
+   - All visual components check theme before rendering
+   - Duplicated components (in different modules) need consistent theme handling
+   - Some components like tooltips maintain consistent appearance across themes
+
 ## Data Flow Patterns
 
 ### CSV Data Loading Pipeline

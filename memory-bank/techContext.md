@@ -69,16 +69,80 @@ The design system is implemented using native CSS variables:
 }
 ```
 
-### Theme Switching
+### Theme System Implementation
 
-Theme switching is implemented via class toggling:
+#### Theme Variables
+
+Theme switching is implemented via class toggling and CSS variables:
+
 ```css
+/* Default dark theme in :root */
+:root {
+  /* Base Colors - Dark Theme (Default) */
+  --bg-main: #0a0a0a;
+  --bg-card: #141414;
+  --bg-card-hover: #1c1c1c;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.78);
+  
+  /* Chart colors for dark theme */
+  --chart-color-1: #635BFF; /* Stripe Purple */
+  --chart-color-2: #E82127; /* Tesla Red */
+  /* and more... */
+}
+
+/* Light theme overrides */
 .light-theme {
   --bg-main: #f8f9fa;
   --bg-card: #ffffff;
   --text-primary: #111827;
+  
+  /* Chart colors for light theme */
+  --chart-color-1: var(--chart-color-1-light);
+  --chart-color-2: var(--chart-color-2-light);
+  /* and more... */
 }
 ```
+
+#### JavaScript Theme Detection
+
+Theme detection is performed consistently across modules using:
+
+```javascript
+// Check if light theme is active
+const isLightTheme = document.body.classList.contains('light-theme');
+
+// Use in conditional rendering
+const textColor = isLightTheme ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)';
+```
+
+#### Theme Toggle Event Listener
+
+Components listen for theme changes:
+
+```javascript
+document.addEventListener('themeChanged', () => {
+  // Update charts or UI elements when theme changes
+  updateAllCharts();
+});
+```
+
+#### Component-Specific Theming
+
+Different component types require specific theming approaches:
+
+1. **Static UI Elements**: Use CSS variables directly
+2. **Chart.js Elements**: Configure via JavaScript conditionals
+3. **Dynamic Content**: Apply appropriate classes or styles at creation time
+4. **Tooltips & Overlays**: Use consistent styling regardless of theme
+
+#### Theme-Related Duplication
+
+The theme-aware code is currently duplicated across different JavaScript modules:
+
+1. **visualization.js**: Contains Chart.js config for Component Factors tab
+2. **transfusions.js**: Contains similar Chart.js config for RBC Transfusion Effects tab
+3. Both need to be updated when fixing theme-related issues
 
 ### Typography
 
