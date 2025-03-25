@@ -100,6 +100,12 @@ function initializeRbcTransfusions(containerId, fileCase, logDebug) {
   // Add event listeners
   addEventListeners(state);
   
+  // Listen for theme changes
+  document.addEventListener('themeChanged', () => {
+    logDebug('Theme changed in RBC Transfusions tab, updating charts...');
+    updateAllCharts(state);
+  });
+  
   // Load and render the initial vital parameter (MAP)
   loadVitalParameterData(state, 'ARTm');
   
