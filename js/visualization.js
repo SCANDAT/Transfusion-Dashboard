@@ -10,6 +10,35 @@
 function createVisualizationControls() {
     return `
       <div class="controls-panel">
+        <div class="available-options">
+          <div class="available-options-toggle">Available Parameters & Factors <span class="toggle-icon">▼</span></div>
+          <div class="available-options-content">
+            <div class="row">
+              <div class="col">
+                <p><strong>Vital Parameters:</strong></p>
+                <ul class="compact-list">
+                  <li>Mean Arterial Pressure (mmHg)</li>
+                  <li>Systolic Blood Pressure (mmHg)</li>
+                  <li>Diastolic Blood Pressure (mmHg)</li>
+                  <li>Heart Rate (bpm)</li>
+                  <li>Fraction of Inspired Oxygen (%)</li>
+                  <li>Peripheral Capillary Oxygen Saturation (%)</li>
+                  <li>Minute Ventilation (L/min)</li>
+                </ul>
+              </div>
+              <div class="col">
+                <p><strong>RBC Component Factors:</strong></p>
+                <ul class="compact-list">
+                  <li>Donor Hemoglobin (g/L)</li>
+                  <li>Donor Parity (parous or nulliparous)</li>
+                  <li>Donor Sex (male or female)</li>
+                  <li>RBC Component Storage Time (days)</li>
+                  <li>Weekday of Donation</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="controls-main">
           <div class="controls-row">
             <div class="controls-col">
@@ -55,36 +84,6 @@ function createVisualizationControls() {
                     <span>Show Change from Baseline</span>
                   </label>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="available-options">
-          <div class="available-options-toggle">Available Parameters & Factors <span class="toggle-icon">▼</span></div>
-          <div class="available-options-content">
-            <div class="row">
-              <div class="col">
-                <p><strong>Vital Parameters:</strong></p>
-                <ul class="compact-list">
-                  <li>Mean Arterial Pressure (mmHg)</li>
-                  <li>Systolic Blood Pressure (mmHg)</li>
-                  <li>Diastolic Blood Pressure (mmHg)</li>
-                  <li>Heart Rate (bpm)</li>
-                  <li>Fraction of Inspired Oxygen (%)</li>
-                  <li>Peripheral Capillary Oxygen Saturation (%)</li>
-                  <li>Minute Ventilation (L/min)</li>
-                </ul>
-              </div>
-              <div class="col">
-                <p><strong>RBC Component Factors:</strong></p>
-                <ul class="compact-list">
-                  <li>Donor Hemoglobin (g/L)</li>
-                  <li>Donor Parity (parous or nulliparous)</li>
-                  <li>Donor Sex (male or female)</li>
-                  <li>RBC Component Storage Time (days)</li>
-                  <li>Weekday of Donation</li>
-                </ul>
               </div>
             </div>
           </div>
