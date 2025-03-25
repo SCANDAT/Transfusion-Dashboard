@@ -24,6 +24,9 @@ class TransfusionDashboard {
       this.comparisonValues = [];   
       this.selectedComparisons = [];
       
+      // Listen for theme changes
+      document.addEventListener('themeChanged', () => this.handleThemeChange());
+      
       // Start from transfusion time (0):
       this.timeRange = [0, 720];    
       
@@ -731,5 +734,36 @@ class TransfusionDashboard {
      */
     logDebug(message) {
       logDebug(message, this.debugMode, document.getElementById('debug-output'));
+    }
+    
+    /**
+     * Handle theme change event
+     * Updates all charts to reflect the new theme colors
+     */
+    handleThemeChange() {
+      this.logDebug('Theme changed, updating charts...');
+      
+      try {
+        // Update main chart in Component Factors tab
+        if (this.chart) {
+          this.updateChart();
+          this.logDebug('Main component factors chart updated');
+        }
+        
+        // Find the RBC Transfusions tab state to update its charts
+        const rbcTransfusionsTab = document.getElementById('rbc-transfusions-tab');
+        if (rbcTransfusionsTab) {
+          // Trigger reset of all charts in the RBC Transfusions tab
+          const resetButton = rbcTransfusionsTab.querySelector('#transfusion-time-reset');
+          if (resetButton) {
+            // Clicking the reset button will redraw all charts with current theme colors
+            resetButton.click();
+            this.logDebug('RBC Transfusions tab charts updated');
+          }
+        }
+      } catch (error) {
+        console.error('Error updating charts after theme change:', error);
+        this.logDebug(`Failed to update charts after theme change: ${error.message}`);
+      }
     }
   }

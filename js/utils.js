@@ -382,7 +382,7 @@ function createSvgExportButton(chart, filename, container) {
 }
 
 /**
- * Toggle dark/light theme
+ * Toggle dark/light theme and dispatch a theme change event
  */
 function toggleTheme() {
   const body = document.body;
@@ -394,6 +394,12 @@ function toggleTheme() {
     body.classList.add('light-theme');
     localStorage.setItem('theme', 'light');
   }
+  
+  // Dispatch a custom event for chart updates
+  const themeChangeEvent = new CustomEvent('themeChanged', {
+    detail: { theme: body.classList.contains('light-theme') ? 'light' : 'dark' }
+  });
+  document.dispatchEvent(themeChangeEvent);
 }
 
 /**
