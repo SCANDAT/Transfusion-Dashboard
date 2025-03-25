@@ -445,10 +445,10 @@ function createChartArea() {
       tag.className = selectedComparisons.includes(value) ? 'tag active' : 'tag';
       tag.textContent = getLegendLabel(value, selectedCompFactor);
       
-      tag.addEventListener('click', () => {
-        onTagClick(value);
-        tag.className = selectedComparisons.includes(value) ? 'tag active' : 'tag';
-      });
+  tag.addEventListener('click', () => {
+    onTagClick(value);
+    // Don't update class name here - it will be handled by recreating tags
+  });
       
       container.appendChild(tag);
     });
