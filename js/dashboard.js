@@ -622,23 +622,33 @@ class TransfusionDashboard {
           </div>
         `;
         
-        // Update comparison tags
-        const tagsContainer = document.getElementById('comparison-tags');
-        createComparisonTags(
-          this.comparisonValues,
-          this.selectedComparisons,
-          this.selectedCompFactor,
-          tagsContainer,
-          (value) => {
-            // Toggle the selected comparison
-            if (this.selectedComparisons.includes(value)) {
-              this.selectedComparisons = this.selectedComparisons.filter(v => v !== value);
-            } else {
-              this.selectedComparisons.push(value);
-            }
-            this.updateChart();
+    // Update comparison tags
+    const tagsContainer = document.getElementById('comparison-tags');
+    const recreateTags = () => {
+      createComparisonTags(
+        this.comparisonValues,
+        this.selectedComparisons,
+        this.selectedCompFactor,
+        tagsContainer,
+        (value) => {
+          // Toggle the selected comparison
+          if (this.selectedComparisons.includes(value)) {
+            this.selectedComparisons = this.selectedComparisons.filter(v => v !== value);
+          } else {
+            this.selectedComparisons.push(value);
           }
-        );
+          
+          // Recreate the tags to reflect the new state
+          recreateTags();
+          
+          // Update the chart
+          this.updateChart();
+        }
+      );
+    };
+    
+    // Initial creation of tags
+    recreateTags();
         
         // Time range inputs
         document.getElementById('time-min').value = this.timeRange[0];

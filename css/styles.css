@@ -489,43 +489,14 @@ p {
 }
 
 .vital-param-button:not(.active) {
-  background: var(--bg-card);
+  background: transparent;
   color: var(--text-secondary);
-  border: 2px dashed var(--border-subtle);
-  opacity: 0.9;
-  position: relative;
+  border: 1px solid var(--border-subtle);
+  opacity: 0.85;
+  transition: all var(--transition-normal);
 }
 
-/* Add diagonal strikethrough for inactive buttons */
-.vital-param-button:not(.active)::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(
-    45deg,
-    transparent 46%,
-    var(--text-secondary) 49%,
-    var(--text-secondary) 51%,
-    transparent 54%
-  );
-  background-size: 8px 8px;
-  opacity: 0.7;
-  border-radius: var(--radius-full);
-  pointer-events: none;
-}
-
-.light-theme .vital-param-button:not(.active)::after {
-  background-image: linear-gradient(
-    45deg,
-    transparent 46%,
-    rgba(0, 0, 0, 0.35) 49%,
-    rgba(0, 0, 0, 0.35) 51%,
-    transparent 54%
-  );
-}
+/* No strikethrough for inactive buttons */
 
 .vital-param-button:not(.active):hover {
   background: var(--bg-card-hover);
@@ -672,42 +643,11 @@ p {
 }
 
 .tag:not(.active) { 
-  background: var(--bg-card);
+  background: transparent;
   color: var(--text-secondary);
-  border: 2px dashed var(--border-subtle);
-  opacity: 0.9;
-  position: relative;
-}
-
-/* Enhanced "disabled" diagonal line to inactive tags with better visibility */
-.tag:not(.active)::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(
-    45deg,
-    transparent 46%,
-    var(--text-secondary) 49%,
-    var(--text-secondary) 51%,
-    transparent 54%
-  );
-  background-size: 8px 8px;
-  opacity: 0.7;
-  border-radius: var(--radius-full);
-  pointer-events: none;
-}
-
-.light-theme .tag:not(.active)::after {
-  background-image: linear-gradient(
-    45deg,
-    transparent 46%,
-    rgba(0, 0, 0, 0.35) 49%,
-    rgba(0, 0, 0, 0.35) 51%,
-    transparent 54%
-  );
+  border: 1px solid var(--border-subtle);
+  opacity: 0.85;
+  transition: all var(--transition-normal);
 }
 
 .tag:not(.active):hover {
