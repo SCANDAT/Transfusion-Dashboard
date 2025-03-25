@@ -184,12 +184,6 @@ class TransfusionDashboard {
       chartCard.innerHTML = createChartArea();
       rbcComponentFactorsTab.appendChild(chartCard);
       
-      // Info card for Vital Parameters and RBC factors
-      const infoCard = document.createElement('div');
-      infoCard.className = 'card';
-      infoCard.innerHTML = createInfoCard();
-      rbcComponentFactorsTab.appendChild(infoCard);
-      
       // RBC Transfusions tab (new correct naming)
       // This tab shows transfusion effects on vital parameters
       const rbcTransfusionsTab = document.createElement('div');
