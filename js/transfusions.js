@@ -128,7 +128,6 @@ function createVitalParamButtons(state) {
       'vital-param-button active' : 'vital-param-button';
     button.dataset.value = param.value;
     button.innerHTML = `
-      <span class="color-indicator" style="background-color: ${param.color}"></span>
       <span class="button-label">${param.label}</span>
     `;
     
