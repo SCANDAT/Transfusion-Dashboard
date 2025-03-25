@@ -289,7 +289,7 @@ p {
 
 .dashboard-description {
   max-width: 82%; /* Width that matches the title's width but slightly narrower */
-  margin: 0 auto var(--space-xl) auto;
+  margin: 0 auto var(--space-md) auto;
   text-align: justify;
   color: var(--text-secondary);
   line-height: 1.8;
