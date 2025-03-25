@@ -878,7 +878,7 @@ function createChartArea() {
             },
             tooltip: {
               backgroundColor: document.body.classList.contains('light-theme') ? 
-                               'var(--bg-card)' : 'rgba(30, 30, 30, 0.95)', // Darker in dark mode for contrast
+                               'rgba(45, 55, 72, 0.95)' : 'rgba(30, 30, 30, 0.95)', // Dark blue-gray for light mode, dark gray for dark mode
               titleFont: {
                 family: "'Inter', sans-serif",
                 size: 13,
@@ -889,13 +889,12 @@ function createChartArea() {
                 size: 12
               },
               borderColor: document.body.classList.contains('light-theme') ? 
-                          'var(--border-subtle)' : 'rgba(255, 255, 255, 0.2)', // More visible border in dark mode
+                          'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)', // More visible border in both modes
               borderWidth: 1,
               padding: 10,
-              titleColor: document.body.classList.contains('light-theme') ? 
-                          'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 1.0)', // Better title contrast
-              bodyColor: document.body.classList.contains('light-theme') ? 
-                         'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)', // Better body text contrast
+              titleColor: 'rgba(255, 255, 255, 1.0)', // White text for both modes
+              bodyColor: 'rgba(255, 255, 255, 0.9)', // Slightly less bright white for body text in both modes
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)', // Add shadow for better visibility
               callbacks: {
                 label: function(context) {
                   return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
