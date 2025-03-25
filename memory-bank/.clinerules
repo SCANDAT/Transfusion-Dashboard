@@ -22,11 +22,16 @@ When implementing or modifying visualizations:
 - Consider SVG export quality in all visualization work
 - Implement theme-aware styling with `document.body.classList.contains('light-theme')` checks
 
-### Dark Mode Chart Implementation
+### Dark Mode and Theme Toggle Implementation
 
-When working with charts that must support dark mode:
+When implementing UI elements that must support both dark and light modes:
 - Use conditional styling to adjust based on current theme: 
   `document.body.classList.contains('light-theme') ? lightValue : darkValue`
+- Always test both dark and light modes when implementing new features
+- Verify component appearance by toggling between modes multiple times
+- Never assume a component will look correct in both modes without testing
+
+#### Chart Visualizations
 - Increase line thickness in dark mode (3px) compared to light mode (2px)
 - Increase grid line opacity in dark mode (15%) compared to light mode (5%)
 - Brighten colors specifically for dark mode to ensure visibility
@@ -34,6 +39,22 @@ When working with charts that must support dark mode:
 - Ensure text elements (labels, ticks, legends) have sufficient contrast
 - Apply consistent font size increases for better readability (13px for axes)
 - Follow these patterns in all chart types across the application
+
+#### Tooltips and Overlays
+- Use dark backgrounds with light text for tooltips in both modes
+- Recommended tooltip background: 
+  - Dark mode: `rgba(30, 30, 30, 0.95)`
+  - Light mode: `rgba(45, 55, 72, 0.95)`
+- Always use white text in tooltips regardless of theme: `rgba(255, 255, 255, 1.0)`
+- Add visible borders to tooltips: `rgba(0, 0, 0, 0.2)` or `rgba(255, 255, 255, 0.2)`
+- Use box-shadow for better definition: `0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)`
+- Check tooltip implementations across all related modules - Chart.js config may be duplicated
+
+#### Module Consistency
+- Look for duplicate code that implements similar functionality across modules
+- Chart.js configuration may appear in multiple files (e.g., visualization.js, transfusions.js)
+- When fixing theme issues, check all instances of similar component configuration
+- Consider refactoring common theme-dependent styling into shared functions
 
 ### Module Extensions
 

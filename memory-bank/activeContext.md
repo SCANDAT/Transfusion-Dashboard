@@ -2,15 +2,27 @@
 
 ## Current Focus
 
-The Transfusion Dashboard project appears to be in active development with a focus on creating a comprehensive visualization system for blood transfusion data in ICU settings. Based on the project architecture and design system documentation, the current focus appears to be on:
+The Transfusion Dashboard project is in active development with a focus on creating a comprehensive visualization system for blood transfusion data in ICU settings. Based on the project architecture and design system documentation, the current focus areas are:
 
 1. **Modular Implementation**: Developing the core modules (dashboard controller, visualization, component factors, transfusions) with clear separation of concerns
 2. **Data Visualization Pipeline**: Establishing robust data loading, transformation, and visualization workflows
 3. **UI Implementation**: Applying the premium design system to create an intuitive and visually appealing interface
+4. **Theme Consistency**: Ensuring all UI components work correctly in both dark and light modes
 
 ## Recent Changes
 
-Recent improvements have been made to enhance chart visibility in dark mode throughout the dashboard:
+### Theme Toggle and UI Improvements
+
+- **Tooltip Styling Fix**: Resolved inconsistent tooltip appearance across:
+  - Fixed tooltip background color in light mode from transparent to dark blue-gray 
+  - Standardized white text in tooltips for both modes
+  - Added consistent borders and shadow for better definition
+  - Identified and fixed duplicate tooltip configurations in multiple JavaScript modules
+
+- **Code Duplication Awareness**: Discovered that Chart.js configurations are duplicated across:
+  - visualization.js (used by Component Factors tab)
+  - transfusions.js (used by RBC Transfusion Effects tab)
+  - These duplications require coordinated updates when fixing theme-related issues
 
 - **Enhanced Chart Visibility**: Improved contrast and readability of all chart elements in dark mode by:
   - Increasing brightness of chart lines and areas
