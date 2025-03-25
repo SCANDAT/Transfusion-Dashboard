@@ -288,11 +288,12 @@ p {
 }
 
 .dashboard-description {
-  width: fit-content;
+  max-width: 82%; /* Width that matches the title's width but slightly narrower */
   margin: 0 auto var(--space-xl) auto;
-  text-align: center;
+  text-align: justify;
   color: var(--text-secondary);
   line-height: 1.8;
+  padding: 0 2%; /* Add subtle padding to create the effect of starting inside the "T" and ending inside the "d" */
 }
 
 .dashboard-description p {
@@ -1170,13 +1171,10 @@ p {
     font-size: 0.85rem;
   }
   
-.dashboard-description {
-  width: fit-content;
-  margin: 0 auto var(--space-xl) auto;
-  text-align: center;
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
+  /* Keep dashboard description consistent with main styling */
+  .dashboard-description {
+    max-width: 90%; /* Slightly wider on mobile for better readability */
+  }
 }
 
 /* Animations */
