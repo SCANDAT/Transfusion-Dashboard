@@ -767,6 +767,8 @@ p {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  border-collapse: separate; /* Changed from collapse to separate to allow border gaps */
+  border-spacing: 0; /* No extra spacing between cells */
 }
 
 .findings-table th {
@@ -774,10 +776,13 @@ p {
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .findings-table td {
   text-align: center;
+  border-top: none;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* First column (parameter names) should be left aligned */
@@ -796,6 +801,7 @@ p {
   font-weight: 500; /* Semi-bold for emphasis */
 }
 
+/* Header styles */
 .findings-table thead tr:first-child th {
   padding: var(--space-md) var(--space-md);
   background: rgba(var(--accent-primary-rgb, 10, 132, 255), 0.12);
@@ -809,6 +815,7 @@ p {
   background: rgba(var(--accent-primary-rgb, 10, 132, 255), 0.04);
   font-weight: normal;
   font-style: italic;
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 /* Make all superscripts in table headers use the accent-primary color */
@@ -819,6 +826,36 @@ p {
 
 .findings-table tbody tr:hover {
   background-color: var(--bg-card-hover);
+}
+
+/* Create border gaps between grouped columns */
+/* First gap: After Unit of Measurement column */
+.findings-table td:nth-child(2),
+.findings-table th:nth-child(2) {
+  border-right: 20px solid transparent;
+}
+
+/* Second gap: After Vital Parameter Change column */
+.findings-table td:nth-child(5),
+.findings-table th:nth-child(5) {
+  border-right: 20px solid transparent;
+}
+
+/* Third gap: After Base Model column */
+.findings-table td:nth-child(6),
+.findings-table th:nth-child(6) {
+  border-right: 20px solid transparent;
+}
+
+/* Ensure header row borders are continuous */
+.findings-table thead tr th {
+  border-bottom-color: var(--border-subtle);
+}
+
+/* Keep the existing borders for the header group rows */
+.findings-table thead tr:first-child th,
+.findings-table thead tr:nth-child(2) th {
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 .table-footnotes {
