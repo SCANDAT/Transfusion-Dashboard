@@ -744,7 +744,7 @@ p {
 
 /* Column widths for findings table */
 .findings-table .col-parameter {
-  width: 22%; /* Increased width for parameter names to fit longer names */
+  width: 24%; /* Increased width for parameter names to fit longer names */
 }
 
 .findings-table .col-unit {
@@ -759,7 +759,7 @@ p {
 .findings-table .col-change, 
 .findings-table .col-base, 
 .findings-table .col-adjusted {
-  width: 17.7%; /* Slightly wider for mean difference data */
+  width: 17%; /* Reduced slightly to accommodate wider parameter column */
 }
 
 /* Main Findings Table Specific Styles */
@@ -788,8 +788,7 @@ p {
 
 /* Specific styling for the Peripheral Capillary Oxygen Saturation parameter */
 .findings-table tr:nth-child(6) td:first-child {
-  font-size: 0.85em; /* Slightly smaller font size */
-  white-space: nowrap; /* Prevent wrapping */
+  white-space: nowrap; /* Prevent wrapping without changing font size */
 }
 
 /* Make last column (Fully Adjusted Model) bold to emphasize findings */
