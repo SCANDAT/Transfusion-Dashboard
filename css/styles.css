@@ -764,11 +764,9 @@ p {
 
 /* Main Findings Table Specific Styles */
 .findings-table {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
   border-collapse: collapse; /* Using collapse for consistent horizontal lines */
   width: 100%;
+  margin-bottom: var(--space-xl);
 }
 
 .findings-table th {
@@ -776,17 +774,14 @@ p {
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
-  border: 1px solid var(--border-subtle);
-  border-left: none;
-  border-right: none;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
   padding: var(--space-sm) var(--space-md);
 }
 
 .findings-table td {
   text-align: center;
-  border: 1px solid var(--border-subtle);
-  border-left: none; 
-  border-right: none;
+  border-bottom: 1px solid var(--border-subtle);
   padding: var(--space-sm) var(--space-md);
 }
 
@@ -837,113 +832,43 @@ p {
   background-color: var(--bg-card-hover);
 }
 
-/* Vertical borders for specific columns */
-/* First section: Parameter info (columns 1-2) */
-.findings-table td:nth-child(1),
-.findings-table th:nth-child(1) {
-  border-left: 1px solid var(--border-subtle);
-}
-
-.findings-table td:nth-child(2),
-.findings-table th:nth-child(2) {
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Second section: Population Estimates (columns 3-5) */
-.findings-table td:nth-child(3),
-.findings-table th:nth-child(3) {
-  border-left: 1px solid var(--border-subtle);
-}
-
-.findings-table td:nth-child(5),
-.findings-table th:nth-child(5) {
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Third section: Model Estimates (columns 6-7) */
-.findings-table td:nth-child(6),
-.findings-table th:nth-child(6) {
-  border-left: 1px solid var(--border-subtle);
-}
-
-.findings-table td:nth-child(7),
-.findings-table th:nth-child(7) {
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Add gaps via table cell styling */
-.findings-table th:nth-child(2) {
-  padding-right: 30px;
-}
-
-.findings-table th:nth-child(3) {
-  padding-left: 30px;
-}
-
-.findings-table th:nth-child(5) {
-  padding-right: 30px;
-}
-
-.findings-table th:nth-child(6) {
-  padding-left: 30px;
-}
-
-.findings-table th:nth-child(6) {
-  padding-right: 30px;
-}
-
-.findings-table th:nth-child(7) {
-  padding-left: 30px;
-}
-
+/* Add spacing between column groups for visual separation */
+/* Gap after Parameter Information section */
+.findings-table th:nth-child(2),
 .findings-table td:nth-child(2) {
   padding-right: 30px;
 }
 
+.findings-table th:nth-child(3),
 .findings-table td:nth-child(3) {
   padding-left: 30px;
 }
 
+/* Gap after Population Estimates section */
+.findings-table th:nth-child(5),
 .findings-table td:nth-child(5) {
   padding-right: 30px;
 }
 
+.findings-table th:nth-child(6),
 .findings-table td:nth-child(6) {
   padding-left: 30px;
 }
 
+/* Gap between Base Model and Fully Adjusted Model */
+.findings-table th:nth-child(6),
 .findings-table td:nth-child(6) {
   padding-right: 30px;
 }
 
+.findings-table th:nth-child(7),
 .findings-table td:nth-child(7) {
   padding-left: 30px;
 }
 
-/* Remove border right from spanning header cells to avoid double borders */
-.findings-table thead tr:first-child th {
-  border-right: none;
-  border-left: none;
-}
-
-/* First column of each section gets left border */
-.findings-table thead tr:first-child th:first-child {
-  border-left: 1px solid var(--border-subtle);
-}
-
-/* Last column of each section gets right border */
-.findings-table thead tr:first-child th:last-child {
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Right border for the Population Estimates header */
-.findings-table thead tr:first-child th:first-of-type + th {
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Bottom border for all cells */
-.findings-table tbody tr:last-child td {
-  border-bottom: 1px solid var(--border-subtle);
+/* Ensure the table looks good in a card */
+.findings-container .card {
+  padding-bottom: var(--space-md);
 }
 
 .table-footnotes {
