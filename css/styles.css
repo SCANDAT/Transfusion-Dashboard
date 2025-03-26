@@ -742,6 +742,26 @@ p {
   border-bottom: 1px solid var(--border-subtle);
 }
 
+/* Column widths for findings table */
+.findings-table .col-parameter {
+  width: 20%; /* Wider column for parameter names */
+}
+
+.findings-table .col-unit {
+  width: 10%; 
+}
+
+.findings-table .col-pre, 
+.findings-table .col-post {
+  width: 9%; /* Narrower columns for T-1 and T+1 hour */
+}
+
+.findings-table .col-change, 
+.findings-table .col-base, 
+.findings-table .col-adjusted {
+  width: 17%; /* Wider columns for mean difference data */
+}
+
 /* Main Findings Table Specific Styles */
 .findings-table {
   border: 1px solid var(--border-subtle);
@@ -779,6 +799,12 @@ p {
   background: rgba(var(--accent-primary-rgb, 10, 132, 255), 0.04);
   font-weight: normal;
   font-style: italic;
+}
+
+/* Make all superscripts in table headers use the accent-primary color */
+.findings-table th sup {
+  color: var(--accent-primary);
+  font-weight: 600;
 }
 
 .findings-table tbody tr:hover {
