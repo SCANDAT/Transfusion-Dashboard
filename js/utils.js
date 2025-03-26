@@ -296,17 +296,23 @@ function exportChartAsSVG(chart, filename) {
     const image = new Image();
     image.src = chart.toBase64Image();
     
-    // Create an SVG container
+    // Use standard landscape dimensions (11in × 8.5in at 96 PPI)
+    const width = 1056; // 11in at 96 PPI
+    const height = 816; // 8.5in at 96 PPI
+    
+    // Create an SVG container with standard dimensions
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    svg.setAttribute("width", chart.width);
-    svg.setAttribute("height", chart.height);
+    svg.setAttribute("width", width);
+    svg.setAttribute("height", height);
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     
-    // Add the image to SVG
+    // Add the image to SVG, ensuring it fills the entire SVG
     const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
-    img.setAttribute("width", chart.width);
-    img.setAttribute("height", chart.height);
+    img.setAttribute("width", width);
+    img.setAttribute("height", height);
     img.setAttribute("href", image.src);
+    img.setAttribute("preserveAspectRatio", "none"); // Ensure the image fills the entire SVG
     svg.appendChild(img);
     
     // Save the SVG

@@ -792,7 +792,7 @@ function createChartArea() {
       plugins: [verticalLinePlugin],
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true, 
         interaction: {
           mode: 'nearest',
           intersect: false
