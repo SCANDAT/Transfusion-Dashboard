@@ -776,12 +776,10 @@ p {
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .findings-table td {
   text-align: center;
-  border-top: none;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -808,6 +806,10 @@ p {
   border-bottom: 2px solid var(--border-subtle);
 }
 
+.findings-table thead tr:nth-child(2) th {
+  border-bottom: 2px solid var(--border-subtle);
+}
+
 .findings-table thead tr:last-child th {
   font-size: 0.85em;
   padding: var(--space-xs) var(--space-md);
@@ -828,7 +830,22 @@ p {
   background-color: var(--bg-card-hover);
 }
 
-/* Create border gaps between grouped columns */
+/* Create vertical column group borders with proper gaps */
+/* First define the main gap structure */
+.findings-table {
+  /* Use background image to create the vertical border gaps */
+  background-image: 
+    /* Gap after Unit of Measurement */
+    linear-gradient(to right, transparent 0%, transparent calc(33% - 10px), var(--border-subtle) calc(33% - 10px), var(--border-subtle) calc(33% - 9px), transparent calc(33% - 9px), transparent calc(66% - 10px), 
+    /* Gap after Vital Parameter Change */
+    var(--border-subtle) calc(66% - 10px), var(--border-subtle) calc(66% - 9px), transparent calc(66% - 9px), transparent calc(83% - 10px), 
+    /* Gap after Base Model */
+    var(--border-subtle) calc(83% - 10px), var(--border-subtle) calc(83% - 9px), transparent calc(83% - 9px), transparent 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
 /* First gap: After Unit of Measurement column */
 .findings-table td:nth-child(2),
 .findings-table th:nth-child(2) {
@@ -847,15 +864,25 @@ p {
   border-right: 20px solid transparent;
 }
 
-/* Ensure header row borders are continuous */
-.findings-table thead tr th {
-  border-bottom-color: var(--border-subtle);
+/* Make sure gaps don't appear in the top header row that spans multiple columns */
+.findings-table thead tr:first-child th {
+  border-right: none;
 }
 
-/* Keep the existing borders for the header group rows */
-.findings-table thead tr:first-child th,
-.findings-table thead tr:nth-child(2) th {
-  border-bottom: 2px solid var(--border-subtle);
+/* Ensure the bottom-most row has a solid border without gaps */
+.findings-table tbody tr:last-child td {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Remove right border from the last cell in each row to avoid double borders */
+.findings-table td:last-child,
+.findings-table th:last-child {
+  border-right: none;
+}
+
+/* Ensure horizontal borders at the top of the table are continuous */
+.findings-table tr:first-child th {
+  border-top: none;
 }
 
 .table-footnotes {
