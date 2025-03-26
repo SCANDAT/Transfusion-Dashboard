@@ -581,7 +581,9 @@ p {
 }
 
 .chart-container-large {
-  height: 800px; /* Double the height of the original chart */
+  width: 1056px; /* 11in at 96 PPI */
+  height: 816px; /* 8.5in at 96 PPI */
+  margin: 0 auto; /* Center the chart container horizontally */
 }
 
 .chart-actions {
