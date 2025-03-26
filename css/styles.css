@@ -767,8 +767,8 @@ p {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  border-collapse: separate; /* Changed from collapse to separate to allow border gaps */
-  border-spacing: 0; /* No extra spacing between cells */
+  border-collapse: collapse; /* Using collapse for consistent horizontal lines */
+  width: 100%;
 }
 
 .findings-table th {
@@ -776,27 +776,34 @@ p {
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
+  border: 1px solid var(--border-subtle);
+  border-left: none;
+  border-right: none;
+  padding: var(--space-sm) var(--space-md);
 }
 
 .findings-table td {
   text-align: center;
-  border-bottom: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
+  border-left: none; 
+  border-right: none;
+  padding: var(--space-sm) var(--space-md);
 }
 
 /* First column (parameter names) should be left aligned */
 .findings-table td:first-child {
   text-align: left;
-  font-weight: 400; /* Changed from 500 to 400 (regular) to make text narrower */
+  font-weight: 400;
 }
 
 /* Specific styling for the Peripheral Capillary Oxygen Saturation parameter */
 .findings-table tr:nth-child(6) td:first-child {
-  white-space: nowrap; /* Prevent wrapping without changing font size */
+  white-space: nowrap;
 }
 
 /* Make last column (Fully Adjusted Model) bold to emphasize findings */
 .findings-table td:last-child {
-  font-weight: 500; /* Semi-bold for emphasis */
+  font-weight: 500;
 }
 
 /* Header styles */
@@ -830,59 +837,113 @@ p {
   background-color: var(--bg-card-hover);
 }
 
-/* Create vertical column group borders with proper gaps */
-/* First define the main gap structure */
-.findings-table {
-  /* Use background image to create the vertical border gaps */
-  background-image: 
-    /* Gap after Unit of Measurement */
-    linear-gradient(to right, transparent 0%, transparent calc(33% - 10px), var(--border-subtle) calc(33% - 10px), var(--border-subtle) calc(33% - 9px), transparent calc(33% - 9px), transparent calc(66% - 10px), 
-    /* Gap after Vital Parameter Change */
-    var(--border-subtle) calc(66% - 10px), var(--border-subtle) calc(66% - 9px), transparent calc(66% - 9px), transparent calc(83% - 10px), 
-    /* Gap after Base Model */
-    var(--border-subtle) calc(83% - 10px), var(--border-subtle) calc(83% - 9px), transparent calc(83% - 9px), transparent 100%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: 0 0;
+/* Vertical borders for specific columns */
+/* First section: Parameter info (columns 1-2) */
+.findings-table td:nth-child(1),
+.findings-table th:nth-child(1) {
+  border-left: 1px solid var(--border-subtle);
 }
 
-/* First gap: After Unit of Measurement column */
 .findings-table td:nth-child(2),
 .findings-table th:nth-child(2) {
-  border-right: 20px solid transparent;
+  border-right: 1px solid var(--border-subtle);
 }
 
-/* Second gap: After Vital Parameter Change column */
+/* Second section: Population Estimates (columns 3-5) */
+.findings-table td:nth-child(3),
+.findings-table th:nth-child(3) {
+  border-left: 1px solid var(--border-subtle);
+}
+
 .findings-table td:nth-child(5),
 .findings-table th:nth-child(5) {
-  border-right: 20px solid transparent;
+  border-right: 1px solid var(--border-subtle);
 }
 
-/* Third gap: After Base Model column */
+/* Third section: Model Estimates (columns 6-7) */
 .findings-table td:nth-child(6),
 .findings-table th:nth-child(6) {
-  border-right: 20px solid transparent;
+  border-left: 1px solid var(--border-subtle);
 }
 
-/* Make sure gaps don't appear in the top header row that spans multiple columns */
+.findings-table td:nth-child(7),
+.findings-table th:nth-child(7) {
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* Add gaps via table cell styling */
+.findings-table th:nth-child(2) {
+  padding-right: 30px;
+}
+
+.findings-table th:nth-child(3) {
+  padding-left: 30px;
+}
+
+.findings-table th:nth-child(5) {
+  padding-right: 30px;
+}
+
+.findings-table th:nth-child(6) {
+  padding-left: 30px;
+}
+
+.findings-table th:nth-child(6) {
+  padding-right: 30px;
+}
+
+.findings-table th:nth-child(7) {
+  padding-left: 30px;
+}
+
+.findings-table td:nth-child(2) {
+  padding-right: 30px;
+}
+
+.findings-table td:nth-child(3) {
+  padding-left: 30px;
+}
+
+.findings-table td:nth-child(5) {
+  padding-right: 30px;
+}
+
+.findings-table td:nth-child(6) {
+  padding-left: 30px;
+}
+
+.findings-table td:nth-child(6) {
+  padding-right: 30px;
+}
+
+.findings-table td:nth-child(7) {
+  padding-left: 30px;
+}
+
+/* Remove border right from spanning header cells to avoid double borders */
 .findings-table thead tr:first-child th {
   border-right: none;
+  border-left: none;
 }
 
-/* Ensure the bottom-most row has a solid border without gaps */
+/* First column of each section gets left border */
+.findings-table thead tr:first-child th:first-child {
+  border-left: 1px solid var(--border-subtle);
+}
+
+/* Last column of each section gets right border */
+.findings-table thead tr:first-child th:last-child {
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* Right border for the Population Estimates header */
+.findings-table thead tr:first-child th:first-of-type + th {
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* Bottom border for all cells */
 .findings-table tbody tr:last-child td {
   border-bottom: 1px solid var(--border-subtle);
-}
-
-/* Remove right border from the last cell in each row to avoid double borders */
-.findings-table td:last-child,
-.findings-table th:last-child {
-  border-right: none;
-}
-
-/* Ensure horizontal borders at the top of the table are continuous */
-.findings-table tr:first-child th {
-  border-top: none;
 }
 
 .table-footnotes {
