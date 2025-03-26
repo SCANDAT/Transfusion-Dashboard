@@ -110,6 +110,10 @@ function getParameterDetails(abbr) {
       name: 'Diastolic Blood Pressure', 
       unit: 'mmHg' 
     },
+    'HR': { 
+      name: 'Heart Rate', 
+      unit: 'bpm' 
+    },
     'Hjärtfrekv': { 
       name: 'Heart Rate', 
       unit: 'bpm' 
@@ -184,7 +188,7 @@ async function initializeMainFindings(tabId, fileCase, logDebug = console.log) {
 function createMainFindingsContent(observedData, modelData) {
   // Ensure the data is properly ordered for display
   const parameterOrder = [
-    'ARTm', 'ARTs', 'ARTd', 'Hjärtfrekv', 'FIO2(u)', 'SpO2', 'VE(u)'
+    'ARTm', 'ARTs', 'ARTd', 'HR', 'FIO2(u)', 'SpO2', 'VE(u)'
   ];
   
   // Create cards for the findings
