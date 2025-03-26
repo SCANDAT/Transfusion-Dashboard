@@ -147,7 +147,7 @@ class TransfusionDashboard {
       header.innerHTML = `
         <h1>The <span class="scandat-highlight">SCANDAT</span> ICU Transfusion Data Dashboard</h1>
         <div class="dashboard-description">
-          <p>The <span style="color: var(--accent-highlight);">SCANDAT</span> ICU Transfusion Data Dashboard serves to interactively visualize the findings of the <span style="color: var(--accent-highlight);">SCANDAT</span> research group's analysis of 14,655 RBC transfusions administered to 6,736 unique ICU patients in four Stockholm-region hospitals between January 2014 – November 2018. Our study examines how continuously monitored vital parameters change following RBC transfusions and whether variations in RBC component factors alter these trajectories.</p>
+          <p>The <span style="color: var(--accent-highlight);">SCANDAT</span> ICU Transfusion Data Dashboard serves to interactively present the findings of the <span style="color: var(--accent-highlight);">SCANDAT</span> research group's analysis of 14,655 RBC transfusions administered to 6,736 unique ICU patients in four Stockholm-region hospitals between January 2014 – November 2018. Our study investigates how continuously monitored vital parameters change following RBC transfusions and whether variations in RBC component factors alter these trajectories.</p>
         </div>
       `;
       this.container.appendChild(header);
@@ -157,9 +157,9 @@ class TransfusionDashboard {
       tabsContainer.className = 'tabs';
       tabsContainer.innerHTML = `
         <button class="tab-button active" onclick="openTab(event, 'main-findings-tab')">Main Findings</button>
-        <button class="tab-button" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
         <button class="tab-button" onclick="openTab(event, 'rbc-transfusions-tab')">RBC Transfusion Effects</button>
         <button class="tab-button" onclick="openTab(event, 'rbc-component-factors-tab')">Component Factor Effects</button>
+        <button class="tab-button" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
       `;
       this.container.appendChild(tabsContainer);
       
