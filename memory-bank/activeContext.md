@@ -11,6 +11,13 @@ The Transfusion Dashboard project is in active development with a focus on creat
 
 ## Recent Changes
 
+### UI Navigation Update
+
+- **Tab Order Modification**: Rearranged the dashboard tabs to place "Descriptive Statistics" at the end:
+  - Changed tab order from: Main Findings → Descriptive Statistics → RBC Transfusion Effects → Component Factor Effects
+  - To new order: Main Findings → RBC Transfusion Effects → Component Factor Effects → Descriptive Statistics
+  - This change provides a more logical flow from main findings to detailed analysis modules
+
 ### Theme Toggle and UI Improvements
 
 - **Tooltip Styling Fix**: Resolved inconsistent tooltip appearance across:
