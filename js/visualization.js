@@ -650,15 +650,42 @@ function createChartArea() {
    * @returns {Chart} New or updated chart instance
    */
   function renderChart(chartData, metaInfo, timeRange, showDeltaPlot, selectedVital, existingChart) {
-    // Clear existing chart if no data
-    if (!chartData) {
-      if (existingChart) {
-        existingChart.destroy();
-      }
-      return null;
+  // Clear existing chart if no data
+  if (!chartData) {
+    if (existingChart) {
+      existingChart.destroy();
     }
-    
-    const ctx = document.getElementById('chart-canvas').getContext('2d');
+    return null;
+  }
+  
+  // Draw red vertical line at time 0 (transfusion time)
+  const verticalLinePlugin = {
+    id: 'verticalLine',
+    beforeDraw: (chart) => {
+      if (chart.tooltip._active && chart.tooltip._active.length) {
+        return;
+      }
+      
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      const zeroPos = xAxis.getPixelForValue(0);
+      
+      // Only draw if zero is in the visible range
+      if (zeroPos >= xAxis.left && zeroPos <= xAxis.right) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(zeroPos, yAxis.top);
+        ctx.lineTo(zeroPos, yAxis.bottom);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
+  
+  const ctx = document.getElementById('chart-canvas').getContext('2d');
     
     // Find min and max values including confidence intervals
     let minY = Infinity;
@@ -762,6 +789,7 @@ function createChartArea() {
       data: {
         datasets: chartData.datasets
       },
+      plugins: [verticalLinePlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
