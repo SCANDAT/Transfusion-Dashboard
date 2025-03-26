@@ -584,6 +584,16 @@ p {
   width: 1056px; /* 11in at 96 PPI */
   height: 816px; /* 8.5in at 96 PPI */
   margin: 0 auto; /* Center the chart container horizontally */
+  padding: 10px; /* Reduce padding */
+  overflow: hidden; /* Prevent content overflow */
+}
+
+/* Fix container border issue with chart cards */
+.card:has(.chart-container-large) {
+  padding: 20px; /* Reduce default card padding */
+  height: auto; /* Let height be determined by content */
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-actions {
