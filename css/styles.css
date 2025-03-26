@@ -744,22 +744,22 @@ p {
 
 /* Column widths for findings table */
 .findings-table .col-parameter {
-  width: 20%; /* Wider column for parameter names */
+  width: 22%; /* Increased width for parameter names to fit longer names */
 }
 
 .findings-table .col-unit {
-  width: 10%; 
+  width: 9%; /* Slightly reduced */
 }
 
 .findings-table .col-pre, 
 .findings-table .col-post {
-  width: 9%; /* Narrower columns for T-1 and T+1 hour */
+  width: 8%; /* Slightly narrower columns for T-1 and T+1 hour */
 }
 
 .findings-table .col-change, 
 .findings-table .col-base, 
 .findings-table .col-adjusted {
-  width: 17%; /* Wider columns for mean difference data */
+  width: 17.7%; /* Slightly wider for mean difference data */
 }
 
 /* Main Findings Table Specific Styles */
@@ -783,7 +783,18 @@ p {
 /* First column (parameter names) should be left aligned */
 .findings-table td:first-child {
   text-align: left;
-  font-weight: 500;
+  font-weight: 400; /* Changed from 500 to 400 (regular) to make text narrower */
+}
+
+/* Specific styling for the Peripheral Capillary Oxygen Saturation parameter */
+.findings-table tr:nth-child(6) td:first-child {
+  font-size: 0.85em; /* Slightly smaller font size */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Make last column (Fully Adjusted Model) bold to emphasize findings */
+.findings-table td:last-child {
+  font-weight: 500; /* Semi-bold for emphasis */
 }
 
 .findings-table thead tr:first-child th {
