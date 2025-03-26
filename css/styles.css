@@ -727,7 +727,7 @@ p {
 }
 
 /* Table Styles */
-.stats-table {
+.stats-table, .findings-table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
@@ -735,10 +735,83 @@ p {
   font-size: 0.9em;
 }
 
-.stats-table th, .stats-table td {
+.stats-table th, .stats-table td,
+.findings-table th, .findings-table td {
   padding: var(--space-sm) var(--space-md);
   text-align: left;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Main Findings Table Specific Styles */
+.findings-table {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.findings-table th {
+  background: rgba(var(--accent-primary-rgb, 10, 132, 255), 0.08);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.findings-table td {
+  text-align: center;
+}
+
+/* First column (parameter names) should be left aligned */
+.findings-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.findings-table thead tr:first-child th {
+  padding: var(--space-md) var(--space-md);
+  background: rgba(var(--accent-primary-rgb, 10, 132, 255), 0.12);
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.findings-table thead tr:last-child th {
+  font-size: 0.85em;
+  padding: var(--space-xs) var(--space-md);
+  color: var(--text-secondary);
+  background: rgba(var(--accent-primary-rgb, 10, 132, 255), 0.04);
+  font-weight: normal;
+  font-style: italic;
+}
+
+.findings-table tbody tr:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.table-footnotes {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.table-footnotes p {
+  margin-bottom: var(--space-md);
+}
+
+.table-footnotes sup {
+  color: var(--accent-primary);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: var(--space-md);
+}
+
+.findings-container {
+  max-width: 100%;
 }
 
 /* Fixed column widths for alignment */

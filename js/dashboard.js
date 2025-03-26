@@ -82,6 +82,7 @@ class TransfusionDashboard {
         // Create UI structure
         this.createUI();
         
+        
         // Load descriptive statistics data first
         try {
           await this.loadDescriptiveStats();
@@ -155,16 +156,34 @@ class TransfusionDashboard {
       const tabsContainer = document.createElement('div');
       tabsContainer.className = 'tabs';
       tabsContainer.innerHTML = `
-        <button class="tab-button active" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
+        <button class="tab-button active" onclick="openTab(event, 'main-findings-tab')">Main Findings</button>
+        <button class="tab-button" onclick="openTab(event, 'descriptive-stats-tab')">Descriptive Statistics</button>
         <button class="tab-button" onclick="openTab(event, 'rbc-transfusions-tab')">RBC Transfusion Effects</button>
         <button class="tab-button" onclick="openTab(event, 'rbc-component-factors-tab')">Component Factor Effects</button>
       `;
       this.container.appendChild(tabsContainer);
       
       // Create tab content containers
+      
+      // Main Findings tab
+      const mainFindingsTab = document.createElement('div');
+      mainFindingsTab.id = 'main-findings-tab';
+      mainFindingsTab.className = 'tab-content active';
+      mainFindingsTab.innerHTML = '<div class="loading">Loading main findings...</div>';
+      this.container.appendChild(mainFindingsTab);
+      
+      // Initialize Main Findings tab
+      try {
+        initializeMainFindings('main-findings-tab', this.fileCase, this.logDebug.bind(this));
+      } catch (error) {
+        console.error('Main Findings initialization error:', error);
+        this.showError(`Failed to load main findings: ${error.message}`);
+      }
+      
+      // Descriptive Statistics tab
       const descriptiveStatsTab = document.createElement('div');
       descriptiveStatsTab.id = 'descriptive-stats-tab';
-      descriptiveStatsTab.className = 'tab-content active';
+      descriptiveStatsTab.className = 'tab-content';
       descriptiveStatsTab.innerHTML = '<div class="loading">Loading descriptive statistics...</div>';
       this.container.appendChild(descriptiveStatsTab);
       
