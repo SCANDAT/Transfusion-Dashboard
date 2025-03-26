@@ -292,41 +292,82 @@ function logDebug(message, debugMode, debugOutput) {
  */
 function exportChartAsSVG(chart, filename) {
   try {
-    // Create a new Image from chart's data URL
-    const image = new Image();
-    image.src = chart.toBase64Image();
+    // Track if we're in dark mode to restore it later
+    const isDarkMode = !document.body.classList.contains('light-theme');
     
-    // Use standard landscape dimensions (11in × 8.5in at 96 PPI)
-    const width = 1056; // 11in at 96 PPI
-    const height = 816; // 8.5in at 96 PPI
+    // If in dark mode, temporarily switch to light mode for export
+    if (isDarkMode) {
+      document.body.classList.add('light-theme');
+      
+      // Trigger chart redraw with light theme
+      const themeChangeEvent = new CustomEvent('themeChanged', {
+        detail: { theme: 'light' }
+      });
+      document.dispatchEvent(themeChangeEvent);
+      
+      // Give time for chart to update with light theme
+      setTimeout(() => {
+        doExport();
+        
+        // Switch back to dark mode after export
+        document.body.classList.remove('light-theme');
+        
+        // Trigger chart redraw with dark theme
+        const darkThemeEvent = new CustomEvent('themeChanged', {
+          detail: { theme: 'dark' }
+        });
+        document.dispatchEvent(darkThemeEvent);
+      }, 300);
+    } else {
+      // If already in light mode, export immediately
+      doExport();
+    }
     
-    // Create an SVG container with standard dimensions
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    svg.setAttribute("width", width);
-    svg.setAttribute("height", height);
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    
-    // Add the image to SVG, ensuring it fills the entire SVG
-    const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
-    img.setAttribute("width", width);
-    img.setAttribute("height", height);
-    img.setAttribute("href", image.src);
-    img.setAttribute("preserveAspectRatio", "none"); // Ensure the image fills the entire SVG
-    svg.appendChild(img);
-    
-    // Save the SVG
-    const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(svg);
-    
-    // Add XML declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-    
-    // Create a blob with the SVG data
-    const svgBlob = new Blob([source], {type:"image/svg+xml;charset=utf-8"});
-    
-    // Use FileSaver.js to save the file
-    saveAs(svgBlob, filename + '.svg');
+    // Helper function to perform the export
+    function doExport() {
+      // Create a new Image from chart's data URL
+      const image = new Image();
+      image.src = chart.toBase64Image();
+      
+      // Use standard landscape dimensions (11in × 8.5in at 96 PPI)
+      const width = 1056; // 11in at 96 PPI
+      const height = 816; // 8.5in at 96 PPI
+      
+      // Create an SVG container with standard dimensions
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      svg.setAttribute("width", width);
+      svg.setAttribute("height", height);
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      
+      // Add white background rectangle to ensure visibility
+      const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      background.setAttribute("width", width);
+      background.setAttribute("height", height);
+      background.setAttribute("fill", "white");
+      svg.appendChild(background);
+      
+      // Add the image to SVG, ensuring it fills the entire SVG
+      const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+      img.setAttribute("width", width);
+      img.setAttribute("height", height);
+      img.setAttribute("href", image.src);
+      img.setAttribute("preserveAspectRatio", "none"); // Ensure the image fills the entire SVG
+      svg.appendChild(img);
+      
+      // Save the SVG
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svg);
+      
+      // Add XML declaration
+      source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+      
+      // Create a blob with the SVG data
+      const svgBlob = new Blob([source], {type:"image/svg+xml;charset=utf-8"});
+      
+      // Use FileSaver.js to save the file
+      saveAs(svgBlob, filename + '.svg');
+    }
     
   } catch (error) {
     console.error("Error exporting chart as SVG:", error);
