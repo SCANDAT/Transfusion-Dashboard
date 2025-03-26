@@ -195,7 +195,7 @@ function createMainFindingsContent(observedData, modelData) {
   return `
     <div class="findings-container">
       <div class="card">
-        <h2>Table 2a. RBC Transfusion Effects on Vital Parameters</h2>
+        <h2>Table 2a. Effects of RBC Transfusions on Vital Parameters</h2>
         <div class="table-container">
           <table class="findings-table">
             <colgroup>
