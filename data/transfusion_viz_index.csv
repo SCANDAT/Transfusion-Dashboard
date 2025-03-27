@@ -4,6 +4,6 @@ ARTm ,Transfusion ,Transfusion Effect ,Vital Parameter Trajectory: Mean Arterial
 ARTs ,Transfusion ,Transfusion Effect ,Vital Parameter Trajectory: Systolic Blood Pressure (mmHg) ,SBP (mmHg) ,Change in   SBP (mmHg)
 FIO2 ,Transfusion ,Transfusion Effect ,Vital Parameter Trajectory: Fraction of Inspired Oxygen (%) ,FiO2 (%) ,Change in   FiO2 (%)
 HR ,Transfusion ,Transfusion Effect ,Vital Parameter Trajectory: Heart Rate (bpm) ,HR (bpm) ,Change in   HR (bpm)
-ARTm ,LOESS ,Z-Score Comparison ,Mean Arterial Pressure (mmHg) ,Z-Score ,Z-Score
+ARTd ,LOESS ,Z-Score Comparison ,Diastolic Blood Pressure (mmHg) ,Z-Score ,Z-Score
 SpO2 ,Transfusion ,Transfusion Effect ,Vital Parameter Trajectory: Peripheral Capillary Oxygen Saturation (%) ,SpO2 (%) ,Change in   SpO2 (%)
 VE ,Transfusion ,Transfusion Effect ,Vital Parameter Trajectory: Minute Ventilation (L/min) ,VE(u) (L/min) ,Change in   VE(u) (L/min)
