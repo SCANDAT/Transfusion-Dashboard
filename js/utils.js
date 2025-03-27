@@ -355,6 +355,30 @@ function exportChartAsSVG(chart, filename) {
       img.setAttribute("preserveAspectRatio", "none"); // Ensure the image fills the entire SVG
       svg.appendChild(img);
       
+      // Capture annotations and legends
+      const annotations = chart.annotation.elements;
+      const legends = chart.legend.legendItems;
+      
+      // Add annotations to SVG
+      annotations.forEach(annotation => {
+        const annotationElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        annotationElement.setAttribute("x", annotation.x);
+        annotationElement.setAttribute("y", annotation.y);
+        annotationElement.setAttribute("fill", "black"); // Ensure text is visible in light mode
+        annotationElement.textContent = annotation.label.content;
+        svg.appendChild(annotationElement);
+      });
+      
+      // Add legends to SVG
+      legends.forEach(legend => {
+        const legendElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        legendElement.setAttribute("x", legend.x);
+        legendElement.setAttribute("y", legend.y);
+        legendElement.setAttribute("fill", "black"); // Ensure text is visible in light mode
+        legendElement.textContent = legend.text;
+        svg.appendChild(legendElement);
+      });
+      
       // Save the SVG
       const serializer = new XMLSerializer();
       let source = serializer.serializeToString(svg);
