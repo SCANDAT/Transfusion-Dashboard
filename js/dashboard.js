@@ -633,10 +633,10 @@ class TransfusionDashboard {
         document.getElementById('model-descriptions').innerHTML = `
           <div class="compact-model-content">
             <div class="model-item">
-              <span class="model-title">Base Model:</span> Mixed-effects model with random intercept for patient ID, adjusting for time from transfusion, patient age, ICU time prior to transfusion, RBC count, patient sex, and ICU ward
+              <span class="model-title">Base Model:</span> A linear mixed-effects model with random intercept (patient ID), adjusted for time relative to transfusion (cubic spline), patient age, ICU admission time (spline), RBC transfusion count, patient sex, and ICU ward.
             </div>
             <div class="model-item">
-              <span class="model-title">Fully Adjusted Model:</span> Includes all base model variables plus cumulative crystalloid fluids, vasopressors (1/24h prior), and sedatives administration (1/24h prior)
+              <span class="model-title">Fully Adjusted Model:</span> A linear mixed-effects model that includes all Base Model variables plus cumulative crystalloid fluid and vasopressor volumes (1h and 24h prior, splines), and sedative administration (1h and 24h prior, binary).
             </div>
           </div>
         `;
