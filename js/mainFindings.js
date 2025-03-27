@@ -262,8 +262,8 @@ function createMainFindingsContent(observedData, modelData) {
         </div>
         
         <div class="table-footnotes">
-          <p><sup>1</sup>Base Model: A linear mixed-effects model with a random intercept for patient ID, adjusted for time relative to transfusion using a cubic spline (knots at −660, −360, −60, 0, 60, 360, and 660 minutes). Additional covariates included patient age, time from ICU admission to transfusion (cubic spline with three percentile-based knots), cumulative number of RBC transfusions, patient sex, and ICU ward.</p>
-          <p><sup>2</sup>Fully Adjusted Model: A linear mixed-effects model including all variables from the Base Model, additionally adjusted for cumulative volumes (in ml) of crystalloid fluids and vasopressors administered within the 1- and 24-hour periods preceding transfusion (each modeled using natural cubic splines with three percentile-based knots), and binary indicators for sedative administration during the same intervals.</p>
+          <p><sup>1</sup><span style="font-weight: bold;">Base Model:</span> A linear mixed-effects model with a random intercept for patient ID, adjusted for time relative to transfusion using a cubic spline (knots at −660, −360, −60, 0, 60, 360, and 660 minutes). Additional covariates included patient age, time from ICU admission to transfusion (cubic spline with three percentile-based knots), cumulative number of RBC transfusions, patient sex, and ICU ward.</p>
+          <p><sup>2</sup><span style="font-weight: bold;">Fully Adjusted Model:</span> A linear mixed-effects model including all variables from the Base Model, additionally adjusted for cumulative volumes (in ml) of crystalloid fluids and vasopressors administered within the 1- and 24-hour periods preceding transfusion (each modeled using natural cubic splines with three percentile-based knots), and binary indicators for sedative administration during the same intervals.</p>
         </div>
       </div>
     </div>

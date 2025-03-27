@@ -48,10 +48,10 @@ function createRbcTransfusionsContent() {
       <div id="model-info" class="info" style="margin-bottom: 10px;">
         <div style="display: flex; justify-content: center; gap: 20px;">
           <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
-            <span style="font-weight: bold;">Base Model:</span> A mixed-effects model with a random intercept for patient ID that adjusts for time from transfusion (natural cubic spline with fixed knots at -660, -360, -60, 0, 60, 360, and 660 minutes), patient age and time spent in the ICU prior to transfusion (natural cubic splines with three percentile-based knots), RBC transfusion count, patient sex, and ICU ward name
+            <span style="font-weight: bold;">Base Model:</span> A linear mixed-effects model with random intercept (patient ID), adjusted for time relative to transfusion (cubic spline), patient age, ICU admission time (spline), RBC transfusion count, patient sex, and ICU ward.
           </div>
           <div style="padding: 5px 10px; border-left: 4px solid #3b82f6;">
-            <span style="font-weight: bold;">Fully Adjusted Model:</span> A mixed-effects model containing all base model variables as well as cumulative crystalloid fluids and vasopressors administered (in ml) in the last 1 and 24 hours prior to transfusion (natural cubic splines with three percentile-based knots), and a binary variable for whether sedatives were administered in the last 1 and 24 hours prior to transfusion 
+            <span style="font-weight: bold;">Fully Adjusted Model:</span> A linear mixed-effects model that includes all Base Model variables plus cumulative crystalloid fluid and vasopressor volumes (1h and 24h prior, splines), and sedative administration (1h and 24h prior, binary). 
           </div>
         </div>
       </div>
