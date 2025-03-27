@@ -195,7 +195,7 @@ function createMainFindingsContent(observedData, modelData) {
   return `
     <div class="findings-container">
       <div class="card">
-        <h2>Table 2a. Effects of RBC Transfusions on Vital Parameters</h2>
+        <h2>Table 2a. RBC Transfusion Effects on Vital Parameters</h2>
         <div class="table-container">
           <table class="findings-table">
             <colgroup>
@@ -262,8 +262,8 @@ function createMainFindingsContent(observedData, modelData) {
         </div>
         
         <div class="table-footnotes">
-          <p><sup>1</sup>Base Model: A mixed-effects model with a random intercept for patient ID that adjusts for time from transfusion (natural cubic spline with fixed knots at -660, -360, -60, 0, 60, 360, and 660 minutes), patient age and time spent in the ICU prior to transfusion (natural cubic splines with three percentile-based knots), RBC transfusion count, patient sex, and ICU ward name.</p>
-          <p><sup>2</sup>Fully Adjusted Model: A mixed-effects model containing all base model variables as well as cumulative crystalloid fluids and vasopressors administered (in ml) in the last 1 and 24 hours prior to transfusion (natural cubic splines with three percentile-based knots), and a binary variable for whether sedatives were administered in the last 1 and 24 hours prior to transfusion.</p>
+          <p><sup>1</sup>Base Model: A linear mixed-effects model with a random intercept for patient ID, adjusted for time relative to transfusion using a cubic spline (knots at −660, −360, −60, 0, 60, 360, and 660 minutes). Additional covariates included patient age, time from ICU admission to transfusion (cubic spline with three percentile-based knots), cumulative number of RBC transfusions, patient sex, and ICU ward.</p>
+          <p><sup>2</sup>Fully Adjusted Model: A linear mixed-effects model including all variables from the Base Model, additionally adjusted for cumulative volumes (in ml) of crystalloid fluids and vasopressors administered within the 1- and 24-hour periods preceding transfusion (each modeled using natural cubic splines with three percentile-based knots), and binary indicators for sedative administration during the same intervals.</p>
         </div>
       </div>
     </div>
