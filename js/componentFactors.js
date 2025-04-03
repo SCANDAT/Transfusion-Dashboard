@@ -275,6 +275,7 @@ function formatPValue(pValue) {
 
 /**
  * Calculate the min and max values for the scale across all estimates for a vital parameter
+ * Make the range symmetric around zero to center the zero point
  * @param {Object} paramData - Data for a specific vital parameter
  * @returns {Object} - Min and max values
  */
@@ -305,15 +306,20 @@ function calculateScaleRange(paramData) {
     max = 1;
   }
   
-  // Always include zero in the range if data spans positive and negative
-  if (min > 0 && min < 1) min = 0; // Include zero for small positive values
-  else if (max < 0 && max > -1) max = 0; // Include zero for small negative values
+  // Always include zero in the range
+  if (min > 0) min = 0; // Force include zero for all positive data
+  if (max < 0) max = 0; // Force include zero for all negative data
   
   // Add margin and round to nice values
   const range = max - min;
   const margin = range * 0.15;
   min = Math.floor(min - margin);
   max = Math.ceil(max + margin);
+  
+  // Make the range symmetric around zero
+  const absMax = Math.max(Math.abs(min), Math.abs(max));
+  min = -absMax;
+  max = absMax;
   
   return { min, max };
 }
@@ -547,7 +553,11 @@ function renderFactorVisualization(factor, factorData, scaleRange, paramDetails)
   // Generate tick positions and labels that align perfectly with the data values
   // Important: Do not add any offsets to these positions to ensure alignment with data points
   const tickPositions = tickValues.map(value => vToPos(value));
-  const tickLabels = tickValues.map(value => value.toFixed(1));
+  const tickLabels = tickValues.map(value => {
+    // Format tick labels, with special handling for zero
+    if (value === 0) return "0"; // No decimal places for zero
+    return value.toFixed(1);
+  });
   
   // Get zero position for reference line
   const zeroPos = min < 0 && max > 0 ? vToPos(0) : -9999; // Hide if zero not in range
@@ -576,12 +586,18 @@ function renderFactorVisualization(factor, factorData, scaleRange, paramDetails)
         
         <div class="x-axis">
           <div class="axis-line"></div>
-          ${tickPositions.map((position, i) => `
-            <div class="axis-tick" style="left: ${position}px;">
-              <div class="axis-tick-line"></div>
-              <div class="axis-tick-label">${tickLabels[i]}</div>
-            </div>
-          `).join('')}
+          ${tickPositions.map((position, i) => {
+            // Check if this is the zero tick to add a special class
+            const isZeroTick = tickValues[i] === 0;
+            const zeroClass = isZeroTick ? 'zero-tick' : '';
+            
+            return `
+              <div class="axis-tick ${zeroClass}" style="left: ${position}px;">
+                <div class="axis-tick-line"></div>
+                <div class="axis-tick-label">${tickLabels[i]}</div>
+              </div>
+            `;
+          }).join('')}
           <div class="x-axis-title">${paramDetails.abbr} (${paramDetails.unit})</div>
         </div>
       </div>

@@ -104,6 +104,13 @@
   position: relative;
 }
 
+/* Special styling for the zero tick */
+.zero-tick .axis-tick-line {
+  width: 2px;
+  height: 7px;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
 .axis-tick-label {
   font-size: 0.7rem;
   color: var(--text-secondary, rgba(255, 255, 255, 0.7));
@@ -113,6 +120,12 @@
   width: 40px; /* Fixed width for labels */
   left: 0;
   position: relative;
+}
+
+/* Make the zero tick label more prominent */
+.zero-tick .axis-tick-label {
+  font-weight: bold;
+  color: var(--text-primary, rgba(255, 255, 255, 0.95));
 }
 
 .x-axis-title {
@@ -128,7 +141,7 @@
   position: absolute;
   width: 0;
   height: 100%;
-  border-left: 3px dotted rgba(255, 255, 255, 0.7);
+  border-left: 2px dashed rgba(255, 255, 255, 0.8);
   top: 0;
   bottom: 0;
   z-index: 1;
