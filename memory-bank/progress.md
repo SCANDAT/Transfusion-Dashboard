@@ -67,6 +67,8 @@ Based on recent improvements and architectural documentation, the following item
 3. **Documentation**
    - ✅ Improved theme implementation guidelines
    - ✅ Code structure documentation
+   - ✅ Component Factors module and Table 2b generation documentation
+   - ✅ Dual-purpose module pattern documentation
    - 🔄 User documentation
    - 🔄 Developer onboarding documentation
    - 🔄 API documentation for extension points
@@ -84,6 +86,8 @@ Based on recent improvements and architectural documentation, the following item
 - ✅ Identifying duplicate functionality across modules helps avoid inconsistencies
 - ✅ Chart.js configuration for tooltips should follow consistent patterns
 - ✅ Consider refactoring common chart configurations into shared functions
+- ✅ Ensure consistent function implementations across modules that serve the same purpose
+- ✅ Functions returning similar data structures should have identical property sets across all modules
 
 ## Known Issues
 
@@ -103,6 +107,7 @@ Based on observations and recent work, the following issues have been identified
 
 3. **User Interface**
    - ✅ Theme toggle inconsistencies in tooltips (RESOLVED)
+   - ✅ Incorrect vital parameter abbreviation display in Main Findings charts (RESOLVED)
    - Theme switching edge cases in other components
    - Responsive layout on smaller screens
    - Advanced filter combinations
