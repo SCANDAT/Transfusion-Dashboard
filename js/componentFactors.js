@@ -595,7 +595,7 @@ function renderFactorVisualization(factor, factorData, scaleRange, paramDetails)
               </div>
             `;
           }).join('')}
-          <div class="x-axis-title">${paramDetails.abbr} (${paramDetails.unit})</div>
+          <div class="x-axis-title">Change in ${paramDetails.abbr} (${paramDetails.unit})</div>
         </div>
       </div>
     </div>
@@ -676,12 +676,6 @@ function createComponentFactorsTable(observedData, modelData) {
     <div class="card">
       <h2>Table 2b. RBC Component Factor Effects on Vital Parameters</h2>
       
-      <div class="component-factors-visualization">
-        ${vitalParameters.map(param => {
-          return createVitalParameterSection(param, processedData[param]);
-        }).join('')}
-      </div>
-      
       <div class="visualization-legend">
         <div class="legend-items">
           <div class="legend-item">
@@ -704,6 +698,12 @@ function createComponentFactorsTable(observedData, modelData) {
           <span class="sig-item">** p<0.01</span>
           <span class="sig-item">*** p<0.001</span>
         </div>
+      </div>
+      
+      <div class="component-factors-visualization">
+        ${vitalParameters.map(param => {
+          return createVitalParameterSection(param, processedData[param]);
+        }).join('')}
       </div>
       
       <div class="table-footnotes">
