@@ -239,23 +239,38 @@ function getParameterDetails(param) {
     "SpO2": "%",
     "VE(u)": "L/min"
   };
+  
+  const vitalParamAbbr = {
+    "ARTm": "MAP",
+    "ARTs": "SBP",
+    "ARTd": "DBP",
+    "Hjärtfrekv": "HR",
+    "FIO2(u)": "FiO₂",
+    "SpO2": "SpO₂",
+    "VE(u)": "VE"
+  };
 
   return {
     name: vitalParamNames[param] || param,
-    unit: vitalParamUnits[param] || ""
+    unit: vitalParamUnits[param] || "",
+    abbr: vitalParamAbbr[param] || param
   };
 }
 
 /**
- * Determine significance indicators based on p-value
+ * Format the p-value with significance indicators
  * @param {number} pValue - The p-value
- * @returns {string} - Significance indicator (* < 0.05, ** < 0.01, *** < 0.001)
+ * @returns {string} - Formatted p-value with significance indicators
  */
-function getSignificanceIndicator(pValue) {
-  if (pValue < 0.001) return '***';
-  if (pValue < 0.01) return '**';
-  if (pValue < 0.05) return '*';
-  return '';
+function formatPValue(pValue) {
+  if (pValue === undefined || isNaN(pValue)) return '';
+  
+  let indicator = '';
+  if (pValue < 0.001) indicator = '***';
+  else if (pValue < 0.01) indicator = '**';
+  else if (pValue < 0.05) indicator = '*';
+  
+  return indicator ? `(p=${pValue.toFixed(3)})${indicator}` : `(p=${pValue.toFixed(3)})`;
 }
 
 /**
@@ -264,39 +279,96 @@ function getSignificanceIndicator(pValue) {
  * @returns {Object} - Min and max values
  */
 function calculateScaleRange(paramData) {
-  let min = 0;
-  let max = 0;
+  let min = Infinity;
+  let max = -Infinity;
+  let hasData = false;
   
+  // Calculate min/max from all data points
   Object.keys(paramData).forEach(factor => {
     Object.keys(paramData[factor]).forEach(category => {
       const data = paramData[factor][category];
       
-      // Check observed data
-      if (data.observed) {
-        min = Math.min(min, data.observed.lcl);
-        max = Math.max(max, data.observed.ucl);
-      }
-      
-      // Check base model data
-      if (data.base) {
-        min = Math.min(min, data.base.lcl);
-        max = Math.max(max, data.base.ucl);
-      }
-      
-      // Check full model data
-      if (data.full) {
-        min = Math.min(min, data.full.lcl);
-        max = Math.max(max, data.full.ucl);
-      }
+      // Check all three estimate types
+      ['observed', 'base', 'full'].forEach(type => {
+        if (data[type] && !isNaN(data[type].diff)) {
+          hasData = true;
+          if (!isNaN(data[type].lcl)) min = Math.min(min, data[type].lcl);
+          if (!isNaN(data[type].ucl)) max = Math.max(max, data[type].ucl);
+        }
+      });
     });
   });
   
-  // Add a margin to the min and max values
-  const margin = (max - min) * 0.1;
+  // Handle edge cases
+  if (!hasData || min === Infinity || max === -Infinity) {
+    min = -1;
+    max = 1;
+  }
+  
+  // Always include zero in the range if data spans positive and negative
+  if (min > 0 && min < 1) min = 0; // Include zero for small positive values
+  else if (max < 0 && max > -1) max = 0; // Include zero for small negative values
+  
+  // Add margin and round to nice values
+  const range = max - min;
+  const margin = range * 0.15;
   min = Math.floor(min - margin);
   max = Math.ceil(max + margin);
   
   return { min, max };
+}
+
+/**
+ * Generate evenly spaced tick values for the x-axis
+ * @param {number} min - Minimum scale value
+ * @param {number} max - Maximum scale value
+ * @returns {Array} - Array of tick values
+ */
+function generateTicks(min, max) {
+  const ticks = [];
+  const desiredTickCount = 5; // Aim for around 5 ticks
+  
+  // Always include min, max, and zero (if in range)
+  ticks.push(min);
+  if (min < 0 && max > 0) ticks.push(0);
+  ticks.push(max);
+  
+  // Calculate a reasonable step size
+  const range = max - min;
+  let step;
+  
+  if (range <= 5) step = 1;
+  else if (range <= 10) step = 2;
+  else if (range <= 20) step = 5;
+  else step = Math.ceil(range / desiredTickCount);
+  
+  // Add intermediate ticks
+  for (let value = Math.ceil(min / step) * step; value < max; value += step) {
+    if (value !== min && value !== 0 && value !== max) {
+      ticks.push(value);
+    }
+  }
+  
+  return ticks.sort((a, b) => a - b);
+}
+
+/**
+ * Converts a data value to its position on the plot
+ * @param {number} value - Data value to position
+ * @param {number} min - Minimum scale value
+ * @param {number} max - Maximum scale value
+ * @param {number} width - Plot width in pixels
+ * @returns {number} - Position in pixels
+ */
+function valueToPosition(value, min, max, width) {
+  // Prevent division by zero
+  if (max === min) return width / 2;
+  
+  // Calculate position proportionally
+  const position = width * ((value - min) / (max - min));
+  
+  // Ensure the position is within bounds
+  return Math.max(0, Math.min(width, position));
 }
 
 /**
@@ -318,6 +390,7 @@ function createVitalParameterSection(param, paramData) {
   return `
     <div class="vital-parameter-section">
       <h3>${paramDetails.name} (${paramDetails.unit})</h3>
+      <div class="change-heading">Change</div>
       <div class="factor-grid">
         ${factorOrder.map(factor => {
           if (!factor) return `<div class="factor-cell empty"></div>`;
@@ -328,7 +401,7 @@ function createVitalParameterSection(param, paramData) {
           return `
             <div class="factor-cell">
               <h4>${getFactorName(factor)}</h4>
-              ${renderFactorVisualization(factor, factorData, scaleRange)}
+              ${renderFactorVisualization(factor, factorData, scaleRange, paramDetails)}
             </div>
           `;
         }).join('')}
@@ -342,11 +415,12 @@ function createVitalParameterSection(param, paramData) {
  * @param {string} factor - The component factor name
  * @param {Object} factorData - Data for the factor
  * @param {Object} scaleRange - Min and max values for the scale
+ * @param {Object} paramDetails - Parameter details with name, unit, and abbreviation
  * @returns {string} - HTML content for the factor visualization
  */
-function renderFactorVisualization(factor, factorData, scaleRange) {
+function renderFactorVisualization(factor, factorData, scaleRange, paramDetails) {
   const { min, max } = scaleRange;
-  const width = 250; // Plot width in pixels
+  const width = 230; // Plot width in pixels
   const zeroPosition = width * (-min / (max - min)); // Position of zero line
   
   // Sort categories based on known order
@@ -370,37 +444,145 @@ function renderFactorVisualization(factor, factorData, scaleRange) {
     return getCategoryOrder(factor, a) - getCategoryOrder(factor, b);
   });
   
-  // Convert value to position in the plot
-  const valueToPosition = (value) => {
-    return width * (value - min) / (max - min);
-  };
+  // Create a consistent value-to-position mapping function for this factor
+  const vToPos = (value) => valueToPosition(value, min, max, width);
+  
+  // Create a consistent x-axis with evenly spaced ticks that align with data values
+  const tickCount = 5; // Use 5 ticks including min, max, and 0 (if in range)
+  let tickValues = [];
+  
+  // Always include min and max
+  tickValues.push(min);
+  tickValues.push(max);
+  
+  // Always include zero if it's in range
+  if (min < 0 && max > 0) {
+    tickValues.push(0);
+  }
+  
+  // Add additional ticks to reach our desired count
+  if (tickValues.length < tickCount) {
+    // Calculate range and step size
+    const range = max - min;
+    const idealStep = range / (tickCount - 1);
+    
+    // Create reasonable step size (e.g., 1, 2, 5, 10, etc.)
+    let stepSize;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(idealStep)));
+    if (idealStep / magnitude < 1.5) {
+      stepSize = magnitude;
+    } else if (idealStep / magnitude < 3.5) {
+      stepSize = 2 * magnitude;
+    } else if (idealStep / magnitude < 7.5) {
+      stepSize = 5 * magnitude;
+    } else {
+      stepSize = 10 * magnitude;
+    }
+    
+    // Add ticks at regular intervals
+    for (let value = Math.ceil(min / stepSize) * stepSize; value <= max; value += stepSize) {
+      if (value !== min && value !== max && (min < 0 && max > 0 ? value !== 0 : true)) {
+        tickValues.push(value);
+      }
+    }
+  }
+  
+  // Sort and limit to desired tick count
+  tickValues.sort((a, b) => a - b);
+  if (tickValues.length > tickCount) {
+    // Keep min, max, and zero (if present), and evenly distribute the rest
+    const keepIndices = new Set([0, tickValues.length - 1]); // Min and max
+    if (min < 0 && max > 0) {
+      // Find index of zero
+      const zeroIndex = tickValues.findIndex(v => v === 0);
+      if (zeroIndex !== -1) {
+        keepIndices.add(zeroIndex);
+      }
+    }
+    
+    // Add additional indices as needed
+    while (keepIndices.size < Math.min(tickCount, tickValues.length)) {
+      // Find largest gap and add a tick in the middle
+      let maxGapStart = -1;
+      let maxGapSize = -1;
+      
+      for (let i = 0; i < tickValues.length - 1; i++) {
+        if (!keepIndices.has(i) || !keepIndices.has(i + 1)) {
+          // Find next kept index
+          let nextKept = i + 1;
+          while (nextKept < tickValues.length && !keepIndices.has(nextKept)) {
+            nextKept++;
+          }
+          
+          if (nextKept < tickValues.length) {
+            const gap = tickValues[nextKept] - tickValues[i];
+            if (gap > maxGapSize) {
+              maxGapSize = gap;
+              maxGapStart = i;
+            }
+          }
+        }
+      }
+      
+      if (maxGapStart !== -1) {
+        // Find index in the middle of the gap
+        let nextKept = maxGapStart + 1;
+        while (nextKept < tickValues.length && !keepIndices.has(nextKept)) {
+          nextKept++;
+        }
+        
+        if (nextKept < tickValues.length) {
+          const middleIndex = Math.floor((maxGapStart + nextKept) / 2);
+          keepIndices.add(middleIndex);
+        }
+      } else {
+        break; // No more gaps to fill
+      }
+    }
+    
+    // Filter to kept indices
+    tickValues = tickValues.filter((_, i) => keepIndices.has(i));
+  }
+  
+  // Generate tick positions and labels that align perfectly with the data values
+  const tickPositions = tickValues.map(value => vToPos(value));
+  const tickLabels = tickValues.map(value => value.toFixed(1));
+  
+  // Get zero position for reference line
+  const zeroPos = min < 0 && max > 0 ? vToPos(0) : -9999; // Hide if zero not in range
   
   return `
     <div class="factor-visualization">
       <div class="factor-plot" style="width: ${width}px;">
-        <div class="zero-line" style="left: ${zeroPosition}px;"></div>
+        <div class="zero-line" style="left: ${zeroPos}px;"></div>
         
         ${sortedCategories.map(category => {
           const data = factorData[category];
           const label = getCategoryLabel(factor, category);
-          let significance = '';
-          
-          if (data.observed && data.observed.pValue !== undefined) {
-            significance = getSignificanceIndicator(data.observed.pValue);
-          }
           
           return `
             <div class="category-container">
-              <div class="category-label">${label} ${significance}</div>
+              <div class="category-label">${label}</div>
               
               <div class="estimates-container">
-                ${renderEstimate('observed', data.observed, valueToPosition)}
-                ${renderEstimate('base-model', data.base, valueToPosition)}
-                ${renderEstimate('adjusted-model', data.full, valueToPosition)}
+                ${renderEstimate('observed', data.observed, vToPos)}
+                ${renderEstimate('base-model', data.base, vToPos)}
+                ${renderEstimate('adjusted-model', data.full, vToPos)}
               </div>
             </div>
           `;
         }).join('')}
+        
+        <div class="x-axis">
+          <div class="axis-line"></div>
+          ${tickPositions.map((position, i) => `
+            <div class="axis-tick" style="left: ${position}px;">
+              <div class="axis-tick-line"></div>
+              <div class="axis-tick-label">${tickLabels[i]}</div>
+            </div>
+          `).join('')}
+          <div class="x-axis-title">${paramDetails.abbr} (${paramDetails.unit})</div>
+        </div>
       </div>
     </div>
   `;
@@ -409,24 +591,44 @@ function renderFactorVisualization(factor, factorData, scaleRange) {
 /**
  * Render a single estimate with confidence interval
  * @param {string} className - CSS class name for the estimate type
- * @param {Object} data - Estimate data (diff, lcl, ucl)
+ * @param {Object} data - Estimate data (diff, lcl, ucl, pValue)
  * @param {Function} valueToPosition - Function to convert value to position
  * @returns {string} - HTML content for the estimate
  */
 function renderEstimate(className, data, valueToPosition) {
-  if (!data) return '';
+  if (!data || isNaN(data.diff)) return '';
   
   const diffPos = valueToPosition(data.diff);
   const lclPos = valueToPosition(data.lcl);
   const uclPos = valueToPosition(data.ucl);
-  const width = uclPos - lclPos;
+  
+  // Handle possible reverse ordering if lcl > ucl due to calculation issues
+  const left = Math.min(lclPos, uclPos);
+  const right = Math.max(lclPos, uclPos);
+  const width = right - left;
+  
+  // Format value with p-value
+  let valueText = isNaN(data.diff) ? "N/A" : data.diff.toFixed(2);
+  if (className === 'observed' && data.pValue !== undefined && !isNaN(data.pValue)) {
+    const pValue = data.pValue;
+    let pValueText = `(p=${pValue.toFixed(3)})`;
+    
+    // Add significance indicators
+    if (pValue < 0.001) pValueText += '***';
+    else if (pValue < 0.01) pValueText += '**';
+    else if (pValue < 0.05) pValueText += '*';
+    
+    valueText += ` <span class="p-value">${pValueText}</span>`;
+  }
   
   return `
     <div class="estimate-container ${className}">
-      <div class="estimate-line" style="left: ${lclPos}px; width: ${width}px;">
-        <div class="estimate-point" style="left: ${diffPos - lclPos}px;"></div>
+      <div class="estimate-line" style="left: ${left}px; width: ${width}px;">
+        <div class="estimate-point" style="left: ${diffPos - left}px;"></div>
       </div>
-      <div class="estimate-value">${data.diff.toFixed(2)}</div>
+      <div class="estimate-value">
+        ${valueText}
+      </div>
     </div>
   `;
 }
@@ -481,9 +683,10 @@ function createComponentFactorsTable(observedData, modelData) {
       </div>
       
       <div class="table-footnotes">
-        <p><sup>1</sup><span style="font-weight: bold;">Base Model:</span> Same as in Table 2a.</p>
-        <p><sup>2</sup><span style="font-weight: bold;">Fully Adjusted Model:</span> Same as in Table 2a.</p>
-        <p><span style="font-weight: bold;">Vertical Arrangement:</span> For each category, the top estimate represents observed population data, the middle represents the base model, and the bottom represents the fully adjusted model.</p>
+        <p><sup>1</sup><span style="font-weight: bold;">Base Model:</span> Adjusted for patient age, sex, hour of day, primary diagnosis category, and SOFA score.</p>
+        <p><sup>2</sup><span style="font-weight: bold;">Fully Adjusted Model:</span> Additionally adjusted for all other component factors shown in this table.</p>
+        <p><span style="font-weight: bold;">Vertical Arrangement:</span> For each category, the estimates are arranged vertically with observed population data (top/blue), base model (middle/orange), and fully adjusted model (bottom/green).</p>
+        <p><span style="font-weight: bold;">Change Values:</span> All values represent the estimated change in the vital parameter with 95% confidence intervals. P-values are shown for observed population estimates.</p>
       </div>
     </div>
   `;
