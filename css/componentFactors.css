@@ -131,9 +131,12 @@
 .x-axis-title {
   text-align: center;
   font-size: 0.8rem;
-  margin-top: 25px; /* Increased margin to position it below the numeric labels */
+  margin-top: 35px; /* Further increased margin to position it clearly below the tick labels */
   color: var(--text-primary);
   font-weight: 500;
+  position: absolute;
+  width: 100%;
+  left: 0;
 }
 
 /* Zero Reference Line */
