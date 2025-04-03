@@ -1,0 +1,236 @@
+/**
+ * Styles for RBC Component Factor Effects visualization
+ */
+
+/* Component Factors Visualization Container */
+.component-factors-visualization {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+/* Vital Parameter Section */
+.vital-parameter-section {
+  border-bottom: 1px solid var(--divider-color);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.vital-parameter-section:last-child {
+  border-bottom: none;
+}
+
+.vital-parameter-section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--text-highlight);
+}
+
+/* Factor Grid Layout (2×3) */
+.factor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 2rem;
+  max-width: 100%;
+}
+
+/* Factor Cell */
+.factor-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.factor-cell.empty {
+  display: none;
+}
+
+.factor-cell h4 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+/* Factor Visualization */
+.factor-visualization {
+  position: relative;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.factor-plot {
+  position: relative;
+  height: auto;
+  min-height: 150px;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+/* Zero Reference Line */
+.zero-line {
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background-color: var(--divider-color);
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+/* Category Container */
+.category-container {
+  position: relative;
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+}
+
+.category-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Estimates Container */
+.estimates-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Estimate Styles */
+.estimate-container {
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.estimate-line {
+  position: absolute;
+  height: 2px;
+  background-color: var(--chart-grid);
+}
+
+.estimate-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.estimate-value {
+  position: absolute;
+  font-size: 0.8rem;
+  right: -46px;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+/* Color coding for different estimate types */
+.observed .estimate-line {
+  background-color: var(--accent-primary);
+}
+
+.observed .estimate-point {
+  background-color: var(--accent-primary);
+}
+
+.base-model .estimate-line {
+  background-color: var(--accent-secondary);
+}
+
+.base-model .estimate-point {
+  background-color: var(--accent-secondary);
+}
+
+.adjusted-model .estimate-line {
+  background-color: var(--accent-tertiary);
+}
+
+.adjusted-model .estimate-point {
+  background-color: var(--accent-tertiary);
+}
+
+/* Legend */
+.visualization-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: var(--card-background-secondary);
+  border-radius: 4px;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.legend-marker {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.legend-marker.observed {
+  background-color: var(--accent-primary);
+}
+
+.legend-marker.base-model {
+  background-color: var(--accent-secondary);
+}
+
+.legend-marker.adjusted-model {
+  background-color: var(--accent-tertiary);
+}
+
+.significance-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.sig-item {
+  margin-right: 1rem;
+}
+
+/* Table Footnotes */
+.table-footnotes {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--divider-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .factor-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+  }
+}
+
+@media (max-width: 768px) {
+  .factor-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+}
