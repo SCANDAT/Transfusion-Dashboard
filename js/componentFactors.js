@@ -275,7 +275,7 @@ function formatPValue(pValue) {
 
 /**
  * Calculate the min and max values for the scale across all estimates for a vital parameter
- * Make the range symmetric around zero to center the zero point
+ * Autoscale the range with a 25% margin on each side
  * @param {Object} paramData - Data for a specific vital parameter
  * @returns {Object} - Min and max values
  */
@@ -310,16 +310,11 @@ function calculateScaleRange(paramData) {
   if (min > 0) min = 0; // Force include zero for all positive data
   if (max < 0) max = 0; // Force include zero for all negative data
   
-  // Add margin and round to nice values
+  // Add 25% margin on each side and round to nice values
   const range = max - min;
-  const margin = range * 0.15;
+  const margin = range * 0.25; // 25% margin as requested
   min = Math.floor(min - margin);
   max = Math.ceil(max + margin);
-  
-  // Make the range symmetric around zero
-  const absMax = Math.max(Math.abs(min), Math.abs(max));
-  min = -absMax;
-  max = absMax;
   
   return { min, max };
 }
@@ -371,9 +366,11 @@ function valueToPosition(value, min, max, width) {
   if (max === min) return width / 2;
   
   // Calculate position proportionally
+  // Ensure we're using the exact formula without any rounding that could cause alignment issues
   const position = width * ((value - min) / (max - min));
   
-  // Ensure the position is within bounds
+  // Ensure the position is within bounds but don't round here
+  // Rounding will occur at the final positioning stage
   return Math.max(0, Math.min(width, position));
 }
 
@@ -615,19 +612,21 @@ function renderFactorVisualization(factor, factorData, scaleRange, paramDetails)
 function renderEstimate(className, data, valueToPosition) {
   if (!data || isNaN(data.diff)) return '';
   
-  // Get exact pixel positions for the data points
-  const diffPos = Math.round(valueToPosition(data.diff));
-  const lclPos = Math.round(valueToPosition(data.lcl));
-  const uclPos = Math.round(valueToPosition(data.ucl));
+  // Calculate the exact positions for the data points - don't round yet
+  const diffPos = valueToPosition(data.diff);
+  const lclPos = valueToPosition(data.lcl);
+  const uclPos = valueToPosition(data.ucl);
   
   // Handle possible reverse ordering if lcl > ucl due to calculation issues
   const left = Math.min(lclPos, uclPos);
   const right = Math.max(lclPos, uclPos);
   const width = right - left;
   
-  // Format value with p-value
+  // Format value with p-value for observed data, or confidence interval for models
   let valueText = isNaN(data.diff) ? "N/A" : data.diff.toFixed(2);
+  
   if (className === 'observed' && data.pValue !== undefined && !isNaN(data.pValue)) {
+    // For observed data, add p-value
     const pValue = data.pValue;
     let pValueText = `(p=${pValue.toFixed(3)})`;
     
@@ -637,12 +636,19 @@ function renderEstimate(className, data, valueToPosition) {
     else if (pValue < 0.05) pValueText += '*';
     
     valueText += ` <span class="p-value">${pValueText}</span>`;
+  } else if (className !== 'observed' && !isNaN(data.lcl) && !isNaN(data.ucl)) {
+    // For model data, add confidence interval
+    valueText += ` <span class="ci-value">(${data.lcl.toFixed(2)} to ${data.ucl.toFixed(2)})</span>`;
   }
   
+  // Add debug info as data attributes
   return `
-    <div class="estimate-container ${className}">
+    <div class="estimate-container ${className}" 
+         data-diff="${data.diff}" 
+         data-lcl="${data.lcl}" 
+         data-ucl="${data.ucl}">
       <div class="estimate-line" style="left: ${left}px; width: ${width}px;">
-        <div class="estimate-point" style="left: ${diffPos - left}px;"></div>
+        <div class="estimate-point" style="left: ${Math.round(diffPos - left)}px;"></div>
       </div>
       <div class="estimate-value">
         ${valueText}
