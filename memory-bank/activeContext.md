@@ -11,6 +11,16 @@ The Transfusion Dashboard project is in active development with a focus on creat
 
 ## Recent Changes
 
+### Vital Parameter Display Fix
+
+- **Fixed Parameter Abbreviation Display**: Resolved an issue where vital parameter abbreviations were not displaying correctly:
+  - Charts in the Main Findings tab were showing "Change in undefined (mmHg)" instead of "Change in MAP (mmHg)"
+  - The root cause was an inconsistency between the `getParameterDetails` function implementations:
+    - In `componentFactors.js`: The function returned `{ name, unit, abbr }` properties
+    - In `mainFindings.js`: The function only returned `{ name, unit }` properties (missing the crucial `abbr` property)
+  - Fixed by updating the `mainFindings.js` implementation to include the proper `abbr` property with appropriate mappings
+  - This resolved all instances of "undefined" showing in place of parameter abbreviations
+
 ### UI Navigation Update
 
 - **Tab Order Modification**: Rearranged the dashboard tabs to place "Descriptive Statistics" at the end:
@@ -58,6 +68,15 @@ Several key technical and design decisions are guiding current development:
 3. **Premium Design System**: Modern, accessible interface with dark/light theme support
 4. **CSV as Data Source**: Standardized data format with specific naming conventions and structure
 
+## Documentation Updates
+
+- **Component Factors Module Documentation**: Created comprehensive documentation in `componentFactorsModule.md` that explains:
+  - How Table 2b is generated and integrated into the Main Findings tab
+  - The dual-purpose nature of the Component Factors module
+  - Implementation details of the small multiples visualization technique
+  - CSS styling for the Component Factors visualization
+  - Code structure and potential areas for refactoring
+
 ## Next Steps
 
 Based on the project documentation and recent work, logical next steps appear to be:
@@ -69,6 +88,7 @@ Based on the project documentation and recent work, logical next steps appear to
 5. **Additional Theme Improvements**: Review other UI elements for potential dark mode enhancement
 6. **Responsive Design Implementation**: Ensuring proper function across different device sizes
 7. **User Testing**: Validating the improved dark mode interface with target users
+8. **Code Refactoring**: Consider refactoring duplicated utilities (like `getParameterDetails()`) into shared modules
 
 ## Open Questions
 

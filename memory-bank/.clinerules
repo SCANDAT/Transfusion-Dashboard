@@ -64,6 +64,16 @@ When extending or modifying modules:
 - Register new functionality with the dashboard controller
 - Update UI in a consistent way with existing components
 
+### Component Factors Module
+
+When working with the Component Factors module:
+- Remember it serves dual purposes: powering both the dedicated tab AND Table 2b in Main Findings
+- Modifications to visualization code affect both locations
+- Always test both areas (Main Findings tab and Component Factors tab) after making changes
+- Maintain the small multiples visualization pattern for consistency
+- Follow the established patterns for representing statistical significance
+- Preserve the visual consistency of the visualization grid layout
+
 ## Project-Specific Patterns
 
 ### File Naming
@@ -80,6 +90,11 @@ When extending or modifying modules:
 - Data processing code is separated from rendering code
 - Error handling is integrated at all levels
 - Debug logging is available via the `logDebug()` utility
+- Functions with the same purpose across modules must have consistent signatures and return values
+- When a utility function (like `getParameterDetails`) appears in multiple modules:
+  - Ensure identical return object structures across all implementations
+  - Consider refactoring into a shared utility function to avoid inconsistencies
+  - When fixing issues in one module, check for similar functions in other modules
 
 ### Design System Usage
 
