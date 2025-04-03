@@ -94,45 +94,53 @@ function formatDiffCi(mean, lcl, ucl) {
 /**
  * Get the human-readable parameter name and unit from abbreviation
  * @param {string} abbr - The parameter abbreviation
- * @returns {Object} - Object with name and unit properties
+ * @returns {Object} - Object with name, unit, and abbr properties
  */
 function getParameterDetails(abbr) {
   const mapping = {
     'ARTm': { 
       name: 'Mean Arterial Pressure', 
-      unit: 'mmHg' 
+      unit: 'mmHg',
+      abbr: 'MAP'
     },
     'ARTs': { 
       name: 'Systolic Blood Pressure', 
-      unit: 'mmHg' 
+      unit: 'mmHg',
+      abbr: 'SBP'
     },
     'ARTd': { 
       name: 'Diastolic Blood Pressure', 
-      unit: 'mmHg' 
+      unit: 'mmHg',
+      abbr: 'DBP'
     },
     'HR': { 
       name: 'Heart Rate', 
-      unit: 'bpm' 
+      unit: 'bpm',
+      abbr: 'HR'
     },
     'Hjärtfrekv': { 
       name: 'Heart Rate', 
-      unit: 'bpm' 
+      unit: 'bpm',
+      abbr: 'HR'
     },
     'FIO2(u)': { 
       name: 'Fraction of Inspired Oxygen', 
-      unit: '%' 
+      unit: '%',
+      abbr: 'FiO₂'
     },
     'SpO2': { 
       name: 'Peripheral Capillary Oxygen Saturation', 
-      unit: '%' 
+      unit: '%',
+      abbr: 'SpO₂'
     },
     'VE(u)': { 
       name: 'Minute Ventilation', 
-      unit: 'L/min' 
+      unit: 'L/min',
+      abbr: 'VE'
     }
   };
   
-  return mapping[abbr] || { name: abbr, unit: '' };
+  return mapping[abbr] || { name: abbr, unit: '', abbr: abbr };
 }
 
 /**
