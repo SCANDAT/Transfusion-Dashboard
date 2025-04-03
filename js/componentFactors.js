@@ -545,6 +545,7 @@ function renderFactorVisualization(factor, factorData, scaleRange, paramDetails)
   }
   
   // Generate tick positions and labels that align perfectly with the data values
+  // Important: Do not add any offsets to these positions to ensure alignment with data points
   const tickPositions = tickValues.map(value => vToPos(value));
   const tickLabels = tickValues.map(value => value.toFixed(1));
   
@@ -598,9 +599,10 @@ function renderFactorVisualization(factor, factorData, scaleRange, paramDetails)
 function renderEstimate(className, data, valueToPosition) {
   if (!data || isNaN(data.diff)) return '';
   
-  const diffPos = valueToPosition(data.diff);
-  const lclPos = valueToPosition(data.lcl);
-  const uclPos = valueToPosition(data.ucl);
+  // Get exact pixel positions for the data points
+  const diffPos = Math.round(valueToPosition(data.diff));
+  const lclPos = Math.round(valueToPosition(data.lcl));
+  const uclPos = Math.round(valueToPosition(data.ucl));
   
   // Handle possible reverse ordering if lcl > ucl due to calculation issues
   const left = Math.min(lclPos, uclPos);

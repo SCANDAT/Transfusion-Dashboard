@@ -94,14 +94,14 @@
 
 .axis-tick {
   position: absolute;
-  transform: translateX(-50%);
+  transform: translateX(-0.5px); /* Align with the exact pixel */
 }
 
 .axis-tick-line {
   width: 1px;
   height: 5px;
-  margin-left: 50%;
   background-color: var(--divider-color);
+  position: relative;
 }
 
 .axis-tick-label {
@@ -109,6 +109,10 @@
   color: var(--text-secondary, rgba(255, 255, 255, 0.7));
   text-align: center;
   margin-top: 5px;
+  transform: translateX(-50%); /* Center the label under the tick */
+  width: 40px; /* Fixed width for labels */
+  left: 0;
+  position: relative;
 }
 
 .x-axis-title {
@@ -183,7 +187,7 @@
   height: 9px;
   border-radius: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); /* Center the point on its actual value */
 }
 
 .estimate-value {
