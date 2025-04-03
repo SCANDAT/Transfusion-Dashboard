@@ -1,113 +1,489 @@
 /**
- * RBC Component Factors tab functionality for the Transfusion Dashboard
- * 
- * Note: This tab actually displays component factors (not transfusions),
- * using the existing visualization.js functionality.
+ * Component Factor Effects visualization for the Transfusion Dashboard
+ * Implements a small multiples visualization of RBC component factor effects on vital parameters
  */
 
 /**
- * Create the content for the RBC Component Factors tab
- * @returns {string} HTML content for the RBC Component Factors tab
+ * Load the factor observed data summary from CSV
+ * @param {string} fileCase - The file case sensitivity pattern (uppercase/lowercase)
+ * @param {function} logDebug - Debug logging function
+ * @returns {Promise<Array>} - The loaded and parsed data
  */
-function createRbcComponentFactorsContent() {
+async function loadFactorObservedDataSummary(fileCase, logDebug = console.log) {
+  try {
+    logDebug(`Loading factor observed data summary`);
+    const result = await safeFetch('factor_observed_data_summary', fileCase, logDebug);
+    
+    return new Promise((resolve, reject) => {
+      Papa.parse(result.text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: results => {
+          if (results.errors && results.errors.length > 0) {
+            logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
+          }
+          // Filter out summary rows (where FactorCategory is "." or null)
+          const filteredData = results.data.filter(row => row.FactorCategory !== "." && row.FactorCategory !== null);
+          resolve(filteredData);
+        },
+        error: error => reject(error)
+      });
+    });
+  } catch (error) {
+    logDebug(`Error loading factor observed data summary: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Load the factor model-based summary data from CSV
+ * @param {string} fileCase - The file case sensitivity pattern (uppercase/lowercase)
+ * @param {function} logDebug - Debug logging function
+ * @returns {Promise<Array>} - The loaded and parsed data
+ */
+async function loadFactorModelBasedSummary(fileCase, logDebug = console.log) {
+  try {
+    logDebug(`Loading factor model-based summary`);
+    const result = await safeFetch('factor_model_based_summary', fileCase, logDebug);
+    
+    return new Promise((resolve, reject) => {
+      Papa.parse(result.text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: results => {
+          if (results.errors && results.errors.length > 0) {
+            logDebug(`CSV parse errors: ${JSON.stringify(results.errors)}`);
+          }
+          resolve(results.data);
+        },
+        error: error => reject(error)
+      });
+    });
+  } catch (error) {
+    logDebug(`Error loading factor model-based summary: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Process component factor data and organize it for visualization
+ * @param {Array} observedData - The observed data summary
+ * @param {Array} modelData - The model-based data summary
+ * @returns {Object} - Data organized by vital parameter, factor, and category
+ */
+function processComponentFactorData(observedData, modelData) {
+  // Define vital parameters in the specific order
+  const vitalParameters = [
+    'ARTm', 'ARTs', 'ARTd', 'Hjärtfrekv', 'FIO2(u)', 'SpO2', 'VE(u)'
+  ];
+  
+  // Define component factors in the specific grid layout order
+  const componentFactors = [
+    'DonorHb_Cat', 'Storage_Cat', 'wdy_donation', 
+    'DonorSex', 'DonorParity'
+  ];
+  
+  // Initialize the data structure
+  const structured = {};
+  
+  // Initialize each vital parameter
+  vitalParameters.forEach(param => {
+    structured[param] = {};
+    
+    // Initialize each component factor
+    componentFactors.forEach(factor => {
+      structured[param][factor] = {};
+    });
+  });
+  
+  // Process observed data
+  observedData.forEach(row => {
+    if (!vitalParameters.includes(row.Abbreviation)) return;
+    if (!componentFactors.includes(row.FactorName)) return;
+    
+    const param = row.Abbreviation;
+    const factor = row.FactorName;
+    const category = row.FactorCategory;
+    
+    if (!structured[param][factor][category]) {
+      structured[param][factor][category] = {
+        observed: {
+          diff: parseFloat(row.Diff_Mean),
+          lcl: parseFloat(row.Diff_LCL),
+          ucl: parseFloat(row.Diff_UCL),
+          pValue: parseFloat(row.p_value)
+        }
+      };
+    } else {
+      structured[param][factor][category].observed = {
+        diff: parseFloat(row.Diff_Mean),
+        lcl: parseFloat(row.Diff_LCL),
+        ucl: parseFloat(row.Diff_UCL),
+        pValue: parseFloat(row.p_value)
+      };
+    }
+  });
+  
+  // Process model data
+  modelData.forEach(row => {
+    if (!vitalParameters.includes(row.Abbreviation)) return;
+    if (!componentFactors.includes(row.FactorName)) return;
+    
+    const param = row.Abbreviation;
+    const factor = row.FactorName;
+    const category = row.FactorCategory;
+    
+    if (!structured[param][factor][category]) {
+      structured[param][factor][category] = {};
+    }
+    
+    structured[param][factor][category].base = {
+      diff: parseFloat(row.Base_Diff),
+      lcl: parseFloat(row.Base_Diff_LCL),
+      ucl: parseFloat(row.Base_Diff_UCL)
+    };
+    
+    structured[param][factor][category].full = {
+      diff: parseFloat(row.Full_Diff),
+      lcl: parseFloat(row.Full_Diff_LCL),
+      ucl: parseFloat(row.Full_Diff_UCL)
+    };
+  });
+  
+  return structured;
+}
+
+/**
+ * Get the human-readable category label
+ * @param {string} factor - The factor name
+ * @param {string} category - The category code
+ * @returns {string} - The human-readable label
+ */
+function getCategoryLabel(factor, category) {
+  const factorCategoryLabels = {
+    "DonorHb_Cat": {
+      "1": "<125 g/L",
+      "2": "125-139 g/L",
+      "3": "140-154 g/L",
+      "4": "155-169 g/L", 
+      "5": "≥170 g/L"
+    },
+    "Storage_Cat": {
+      "1": "<10 days",
+      "2": "10-19 days",
+      "3": "20-29 days",
+      "4": "30-39 days",
+      "5": "≥40 days"
+    },
+    "DonorSex": {
+      "1": "Male",
+      "2": "Female"
+    },
+    "DonorParity": {
+      "0": "Nulliparous",
+      "1": "Parous"
+    },
+    "wdy_donation": {
+      "1": "Sunday",
+      "2": "Monday",
+      "3": "Tuesday",
+      "4": "Wednesday",
+      "5": "Thursday",
+      "6": "Friday",
+      "7": "Saturday"
+    }
+  };
+
+  return factorCategoryLabels[factor]?.[category] || category;
+}
+
+/**
+ * Get the human-readable factor name
+ * @param {string} factor - The factor name
+ * @returns {string} - The human-readable name
+ */
+function getFactorName(factor) {
+  const factorNames = {
+    "DonorHb_Cat": "Donor Hemoglobin",
+    "Storage_Cat": "Storage Time",
+    "DonorSex": "Donor Sex",
+    "DonorParity": "Donor Parity",
+    "wdy_donation": "Weekday of Donation"
+  };
+
+  return factorNames[factor] || factor;
+}
+
+/**
+ * Get parameter details (name and unit) for a vital parameter
+ * @param {string} param - The vital parameter abbreviation
+ * @returns {Object} - Parameter details with name and unit
+ */
+function getParameterDetails(param) {
+  const vitalParamNames = {
+    "ARTm": "Mean Arterial Pressure",
+    "ARTs": "Systolic Blood Pressure",
+    "ARTd": "Diastolic Blood Pressure",
+    "Hjärtfrekv": "Heart Rate",
+    "FIO2(u)": "Fraction of Inspired Oxygen",
+    "SpO2": "Peripheral Capillary Oxygen Saturation",
+    "VE(u)": "Minute Ventilation"
+  };
+
+  const vitalParamUnits = {
+    "ARTm": "mmHg",
+    "ARTs": "mmHg",
+    "ARTd": "mmHg",
+    "Hjärtfrekv": "bpm",
+    "FIO2(u)": "%",
+    "SpO2": "%",
+    "VE(u)": "L/min"
+  };
+
+  return {
+    name: vitalParamNames[param] || param,
+    unit: vitalParamUnits[param] || ""
+  };
+}
+
+/**
+ * Determine significance indicators based on p-value
+ * @param {number} pValue - The p-value
+ * @returns {string} - Significance indicator (* < 0.05, ** < 0.01, *** < 0.001)
+ */
+function getSignificanceIndicator(pValue) {
+  if (pValue < 0.001) return '***';
+  if (pValue < 0.01) return '**';
+  if (pValue < 0.05) return '*';
+  return '';
+}
+
+/**
+ * Calculate the min and max values for the scale across all estimates for a vital parameter
+ * @param {Object} paramData - Data for a specific vital parameter
+ * @returns {Object} - Min and max values
+ */
+function calculateScaleRange(paramData) {
+  let min = 0;
+  let max = 0;
+  
+  Object.keys(paramData).forEach(factor => {
+    Object.keys(paramData[factor]).forEach(category => {
+      const data = paramData[factor][category];
+      
+      // Check observed data
+      if (data.observed) {
+        min = Math.min(min, data.observed.lcl);
+        max = Math.max(max, data.observed.ucl);
+      }
+      
+      // Check base model data
+      if (data.base) {
+        min = Math.min(min, data.base.lcl);
+        max = Math.max(max, data.base.ucl);
+      }
+      
+      // Check full model data
+      if (data.full) {
+        min = Math.min(min, data.full.lcl);
+        max = Math.max(max, data.full.ucl);
+      }
+    });
+  });
+  
+  // Add a margin to the min and max values
+  const margin = (max - min) * 0.1;
+  min = Math.floor(min - margin);
+  max = Math.ceil(max + margin);
+  
+  return { min, max };
+}
+
+/**
+ * Create the small multiples visualization for a vital parameter
+ * @param {string} param - The vital parameter abbreviation
+ * @param {Object} paramData - Data for the vital parameter
+ * @returns {string} - HTML content for the visualization
+ */
+function createVitalParameterSection(param, paramData) {
+  const paramDetails = getParameterDetails(param);
+  const scaleRange = calculateScaleRange(paramData);
+  
+  // Create the factors grid layout (2x3 grid, last slot empty)
+  const factorOrder = [
+    'DonorHb_Cat', 'Storage_Cat', 'wdy_donation', 
+    'DonorSex', 'DonorParity', null // null for empty slot
+  ];
+  
   return `
-    <div class="card compact-controls">
-      <div class="controls-panel">
-        <div class="available-options">
-          <div class="available-options-toggle">Available Parameters & Factors <span class="toggle-icon">▼</span></div>
-          <div class="available-options-content">
-            <div class="row">
-              <div class="col">
-                <p><strong>Vital Parameters:</strong></p>
-                <ul class="compact-list">
-                  <li>Mean Arterial Pressure (mmHg)</li>
-                  <li>Systolic Blood Pressure (mmHg)</li>
-                  <li>Diastolic Blood Pressure (mmHg)</li>
-                  <li>Heart Rate (bpm)</li>
-                  <li>Fraction of Inspired Oxygen (%)</li>
-                  <li>Peripheral Capillary Oxygen Saturation (%)</li>
-                  <li>Minute Ventilation (L/min)</li>
-                </ul>
-              </div>
-              <div class="col">
-                <p><strong>RBC Component Factors:</strong></p>
-                <ul class="compact-list">
-                  <li>Donor Hemoglobin (g/L)</li>
-                  <li>Donor Parity (parous or nulliparous)</li>
-                  <li>Donor Sex (male or female)</li>
-                  <li>RBC Component Storage Time (days)</li>
-                  <li>Weekday of Donation</li>
-                </ul>
+    <div class="vital-parameter-section">
+      <h3>${paramDetails.name} (${paramDetails.unit})</h3>
+      <div class="factor-grid">
+        ${factorOrder.map(factor => {
+          if (!factor) return `<div class="factor-cell empty"></div>`;
+          
+          const factorData = paramData[factor];
+          if (!factorData) return `<div class="factor-cell empty"></div>`;
+          
+          return `
+            <div class="factor-cell">
+              <h4>${getFactorName(factor)}</h4>
+              ${renderFactorVisualization(factor, factorData, scaleRange)}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render the visualization for a specific component factor
+ * @param {string} factor - The component factor name
+ * @param {Object} factorData - Data for the factor
+ * @param {Object} scaleRange - Min and max values for the scale
+ * @returns {string} - HTML content for the factor visualization
+ */
+function renderFactorVisualization(factor, factorData, scaleRange) {
+  const { min, max } = scaleRange;
+  const width = 250; // Plot width in pixels
+  const zeroPosition = width * (-min / (max - min)); // Position of zero line
+  
+  // Sort categories based on known order
+  const getCategoryOrder = (factor, category) => {
+    if (factor === 'wdy_donation') {
+      return parseInt(category, 10);
+    }
+    if (factor === 'DonorHb_Cat' || factor === 'Storage_Cat') {
+      return parseInt(category, 10);
+    }
+    if (factor === 'DonorSex') {
+      return parseInt(category, 10);
+    }
+    if (factor === 'DonorParity') {
+      return parseInt(category, 10);
+    }
+    return 0;
+  };
+  
+  const sortedCategories = Object.keys(factorData).sort((a, b) => {
+    return getCategoryOrder(factor, a) - getCategoryOrder(factor, b);
+  });
+  
+  // Convert value to position in the plot
+  const valueToPosition = (value) => {
+    return width * (value - min) / (max - min);
+  };
+  
+  return `
+    <div class="factor-visualization">
+      <div class="factor-plot" style="width: ${width}px;">
+        <div class="zero-line" style="left: ${zeroPosition}px;"></div>
+        
+        ${sortedCategories.map(category => {
+          const data = factorData[category];
+          const label = getCategoryLabel(factor, category);
+          let significance = '';
+          
+          if (data.observed && data.observed.pValue !== undefined) {
+            significance = getSignificanceIndicator(data.observed.pValue);
+          }
+          
+          return `
+            <div class="category-container">
+              <div class="category-label">${label} ${significance}</div>
+              
+              <div class="estimates-container">
+                ${renderEstimate('observed', data.observed, valueToPosition)}
+                ${renderEstimate('base-model', data.base, valueToPosition)}
+                ${renderEstimate('adjusted-model', data.full, valueToPosition)}
               </div>
             </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render a single estimate with confidence interval
+ * @param {string} className - CSS class name for the estimate type
+ * @param {Object} data - Estimate data (diff, lcl, ucl)
+ * @param {Function} valueToPosition - Function to convert value to position
+ * @returns {string} - HTML content for the estimate
+ */
+function renderEstimate(className, data, valueToPosition) {
+  if (!data) return '';
+  
+  const diffPos = valueToPosition(data.diff);
+  const lclPos = valueToPosition(data.lcl);
+  const uclPos = valueToPosition(data.ucl);
+  const width = uclPos - lclPos;
+  
+  return `
+    <div class="estimate-container ${className}">
+      <div class="estimate-line" style="left: ${lclPos}px; width: ${width}px;">
+        <div class="estimate-point" style="left: ${diffPos - lclPos}px;"></div>
+      </div>
+      <div class="estimate-value">${data.diff.toFixed(2)}</div>
+    </div>
+  `;
+}
+
+/**
+ * Create the entire Table 2b content
+ * @param {Array} observedData - The observed data summary
+ * @param {Array} modelData - The model-based data summary
+ * @returns {string} - HTML content for Table 2b
+ */
+function createComponentFactorsTable(observedData, modelData) {
+  // Process and organize the data
+  const processedData = processComponentFactorData(observedData, modelData);
+  
+  // Define vital parameters in the specific order
+  const vitalParameters = [
+    'ARTm', 'ARTs', 'ARTd', 'Hjärtfrekv', 'FIO2(u)', 'SpO2', 'VE(u)'
+  ];
+  
+  return `
+    <div class="card">
+      <h2>Table 2b. RBC Component Factor Effects on Vital Parameters</h2>
+      
+      <div class="component-factors-visualization">
+        ${vitalParameters.map(param => {
+          return createVitalParameterSection(param, processedData[param]);
+        }).join('')}
+      </div>
+      
+      <div class="visualization-legend">
+        <div class="legend-items">
+          <div class="legend-item">
+            <span class="legend-marker observed"></span>
+            <span>Observed Population Estimates</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker base-model"></span>
+            <span>Base Model Estimates<sup>1</sup></span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker adjusted-model"></span>
+            <span>Fully Adjusted Model Estimates<sup>2</sup></span>
           </div>
         </div>
-        <div class="controls-main">
-          <div class="controls-row">
-            <div class="controls-col">
-              <div class="form-group compact">
-                <label class="form-label">Vital Parameters:</label>
-                <div id="vital-param-buttons" class="button-group"></div>
-              </div>
-            </div>
-            <div class="controls-col">
-              <div class="form-group compact">
-                <label class="form-label">RBC Component Factors:</label>
-                <div id="component-factor-buttons" class="button-group"></div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="controls-row">
-            <div class="controls-col">
-              <div class="form-group compact">
-                <label class="form-label">Time Range (minutes):</label>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <input type="number" id="time-min" class="form-input" style="width: 80px;" value="0">
-                  <span>to</span>
-                  <input type="number" id="time-max" class="form-input" style="width: 80px;" value="720">
-                  <button id="time-reset" class="btn btn-sm">Reset</button>
-                </div>
-              </div>
-            </div>
-            <div class="controls-col">
-              <div class="form-group compact">
-                <label class="form-label">Display Options:</label>
-                <div class="checkbox-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="show-ci" checked> 
-                    <span>Show Confidence Interval</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="show-base"> 
-                    <span>Show Base Model</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="show-delta" checked> 
-                    <span>Show Change from Baseline</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
+        
+        <div class="significance-legend">
+          <span>Significance: </span>
+          <span class="sig-item">* p<0.05</span>
+          <span class="sig-item">** p<0.01</span>
+          <span class="sig-item">*** p<0.001</span>
         </div>
       </div>
       
-      <div id="debug-container" style="display: none;">
-        <div class="form-group compact">
-          <label>
-            <input type="checkbox" id="debug-mode"> Enable Debug Mode
-          </label>
-        </div>
-        <div id="debug-output" class="debug-info" style="display: none;"></div>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div id="chart-title" class="header" style="margin-bottom: 8px;"></div>
-      <div id="model-descriptions" class="info compact-model-descriptions" style="margin-bottom: 8px;"></div>
-      <div id="charts-container" class="chart-grid">
-        <!-- Dynamic charts will be inserted here -->
+      <div class="table-footnotes">
+        <p><sup>1</sup><span style="font-weight: bold;">Base Model:</span> Same as in Table 2a.</p>
+        <p><sup>2</sup><span style="font-weight: bold;">Fully Adjusted Model:</span> Same as in Table 2a.</p>
+        <p><span style="font-weight: bold;">Vertical Arrangement:</span> For each category, the top estimate represents observed population data, the middle represents the base model, and the bottom represents the fully adjusted model.</p>
       </div>
     </div>
   `;
@@ -115,244 +491,56 @@ function createRbcComponentFactorsContent() {
 
 /**
  * Initialize the RBC Component Factors tab
- * This tab uses the existing visualization functionality
- * 
- * @param {string} containerId - ID of the container element
- * @param {string} fileCase - File case style ('uppercase', 'lowercase', or 'unknown')
- * @param {Function} logDebug - Debug logging function
+ * @param {string} tabId - The ID of the tab element
+ * @param {string} fileCase - The file case sensitivity pattern (uppercase/lowercase)
+ * @param {function} logDebug - Debug logging function
  */
-function initializeRbcComponentFactors(containerId, fileCase, logDebug) {
-  const container = document.getElementById(containerId);
-  if (!container) {
-    logDebug('Cannot initialize RBC Component Factors: container not found');
-    return;
-  }
-  
-  // State for this module
-  const state = {
-    selectedVital: null,
-    selectedFactor: null,
-    chart: null,
-    fileCase: fileCase,
-    logDebug: logDebug,
-    loadingElement: null,
-    vitalParamInfo: [
-      { value: 'ARTm', label: 'Mean Arterial Pressure (mmHg)', abbreviation: 'MAP', color: '#3b82f6' },
-      { value: 'ARTs', label: 'Systolic Blood Pressure (mmHg)', abbreviation: 'SBP', color: '#ef4444' },
-      { value: 'ARTd', label: 'Diastolic Blood Pressure (mmHg)', abbreviation: 'DBP', color: '#10b981' },
-      { value: 'HR', label: 'Heart Rate (bpm)', abbreviation: 'HR', color: '#f59e0b' },
-      { value: 'FIO2', label: 'Fraction of Inspired Oxygen (%)', abbreviation: 'FiO2', color: '#8b5cf6' },
-      { value: 'SpO2', label: 'Peripheral Capillary Oxygen Saturation (%)', abbreviation: 'SpO2', color: '#ec4899' },
-      { value: 'VE', label: 'Minute Ventilation (L/min)', abbreviation: 'VE', color: '#6366f1' }
-    ],
-    componentFactorInfo: [
-      { value: 'DonorHb_Cat', label: 'Donor Hemoglobin (g/L)', color: '#3b82f6' },
-      { value: 'DonorParity', label: 'Donor Parity', color: '#ef4444' },
-      { value: 'DonorSex', label: 'Donor Sex', color: '#10b981' },
-      { value: 'Storage_Cat', label: 'RBC Storage Time (days)', color: '#f59e0b' },
-      { value: 'wdy_donation', label: 'Weekday of Donation', color: '#8b5cf6' }
-    ]
-  };
-  
-  // Create button controls for vital parameters and component factors
-  createButtonControls(state);
-  
-  // Add event listeners
-  addEventListeners(state);
-  
-  // Listen for theme changes
-  document.addEventListener('themeChanged', () => {
-    logDebug('Theme changed in RBC Component Factors tab, updating chart...');
-    updateChart(state);
-  });
-  
-  logDebug('RBC Component Factors tab initialized');
-}
-
-/**
- * Create button controls for vital parameters and component factors
- * @param {Object} state - Module state
- */
-function createButtonControls(state) {
-  const vitalParamContainer = document.getElementById('vital-param-buttons');
-  const componentFactorContainer = document.getElementById('component-factor-buttons');
-  
-  if (!vitalParamContainer || !componentFactorContainer) return;
-  
-  // Clear existing buttons
-  vitalParamContainer.innerHTML = '';
-  componentFactorContainer.innerHTML = '';
-  
-  // Create buttons for vital parameters
-  state.vitalParamInfo.forEach(param => {
-    const button = document.createElement('button');
-    button.className = 'vital-param-button';
-    button.dataset.value = param.value;
-    button.innerHTML = `<span class="button-label">${param.label}</span>`;
+async function initializeRbcComponentFactors(tabId, fileCase, logDebug = console.log) {
+  try {
+    logDebug('Initializing RBC Component Factors tab');
     
-    button.addEventListener('click', () => handleVitalParamClick(state, param.value));
-    vitalParamContainer.appendChild(button);
-  });
-  
-  // Create buttons for component factors
-  state.componentFactorInfo.forEach(factor => {
-    const button = document.createElement('button');
-    button.className = 'component-factor-button';
-    button.dataset.value = factor.value;
-    button.innerHTML = `<span class="button-label">${factor.label}</span>`;
+    // Load the factor data first
+    const factorObservedData = await loadFactorObservedDataSummary(fileCase, logDebug);
+    const factorModelData = await loadFactorModelBasedSummary(fileCase, logDebug);
     
-    button.addEventListener('click', () => handleComponentFactorClick(state, factor.value));
-    componentFactorContainer.appendChild(button);
-  });
-}
-
-/**
- * Handle click event for vital parameter buttons
- * @param {Object} state - Module state
- * @param {string} vitalParam - Vital parameter code
- */
-function handleVitalParamClick(state, vitalParam) {
-  state.selectedVital = vitalParam;
-  updateButtonStates(state);
-  updateChart(state);
-}
-
-/**
- * Handle click event for component factor buttons
- * @param {Object} state - Module state
- * @param {string} componentFactor - Component factor code
- */
-function handleComponentFactorClick(state, componentFactor) {
-  state.selectedFactor = componentFactor;
-  updateButtonStates(state);
-  updateChart(state);
-}
-
-/**
- * Update button states to reflect current selections
- * @param {Object} state - Module state
- */
-function updateButtonStates(state) {
-  state.vitalParamInfo.forEach(param => {
-    const button = document.querySelector(`.vital-param-button[data-value="${param.value}"]`);
-    if (button) {
-      button.classList.toggle('active', state.selectedVital === param.value);
+    logDebug(`Loaded factor observed data (${factorObservedData.length} rows) and factor model data (${factorModelData.length} rows)`);
+    
+    // Use Main Findings tab to add our Table 2b
+    const mainFindingsTab = document.getElementById('main-findings-tab');
+    if (!mainFindingsTab) {
+      logDebug(`Main findings tab element not found`);
+      return;
     }
-  });
-  
-  state.componentFactorInfo.forEach(factor => {
-    const button = document.querySelector(`.component-factor-button[data-value="${factor.value}"]`);
-    if (button) {
-      button.classList.toggle('active', state.selectedFactor === factor.value);
-    }
-  });
-}
-
-/**
- * Add event listeners for the controls
- * @param {Object} state - Module state
- */
-function addEventListeners(state) {
-  // Time range controls
-  document.getElementById('time-min').addEventListener('change', (e) => {
-    state.timeRange[0] = parseInt(e.target.value);
-    updateChart(state);
-  });
-  
-  document.getElementById('time-max').addEventListener('change', (e) => {
-    state.timeRange[1] = parseInt(e.target.value);
-    updateChart(state);
-  });
-  
-  document.getElementById('time-reset').addEventListener('click', () => {
-    state.timeRange = [0, 720];
-    document.getElementById('time-min').value = 0;
-    document.getElementById('time-max').value = 720;
-    updateChart(state);
-  });
-  
-  // Display options
-  document.getElementById('show-ci').addEventListener('change', (e) => {
-    state.showConfidenceInterval = e.target.checked;
-    updateChart(state);
-  });
-  
-  document.getElementById('show-base').addEventListener('change', (e) => {
-    state.showBaseModel = e.target.checked;
-    updateChart(state);
-  });
-  
-  document.getElementById('show-delta').addEventListener('change', (e) => {
-    state.showDeltaPlot = e.target.checked;
-    updateChart(state);
-  });
-}
-
-/**
- * Update the chart with current settings
- * @param {Object} state - Module state
- */
-function updateChart(state) {
-  if (!state.selectedVital || !state.selectedFactor) {
-    return;
-  }
-  
-  showLoading(state);
-  
-  loadVisualizationData(state.selectedVital, state.selectedFactor, state.fileCase, state.logDebug)
-    .then(data => {
-      const chartData = prepareChartData(data, [state.selectedFactor], state.timeRange, state.showDeltaPlot, state.showConfidenceInterval, state.showBaseModel, state.selectedFactor, [state.selectedFactor]);
-      if (chartData) {
-        // Destroy existing charts if any
-        if (state.charts[state.selectedVital]) {
-          state.charts[state.selectedVital].forEach(chart => chart.destroy());
-        }
-        
-        // Create new charts
-        state.charts[state.selectedVital] = [];
-        const chartContainer = document.getElementById('charts-container');
-        chartContainer.innerHTML = ''; // Clear existing charts
-        
-        // Create a grid layout
-        const grid = document.createElement('div');
-        grid.className = 'chart-grid';
-        chartContainer.appendChild(grid);
-        
-        // Create charts for each combination
-        const combinations = [state.selectedFactor];
-        combinations.forEach((factor, index) => {
-          const chartElement = document.createElement('div');
-          chartElement.className = 'chart-container';
-          grid.appendChild(chartElement);
-          
-          const chart = renderChart(chartData, data.metaInfo, state.timeRange, state.showDeltaPlot, state.selectedVital, null, factor);
-          state.charts[state.selectedVital].push(chart);
-          
-          // Add chart title
-          const chartTitle = document.createElement('div');
-          chartTitle.className = 'chart-title';
-          chartTitle.textContent = `${getVitalParamLabel(state, state.selectedVital)} vs ${getComponentFactorLabel(state, factor)}`;
-          chartElement.insertBefore(chartTitle, chartElement.firstChild);
-        });
-      }
-    })
-    .catch(error => {
-      state.logDebug(`Failed to update chart: ${error.message}`);
-      const container = document.getElementById('charts-container');
-      showError(`Failed to load data for ${getVitalParamLabel(state, state.selectedVital)} and ${getComponentFactorLabel(state, state.selectedFactor)}: ${error.message}`, container);
-    })
-    .finally(() => {
-      hideLoading(state);
+    
+    // Check if Table 2a exists and Table 2b doesn't exist yet
+    const allH2s = mainFindingsTab.querySelectorAll('h2');
+    let table2aExists = false;
+    let table2bExists = false;
+    
+    // Check all h2 elements for our tables
+    allH2s.forEach(h2 => {
+      if (h2.textContent.includes('Table 2a')) table2aExists = true;
+      if (h2.textContent.includes('Table 2b')) table2bExists = true;
     });
-}
-
-/**
- * Get the human-readable label for a component factor
- * @param {Object} state - Module state
- * @param {string} componentFactor - Component factor code
- * @returns {string} Human-readable label
- */
-function getComponentFactorLabel(state, componentFactor) {
-  const factorInfo = state.componentFactorInfo.find(factor => factor.value === componentFactor);
-  return factorInfo ? factorInfo.label : componentFactor;
+    
+    if (table2aExists && !table2bExists) {
+      // Create the visualization table
+      const visualizationElement = document.createElement('div');
+      visualizationElement.innerHTML = createComponentFactorsTable(factorObservedData, factorModelData);
+      
+      // Add it to the findings container
+      const findingsContainer = mainFindingsTab.querySelector('.findings-container');
+      if (findingsContainer) {
+        findingsContainer.appendChild(visualizationElement.firstElementChild);
+        logDebug('Added Table 2b to Main Findings tab');
+      } else {
+        logDebug('Findings container not found in Main Findings tab');
+      }
+    }
+    
+    logDebug('RBC Component Factors tab initialized successfully');
+  } catch (error) {
+    logDebug(`Error initializing RBC Component Factors tab: ${error.message}`);
+    throw error;
+  }
 }
