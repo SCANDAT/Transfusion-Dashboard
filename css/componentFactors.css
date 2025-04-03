@@ -240,7 +240,15 @@
 }
 
 .observed .estimate-value {
-  color: var(--chart-color-1);
+  color: var(--text-primary);
+}
+
+.base-model .estimate-value {
+  color: var(--text-primary);
+}
+
+.adjusted-model .estimate-value {
+  color: var(--text-primary);
 }
 
 .base-model .estimate-line {
@@ -251,20 +259,12 @@
   background-color: var(--chart-color-2);
 }
 
-.base-model .estimate-value {
-  color: var(--chart-color-2);
-}
-
 .adjusted-model .estimate-line {
   background-color: var(--chart-color-3);
 }
 
 .adjusted-model .estimate-point {
   background-color: var(--chart-color-3);
-}
-
-.adjusted-model .estimate-value {
-  color: var(--chart-color-3);
 }
 
 /* Legend */
