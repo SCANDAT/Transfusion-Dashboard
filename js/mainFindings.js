@@ -94,45 +94,53 @@ function formatDiffCi(mean, lcl, ucl) {
 /**
  * Get the human-readable parameter name and unit from abbreviation
  * @param {string} abbr - The parameter abbreviation
- * @returns {Object} - Object with name and unit properties
+ * @returns {Object} - Object with name, unit, and abbr properties
  */
 function getParameterDetails(abbr) {
   const mapping = {
     'ARTm': { 
       name: 'Mean Arterial Pressure', 
-      unit: 'mmHg' 
+      unit: 'mmHg',
+      abbr: 'MAP'
     },
     'ARTs': { 
       name: 'Systolic Blood Pressure', 
-      unit: 'mmHg' 
+      unit: 'mmHg',
+      abbr: 'SBP'
     },
     'ARTd': { 
       name: 'Diastolic Blood Pressure', 
-      unit: 'mmHg' 
+      unit: 'mmHg',
+      abbr: 'DBP'
     },
     'HR': { 
       name: 'Heart Rate', 
-      unit: 'bpm' 
+      unit: 'bpm',
+      abbr: 'HR'
     },
     'Hjärtfrekv': { 
       name: 'Heart Rate', 
-      unit: 'bpm' 
+      unit: 'bpm',
+      abbr: 'HR'
     },
     'FIO2(u)': { 
       name: 'Fraction of Inspired Oxygen', 
-      unit: '%' 
+      unit: '%',
+      abbr: 'FiO₂'
     },
     'SpO2': { 
       name: 'Peripheral Capillary Oxygen Saturation', 
-      unit: '%' 
+      unit: '%',
+      abbr: 'SpO₂'
     },
     'VE(u)': { 
       name: 'Minute Ventilation', 
-      unit: 'L/min' 
+      unit: 'L/min',
+      abbr: 'VE'
     }
   };
   
-  return mapping[abbr] || { name: abbr, unit: '' };
+  return mapping[abbr] || { name: abbr, unit: '', abbr: abbr };
 }
 
 /**
@@ -154,14 +162,19 @@ async function initializeMainFindings(tabId, fileCase, logDebug = console.log) {
     // Show loading state
     tabElement.innerHTML = '<div class="loading">Loading main findings data...</div>';
     
-    // Load the data
+    // Load the data for Table 2a
     const observedData = await loadObservedDataSummary(fileCase, logDebug);
     const modelData = await loadModelBasedSummary(fileCase, logDebug);
     
-    logDebug(`Loaded observed data (${observedData.length} rows) and model data (${modelData.length} rows)`);
+    // Load the data for Table 2b
+    const factorObservedData = await loadFactorObservedDataSummary(fileCase, logDebug);
+    const factorModelData = await loadFactorModelBasedSummary(fileCase, logDebug);
     
-    // Create the table
-    tabElement.innerHTML = createMainFindingsContent(observedData, modelData);
+    logDebug(`Loaded observed data (${observedData.length} rows), model data (${modelData.length} rows), ` + 
+             `factor observed data (${factorObservedData.length} rows), and factor model data (${factorModelData.length} rows)`);
+    
+    // Create the content with both tables
+    tabElement.innerHTML = createMainFindingsContent(observedData, modelData, factorObservedData, factorModelData);
     
     logDebug('Main Findings tab initialized successfully');
   } catch (error) {
@@ -180,21 +193,22 @@ async function initializeMainFindings(tabId, fileCase, logDebug = console.log) {
 }
 
 /**
- * Create the main findings content with the vital parameters table
- * @param {Array} observedData - The observed data summary
- * @param {Array} modelData - The model-based summary data
+ * Create the main findings content with the vital parameters tables
+ * @param {Array} observedData - The observed data summary for Table 2a
+ * @param {Array} modelData - The model-based summary data for Table 2a
+ * @param {Array} factorObservedData - The factor observed data summary for Table 2b
+ * @param {Array} factorModelData - The factor model-based summary data for Table 2b
  * @returns {string} - HTML content for the tab
  */
-function createMainFindingsContent(observedData, modelData) {
+function createMainFindingsContent(observedData, modelData, factorObservedData, factorModelData) {
   // Ensure the data is properly ordered for display
   const parameterOrder = [
     'ARTm', 'ARTs', 'ARTd', 'HR', 'FIO2(u)', 'SpO2', 'VE(u)'
   ];
   
-  // Create cards for the findings
-  return `
-    <div class="findings-container">
-      <div class="card">
+  // Create Table 2a
+  const table2a = `
+    <div class="card">
         <h2>Table 2a. RBC Transfusion Effects on Vital Parameters</h2>
         <div class="table-container">
           <table class="findings-table">
@@ -266,6 +280,16 @@ function createMainFindingsContent(observedData, modelData) {
           <p><sup>2</sup><span style="font-weight: bold;">Fully Adjusted Model:</span> A linear mixed-effects model including all variables from the Base Model, additionally adjusted for cumulative volumes (in ml) of crystalloid fluids and vasopressors administered within the 1- and 24-hour periods preceding transfusion (each modeled using natural cubic splines with three percentile-based knots), and binary indicators for sedative administration during the same intervals.</p>
         </div>
       </div>
+  `;
+  
+  // Create Table 2b
+  const table2b = createComponentFactorsTable(factorObservedData, factorModelData);
+  
+  // Combine both tables
+  return `
+    <div class="findings-container">
+      ${table2a}
+      ${table2b}
     </div>
   `;
 }

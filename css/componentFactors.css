@@ -1,0 +1,353 @@
+/**
+ * Styles for RBC Component Factor Effects visualization
+ */
+
+/* Component Factors Visualization Container */
+.component-factors-visualization {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+/* Vital Parameter Section */
+.vital-parameter-section {
+  border-bottom: 1px solid var(--divider-color);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.vital-parameter-section:last-child {
+  border-bottom: none;
+}
+
+.vital-parameter-section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--text-highlight);
+}
+
+/* Factor Grid Layout (2×3) */
+.factor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 1rem;
+  max-width: 100%;
+}
+
+/* Factor Cell as a Card */
+.factor-cell {
+  border: 1px solid var(--bg-card-hover);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px var(--text-secondary, rgba(0, 0, 0, 0.15));
+  background-color: var(--bg-card);
+  margin-bottom: 15px;
+  margin-right: 10px;
+}
+
+.factor-cell.empty {
+  display: none;
+}
+
+/* Factor Cell Header */
+.factor-cell h4 {
+  background-color: var(--bg-card-hover);
+  padding: 0.75rem 1rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--bg-card-hover);
+}
+
+/* Factor Visualization */
+.factor-visualization {
+  position: relative;
+  padding: 1rem;
+}
+
+.factor-plot {
+  position: relative;
+  height: auto;
+  min-height: 150px;
+  margin-left: 0.5rem; /* Reduced left margin to give more space for zero line centering */
+  margin-right: 115px; /* Increased to accommodate longer value labels with CIs */
+}
+
+/* X-Axis */
+.x-axis {
+  position: relative;
+  height: 45px; /* Increased to accommodate label layout */
+  margin-top: 10px;
+}
+
+.axis-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px; /* Thicker line */
+  background-color: var(--text-secondary); /* Darker color */
+}
+
+.axis-tick {
+  position: absolute;
+  transform: translateX(-0.5px); /* Align with the exact pixel */
+}
+
+.axis-tick-line {
+  width: 1px;
+  height: 6px; /* Slightly taller */
+  background-color: var(--text-secondary); /* Match axis line color */
+  position: relative;
+}
+
+/* Special styling for the zero tick */
+.zero-tick .axis-tick-line {
+  width: 2px;
+  height: 8px; /* Slightly taller */
+  background-color: var(--text-primary);
+}
+
+.axis-tick-label {
+  font-size: 0.75rem; /* Slightly larger */
+  color: var(--text-primary); /* Darker color for better visibility */
+  text-align: center;
+  margin-top: 7px; /* More space from the axis line */
+  transform: translateX(-50%); /* Center the label under the tick */
+  width: 40px; /* Fixed width for labels */
+  left: 0;
+  position: relative;
+}
+
+/* Make the zero tick label more prominent */
+.zero-tick .axis-tick-label {
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.x-axis-title {
+  text-align: center;
+  font-size: 0.8rem;
+  margin-top: 35px; /* Further increased margin to position it clearly below the tick labels */
+  color: var(--text-primary);
+  font-weight: 500;
+  position: absolute;
+  width: 100%;
+  left: 0;
+}
+
+/* Zero Reference Line */
+.zero-line {
+  position: absolute;
+  width: 0;
+  height: calc(100% - 80px); /* Further reduced to end at the x-axis */
+  border-left: 1px dashed var(--text-secondary); /* Lighter, thinner line */
+  top: 25px; /* Start below the first category label */
+  bottom: auto; /* Don't extend to the bottom edge */
+  z-index: 1; 
+}
+
+/* Change heading */
+.change-heading {
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: right;
+  margin-right: 3rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-highlight);
+}
+
+/* Category Container */
+.category-container {
+  position: relative;
+  margin: 0.75rem 0;
+  padding-left: 0.1rem; /* Reduced padding to move labels left */
+}
+
+.category-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-weight: 500;
+  margin-left: 0; /* Ensure no extra margin pushing it right */
+}
+
+/* Estimates Container */
+.estimates-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Further increased for better vertical separation */
+  margin-bottom: 20px; /* Increased to provide more space above the x-axis */
+  position: relative; /* Ensure proper positioning context */
+}
+
+/* Estimate Styles */
+.estimate-container {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* All estimate lines have consistent styling */
+.estimate-line {
+  position: absolute;
+  height: 3px; /* Exact consistent height for all lines */
+  background-color: var(--chart-grid);
+  overflow: visible; /* Ensure point indicators aren't clipped */
+}
+
+.estimate-point {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* Center the point on its actual value */
+  box-shadow: 0 0 0 1px white; /* Subtle white outline for better visibility */
+}
+
+.estimate-value {
+  position: absolute;
+  font-size: 0.8rem;
+  right: -110px; /* Increased to accommodate confidence intervals */
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.p-value, .ci-value {
+  font-size: 0.7rem;
+  margin-left: 2px;
+}
+
+/* Color coding for different estimate types - with consistent opacity/strength */
+.observed .estimate-line,
+.base-model .estimate-line,
+.adjusted-model .estimate-line {
+  height: 3px; /* Consistent height for all lines */
+}
+
+.observed .estimate-line {
+  background-color: var(--chart-color-1);
+}
+
+.observed .estimate-point {
+  background-color: var(--chart-color-1);
+}
+
+.observed .estimate-value {
+  color: var(--text-primary);
+}
+
+.base-model .estimate-value {
+  color: var(--text-primary);
+}
+
+.adjusted-model .estimate-value {
+  color: var(--text-primary);
+}
+
+.base-model .estimate-line {
+  background-color: var(--chart-color-2);
+}
+
+.base-model .estimate-point {
+  background-color: var(--chart-color-2);
+}
+
+.adjusted-model .estimate-line {
+  background-color: var(--chart-color-3);
+}
+
+.adjusted-model .estimate-point {
+  background-color: var(--chart-color-3);
+}
+
+/* Legend */
+.visualization-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: var(--bg-card-hover);
+  border-radius: 4px;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.legend-marker {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.legend-marker.observed {
+  background-color: var(--chart-color-1);
+}
+
+.legend-marker.base-model {
+  background-color: var(--chart-color-2);
+}
+
+.legend-marker.adjusted-model {
+  background-color: var(--chart-color-3);
+}
+
+.significance-legend, .crosszero-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.crosszero-legend {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--divider-color);
+}
+
+.sig-item {
+  margin-right: 1rem;
+}
+
+/* Table Footnotes */
+.table-footnotes {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--divider-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .factor-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+  }
+}
+
+@media (max-width: 768px) {
+  .factor-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+}

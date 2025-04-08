@@ -1369,3 +1369,17 @@ p {
 canvas {
   transition: opacity var(--transition-normal);
 }
+
+/* Grid Layout for Multiple Charts */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-md);
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .chart-grid {
+    grid-template-columns: repeat(min(4, var(--grid-columns)), 1fr);
+  }
+}
