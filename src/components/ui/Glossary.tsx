@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import styles from './Glossary.module.css'
 
 // Glossary definitions for technical terms
+// eslint-disable-next-line react-refresh/only-export-components
 export const GLOSSARY: Record<string, { term: string; definition: string; category?: string }> = {
   // Statistical Terms
   'loess': {
@@ -141,6 +142,7 @@ export function GlossaryProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useGlossary() {
   const context = useContext(GlossaryContext)
   if (!context) {

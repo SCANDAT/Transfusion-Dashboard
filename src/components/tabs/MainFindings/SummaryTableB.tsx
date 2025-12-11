@@ -21,6 +21,7 @@ export interface GroupedFactorData {
 /**
  * Hook to group factor data - shared between table and chart components
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useGroupedFactorData(
   observedData: FactorObservedSummaryRow[],
   modelData: FactorModelSummaryRow[]
@@ -120,6 +121,7 @@ const formatCI = (lower: number | undefined, upper: number | undefined, decimals
 /**
  * Get human-readable category label
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getCategoryLabel(factorCode: string, category: string | number): string {
   const catStr = String(category)
   const categoryLabels: Record<string, Record<string, string>> = {

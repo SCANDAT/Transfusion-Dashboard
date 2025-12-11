@@ -18,15 +18,57 @@ import type {
   DescriptiveStatistics,
   PatientSexDistribution,
   PatientAgeStats,
-  AgeGroupDistribution,
-  RbcUnitsPerPatient,
-  DonorHbDistribution,
-  DonorSexDistribution,
-  DonorParityDistribution,
-  DonationWeekdayDistribution,
-  StorageDistribution,
 } from '@/types'
 import { VITAL_PARAMS, COMP_FACTORS, VITAL_PARAM_CODES, COMP_FACTOR_CODES } from '@/types'
+
+// Raw CSV row types (field names as they appear in CSV files)
+interface RawAgeGroupRow {
+  Age_Group?: string
+  ageGroup?: string
+  COUNT?: number
+  count?: number
+  PERCENT?: number
+  percentage?: number
+}
+
+interface RawRbcUnitsRow {
+  Unit_Category?: string
+  unitsReceived?: string
+  COUNT?: number
+  count?: number
+  Relative_Frequency?: number
+  percentage?: number
+}
+
+interface RawDonorHbRow {
+  donorhb_category?: string
+  category?: string
+  No_of_Transfused_Units?: number
+}
+
+interface RawDonorSexRow {
+  donor_sex_label?: string
+  sex?: string
+  No_of_Transfused_Units?: number
+}
+
+interface RawDonorParityRow {
+  donor_parity_label?: string | number
+  parity?: string
+  No_of_Transfused_Units?: number
+}
+
+interface RawDonationWeekdayRow {
+  wdy_donation?: string | number
+  dayNumber?: string | number
+  No_of_Transfused_Units?: number
+}
+
+interface RawStorageRow {
+  storagecat?: string
+  Storage_Category?: string
+  No_of_Transfused_Units?: number
+}
 
 // Base path for data files - uses Vite's base path for GitHub Pages compatibility
 const DATA_BASE_PATH = `${import.meta.env.BASE_URL}data`
@@ -289,13 +331,13 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     fetchCSV<{ No_of_Transfused_Units: number }>(`${DATA_BASE_PATH}/total_transfused_units.csv`),
     fetchCSV<{ Patient_Sex: string; No_of_Patients: number }>(`${DATA_BASE_PATH}/patient_sex_distribution.csv`),
     fetchCSV<{ Mean_Age: number; Median_Age: number; Min_Age: number; Max_Age: number; Q1_Age: number; Q3_Age: number }>(`${DATA_BASE_PATH}/patient_age_stats.csv`),
-    fetchCSV<AgeGroupDistribution>(`${DATA_BASE_PATH}/patient_age_groups.csv`),
-    fetchCSV<RbcUnitsPerPatient>(`${DATA_BASE_PATH}/rbc_units_per_patient.csv`),
-    fetchCSV<DonorHbDistribution>(`${DATA_BASE_PATH}/donorhb_distribution.csv`),
-    fetchCSV<DonorSexDistribution>(`${DATA_BASE_PATH}/donor_sex_distribution.csv`),
-    fetchCSV<DonorParityDistribution>(`${DATA_BASE_PATH}/donor_parity_distribution.csv`),
-    fetchCSV<DonationWeekdayDistribution>(`${DATA_BASE_PATH}/donation_weekday_distribution.csv`),
-    fetchCSV<StorageDistribution>(`${DATA_BASE_PATH}/storage_distribution.csv`),
+    fetchCSV<RawAgeGroupRow>(`${DATA_BASE_PATH}/patient_age_groups.csv`),
+    fetchCSV<RawRbcUnitsRow>(`${DATA_BASE_PATH}/rbc_units_per_patient.csv`),
+    fetchCSV<RawDonorHbRow>(`${DATA_BASE_PATH}/donorhb_distribution.csv`),
+    fetchCSV<RawDonorSexRow>(`${DATA_BASE_PATH}/donor_sex_distribution.csv`),
+    fetchCSV<RawDonorParityRow>(`${DATA_BASE_PATH}/donor_parity_distribution.csv`),
+    fetchCSV<RawDonationWeekdayRow>(`${DATA_BASE_PATH}/donation_weekday_distribution.csv`),
+    fetchCSV<RawStorageRow>(`${DATA_BASE_PATH}/storage_distribution.csv`),
   ])
 
   // Transform patient sex data
@@ -323,7 +365,7 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     totalUnits: totalUnitsData[0]?.No_of_Transfused_Units ?? 0,
     patientSex,
     patientAge,
-    ageGroups: ageGroupsData.map((row: any) => {
+    ageGroups: (ageGroupsData as RawAgeGroupRow[]).map((row) => {
       const rawGroup = row.Age_Group || row.ageGroup || 'Unknown'
       // Map to cleaner names with full ranges
       const ageGroupMap: Record<string, string> = {
@@ -346,14 +388,14 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       const order = ['<20', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '≥80']
       return order.indexOf(a.ageGroup) - order.indexOf(b.ageGroup)
     }),
-    rbcUnitsPerPatient: rbcUnitsData.map((row: any) => ({
+    rbcUnitsPerPatient: rbcUnitsData.map((row) => ({
       unitsReceived: row.Unit_Category || row.unitsReceived || 'Unknown',
       count: row.COUNT || row.count || 0,
       percentage: row.Relative_Frequency || row.percentage || 0,
     })),
-    donorHb: donorHbData.map((row: any) => {
+    donorHb: donorHbData.map((row) => {
       const count = row.No_of_Transfused_Units || 0
-      const total = donorHbData.reduce((sum: number, r: any) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const total = donorHbData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const rawCategory = row.donorhb_category || row.category || 'Unknown'
       // Map to cleaner names
       const hbMap: Record<string, string> = {
@@ -373,9 +415,9 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       const order = ['<125', '125-139', '140-154', '155-169', '≥170']
       return order.indexOf(a.category) - order.indexOf(b.category)
     }),
-    donorSex: donorSexData.map((row: any) => {
+    donorSex: donorSexData.map((row) => {
       const count = row.No_of_Transfused_Units || 0
-      const total = donorSexData.reduce((sum: number, r: any) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const total = donorSexData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const rawSex = row.donor_sex_label || row.sex || 'Unknown'
       return {
         sex: rawSex === 'U' ? 'Unknown' : rawSex,
@@ -383,9 +425,9 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
         percentage: total > 0 ? (count / total) * 100 : 0,
       }
     }),
-    donorParity: donorParityData.map((row: any) => {
+    donorParity: donorParityData.map((row) => {
       const count = row.No_of_Transfused_Units || 0
-      const total = donorParityData.reduce((sum: number, r: any) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const total = donorParityData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const parityMap: Record<string, string> = {
         '0': 'Nulliparous', '1': 'Parous'
       }
@@ -396,9 +438,9 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
         percentage: total > 0 ? (count / total) * 100 : 0,
       }
     }),
-    donationWeekday: donationWeekdayData.map((row: any) => {
+    donationWeekday: donationWeekdayData.map((row) => {
       const count = row.No_of_Transfused_Units || 0
-      const total = donationWeekdayData.reduce((sum: number, r: any) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const total = donationWeekdayData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const dayMap: Record<string, string> = {
         '1': 'Sunday', '2': 'Monday', '3': 'Tuesday', '4': 'Wednesday',
         '5': 'Thursday', '6': 'Friday', '7': 'Saturday'
@@ -411,9 +453,9 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
         percentage: total > 0 ? (count / total) * 100 : 0,
       }
     }),
-    storage: storageData.map((row: any) => {
+    storage: storageData.map((row) => {
       const count = row.No_of_Transfused_Units || 0
-      const total = storageData.reduce((sum: number, r: any) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const total = storageData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const rawCategory = row.storagecat || row.Storage_Category || 'Unknown'
       // Map to cleaner names
       const storageMap: Record<string, string> = {
@@ -486,7 +528,7 @@ export async function loadFactorModelSummary(): Promise<FactorModelSummaryRow[]>
  */
 function normalizeVitalAbbreviation(abbrev: string): string {
   // Remove (u) suffix if present
-  let normalized = abbrev.replace(/\(u\)$/i, '')
+  const normalized = abbrev.replace(/\(u\)$/i, '')
 
   // Handle Swedish abbreviation for Heart Rate
   if (normalized === 'Hjärtfrekv' || normalized.toLowerCase() === 'hjärtfrekv') {
