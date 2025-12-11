@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle size
+        run: |
+          MAX_SIZE=500000  # 500KB gzipped
+          ACTUAL_SIZE=$(find dist/assets -name "*.js" -exec gzip -c {} \; | wc -c)
+          echo "Bundle size: ${ACTUAL_SIZE} bytes (gzipped)"
+          if [ $ACTUAL_SIZE -gt $MAX_SIZE ]; then
+            echo "Warning: Bundle size exceeds ${MAX_SIZE} bytes"
+          fi

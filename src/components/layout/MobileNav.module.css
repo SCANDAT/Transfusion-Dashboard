@@ -1,0 +1,120 @@
+.mobileNav {
+  display: none;
+  position: relative;
+}
+
+/* Only show on mobile */
+@media (max-width: 640px) {
+  .mobileNav {
+    display: block;
+  }
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border: none;
+  border-bottom: 1px solid var(--color-border-default);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+.menuButton:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.menuButton:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: -2px;
+}
+
+.menuIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.currentTab {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown);
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-4);
+  text-align: left;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-subtle);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.menuItem:last-child {
+  border-bottom: none;
+}
+
+.menuItem:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: -2px;
+}
+
+.menuItem.active {
+  color: var(--color-accent-primary);
+  font-weight: var(--font-medium);
+  background-color: var(--color-bg-elevated);
+}
+
+/* Touch-friendly sizing */
+@media (pointer: coarse) {
+  .menuButton,
+  .menuItem {
+    min-height: 48px;
+  }
+}
