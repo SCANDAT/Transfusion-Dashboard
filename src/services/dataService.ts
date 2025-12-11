@@ -78,8 +78,11 @@ const DATA_BASE_PATH = `${import.meta.env.BASE_URL}data`
  * Tries uppercase first, then lowercase
  */
 async function fetchCSVWithFallback<T>(fileName: string): Promise<T[]> {
-  const upperPath = `${DATA_BASE_PATH}/${fileName.toUpperCase()}`
-  const lowerPath = `${DATA_BASE_PATH}/${fileName.toLowerCase()}`
+  // Files have uppercase names but lowercase .csv extension
+  // e.g., VIZ_ARTM_DONORHB_CAT.csv
+  const baseName = fileName.replace(/\.csv$/i, '')
+  const upperPath = `${DATA_BASE_PATH}/${baseName.toUpperCase()}.csv`
+  const lowerPath = `${DATA_BASE_PATH}/${baseName.toLowerCase()}.csv`
 
   try {
     return await fetchCSV<T>(upperPath)
