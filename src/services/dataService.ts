@@ -28,8 +28,8 @@ import type {
 } from '@/types'
 import { VITAL_PARAMS, COMP_FACTORS, VITAL_PARAM_CODES, COMP_FACTOR_CODES } from '@/types'
 
-// Base path for data files
-const DATA_BASE_PATH = '/data'
+// Base path for data files - uses Vite's base path for GitHub Pages compatibility
+const DATA_BASE_PATH = `${import.meta.env.BASE_URL}data`
 
 /**
  * Helper to fetch CSV with case-insensitive fallback
