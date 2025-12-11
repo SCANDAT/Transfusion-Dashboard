@@ -4,8 +4,11 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
+  BarController,
   ArcElement,
+  DoughnutController,
   Title,
   Tooltip,
   Legend,
@@ -24,8 +27,11 @@ import { verticalLinePlugin } from './plugins/verticalLinePlugin'
  * - LinearScale: For linear numeric axes
  * - PointElement: For scatter and line chart points
  * - LineElement: For line charts
+ * - LineController: Controller for line charts
  * - BarElement: For bar charts
+ * - BarController: Controller for bar charts
  * - ArcElement: For pie/doughnut charts
+ * - DoughnutController: Controller for doughnut charts
  * - Title: For chart titles
  * - Tooltip: For interactive tooltips
  * - Legend: For chart legends
@@ -39,8 +45,11 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
+  BarController,
   ArcElement,
+  DoughnutController,
   Title,
   Tooltip,
   Legend,
