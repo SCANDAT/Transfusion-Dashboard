@@ -526,7 +526,8 @@ export async function loadFactorModelSummary(): Promise<FactorModelSummaryRow[]>
  * CSV uses: FIO2(u), SpO2, VE(u), Hjärtfrekv (Swedish for heart rate)
  * Standard: FIO2, SPO2, VE, HR
  */
-function normalizeVitalAbbreviation(abbrev: string): string {
+function normalizeVitalAbbreviation(abbrev: string | undefined): string {
+  if (!abbrev) return ''
   // Remove (u) suffix if present
   const normalized = abbrev.replace(/\(u\)$/i, '')
 
