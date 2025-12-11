@@ -1,0 +1,270 @@
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════════════════════════
+
+   Breakpoint Reference:
+   - xs: 0-479px (small phones)
+   - sm: 480-639px (large phones)
+   - md: 640-767px (small tablets)
+   - lg: 768-1023px (tablets)
+   - xl: 1024-1279px (laptops)
+   - 2xl: 1280-1535px (desktops)
+   - 3xl: 1536px+ (large desktops)
+
+   Usage: Mobile-first approach - base styles for mobile,
+   then add overrides for larger screens.
+*/
+
+/* ═══════════════════════════════════════════════════════════════
+   CONTAINER QUERIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Enable container queries for component-level responsiveness */
+@supports (container-type: inline-size) {
+  .chart-container {
+    container-type: inline-size;
+    container-name: chart;
+  }
+
+  @container chart (max-width: 400px) {
+    .chart-legend {
+      display: none;
+    }
+  }
+
+  .card-container {
+    container-type: inline-size;
+    container-name: card;
+  }
+
+  @container card (max-width: 300px) {
+    .card-details {
+      display: none;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE VISIBILITY UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hide on mobile (below 640px) */
+@media (max-width: 639px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Show only on mobile */
+@media (min-width: 640px) {
+  .show-mobile-only {
+    display: none !important;
+  }
+}
+
+/* Hide on tablet (640px-1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* Hide on desktop (1024px+) */
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* Show only on desktop */
+@media (max-width: 1023px) {
+  .show-desktop-only {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Stack on mobile (below 768px) */
+@media (max-width: 767px) {
+  .stack-mobile {
+    flex-direction: column !important;
+  }
+
+  .stack-mobile > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Stack on tablet (below 1024px) */
+@media (max-width: 1023px) {
+  .stack-tablet {
+    flex-direction: column !important;
+  }
+
+  .stack-tablet > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Full width on mobile */
+@media (max-width: 639px) {
+  .full-width-mobile {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE GRID UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Single column on mobile */
+@media (max-width: 639px) {
+  .grid-cols-1-mobile {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Two columns on tablet+ */
+@media (min-width: 640px) {
+  .grid-cols-2-tablet {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Three columns on desktop+ */
+@media (min-width: 1024px) {
+  .grid-cols-3-desktop {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Four columns on large desktop+ */
+@media (min-width: 1280px) {
+  .grid-cols-4-xl {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE SPACING UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Reduced padding on mobile */
+@media (max-width: 639px) {
+  .responsive-padding {
+    padding: var(--spacing-3) !important;
+  }
+
+  .responsive-padding-x {
+    padding-left: var(--spacing-3) !important;
+    padding-right: var(--spacing-3) !important;
+  }
+
+  .responsive-padding-y {
+    padding-top: var(--spacing-3) !important;
+    padding-bottom: var(--spacing-3) !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .responsive-padding {
+    padding: var(--spacing-4) !important;
+  }
+
+  .responsive-padding-x {
+    padding-left: var(--spacing-4) !important;
+    padding-right: var(--spacing-4) !important;
+  }
+
+  .responsive-padding-y {
+    padding-top: var(--spacing-4) !important;
+    padding-bottom: var(--spacing-4) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-padding {
+    padding: var(--spacing-6) !important;
+  }
+
+  .responsive-padding-x {
+    padding-left: var(--spacing-6) !important;
+    padding-right: var(--spacing-6) !important;
+  }
+
+  .responsive-padding-y {
+    padding-top: var(--spacing-6) !important;
+    padding-bottom: var(--spacing-6) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 639px) {
+  .text-responsive {
+    font-size: var(--text-sm) !important;
+  }
+
+  h1.responsive { font-size: var(--text-2xl) !important; }
+  h2.responsive { font-size: var(--text-xl) !important; }
+  h3.responsive { font-size: var(--text-lg) !important; }
+  h4.responsive { font-size: var(--text-base) !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE CHART DIMENSIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 639px) {
+  .chart-responsive {
+    min-height: 200px !important;
+    max-height: 300px !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .chart-responsive {
+    min-height: 250px !important;
+    max-height: 400px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chart-responsive {
+    min-height: 300px !important;
+    max-height: 500px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR RESPONSIVE BEHAVIOR
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1023px) {
+  .sidebar-responsive {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    margin-bottom: var(--spacing-4);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-responsive {
+    position: sticky !important;
+    top: var(--spacing-4);
+    max-height: calc(100vh - var(--spacing-8));
+    overflow-y: auto;
+  }
+}

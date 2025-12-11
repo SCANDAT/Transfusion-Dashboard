@@ -1,0 +1,970 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.loading,
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-error);
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  padding: var(--spacing-8) var(--spacing-4);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-light);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.description {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 82%;
+  margin: 0 auto;
+  line-height: 1.8;
+  text-align: justify;
+}
+
+/* Guide Section */
+.guideSection {
+  background-color: var(--color-bg-card-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-6);
+  border-left: 3px solid var(--color-accent-primary);
+}
+
+.guideHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+  color: var(--color-accent-primary);
+}
+
+.guideHeader h3 {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.guideContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.guideItem {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.guideItem strong {
+  color: var(--color-text-primary);
+}
+
+.guideItem em {
+  color: var(--color-accent-primary);
+  font-style: normal;
+}
+
+/* Section Header */
+.sectionHeader {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Interpretation Hint */
+.interpretationHint {
+  background-color: var(--color-bg-card-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  border-left: 3px solid var(--color-chart-3);
+}
+
+.interpretationHint strong {
+  color: var(--color-chart-3);
+}
+
+/* Grid Legend */
+.gridLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-card-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.gridLegend span {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+/* Summary Section */
+.summarySection {
+  padding: var(--spacing-4);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-6);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+}
+
+.summaryValue {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-accent-highlight);
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-2);
+}
+
+.summaryDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-1);
+  text-align: center;
+}
+
+/* Section Styles */
+.gridSection,
+.chartSection,
+.tableSection {
+  padding: var(--spacing-8);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.gridSection:hover,
+.chartSection:hover,
+.tableSection:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-light);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.sectionDescription {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-6);
+  line-height: 1.6;
+}
+
+/* Small Multiples Grid */
+.gridContainer {
+  overflow-x: auto;
+}
+
+/* Virtualized Grid Container */
+.virtualContainer {
+  overflow: auto;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-elevated);
+}
+
+.virtualContainer::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.virtualContainer::-webkit-scrollbar-track {
+  background: var(--color-bg-main);
+  border-radius: 4px;
+}
+
+.virtualContainer::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 4px;
+}
+
+.virtualContainer::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-emphasis);
+}
+
+.gridHeader {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.gridCorner {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.gridHeaderCell {
+  flex: 1;
+  min-width: 70px;
+  padding: var(--spacing-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.gridRow {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.gridRowHeader {
+  width: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+}
+
+.gridCell {
+  flex: 1;
+  min-width: 70px;
+  aspect-ratio: 1.5;
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: not-allowed;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gridCellActive {
+  cursor: pointer;
+  background-color: var(--color-bg-tertiary);
+}
+
+.gridCellActive:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-accent-primary);
+  transform: scale(1.02);
+}
+
+/* Mini Chart in Grid Cells */
+.miniChart {
+  width: 80%;
+  height: 60%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-primary) 0%,
+    var(--color-accent-secondary) 100%
+  );
+  opacity: 0.3;
+  border-radius: var(--radius-sm);
+}
+
+.miniChartSvg {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+}
+
+.miniChartHovered {
+  transform: scale(1.05);
+}
+
+.miniChartLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.miniChartSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-subtle);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.miniChartError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Chart Section */
+.chartContainer {
+  min-height: 350px;
+}
+
+/* Forest Plot Styles */
+.forestPlot {
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+}
+
+.forestPlotTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.forestPlotEmpty {
+  padding: var(--spacing-8);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* Old forestPlot grid layout - replaced by new layout below */
+
+.forestPlotLabels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.forestPlotLabelRow {
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.forestPlotLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.forestPlotChart {
+  position: relative;
+  min-height: 200px;
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+.forestPlotZeroLine {
+  position: absolute;
+  top: 0;
+  bottom: 24px;
+  width: 1px;
+  background-color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.forestPlotRow {
+  position: relative;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.forestPlotCIBar {
+  position: absolute;
+  height: 8px;
+  border: 1px solid;
+  border-radius: 2px;
+}
+
+.forestPlotDiamond {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
+.forestPlotXAxis {
+  position: absolute;
+  bottom: 0;
+  left: var(--spacing-4);
+  right: var(--spacing-4);
+  height: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.forestPlotAxisMin {
+  text-align: left;
+}
+
+.forestPlotAxisZero {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.forestPlotAxisMax {
+  text-align: right;
+}
+
+.forestPlotValues {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.forestPlotValueRow {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-sm);
+}
+
+.forestPlotValue {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  min-width: 50px;
+}
+
+.forestPlotCI {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.forestPlotXAxisLabel {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-2);
+}
+
+/* Summary Table Styles */
+.summaryTableContainer {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+}
+
+.summaryTableTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.tableFootnotes {
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-default);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.tableFootnotes p {
+  margin-bottom: var(--spacing-3);
+}
+
+.tableFootnotes sup {
+  color: var(--color-accent-primary);
+  font-weight: var(--font-semibold);
+  margin-right: var(--spacing-1);
+}
+
+.tableFootnotes strong {
+  color: var(--color-text-primary);
+}
+
+.summaryTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.summaryTable th,
+.summaryTable td {
+  padding: var(--spacing-2) var(--spacing-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.summaryTable th {
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-elevated);
+}
+
+.summaryTable td {
+  color: var(--color-text-primary);
+}
+
+.summaryTable tbody tr:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.summaryTable .positive {
+  color: var(--color-success);
+}
+
+.summaryTable .negative {
+  color: var(--color-error);
+}
+
+.tableEmpty {
+  padding: var(--spacing-8);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* Table Section */
+.tableSection {
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+}
+
+/* Tables Grid Layout */
+.tablesSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-6);
+}
+
+/* Data Tables (Table 2a and 2b) */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-2) var(--spacing-3);
+  text-align: center;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.table th {
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-elevated);
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+
+.table td {
+  color: var(--color-text-primary);
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.thSticky {
+  position: sticky;
+  left: 0;
+  background-color: var(--color-bg-elevated);
+  z-index: 1;
+}
+
+/* Column group headers (top row) */
+.thGroup {
+  text-align: center !important;
+  border-bottom: 2px solid var(--color-accent-primary);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+/* Add visual separation between column groups */
+.thGroup:not(:first-child) {
+  border-left: 3px solid var(--color-bg-main);
+}
+
+.thGroup sup {
+  color: var(--color-accent-primary);
+  font-weight: var(--font-semibold);
+}
+
+/* Subheadings (second row) */
+.thSub {
+  font-size: var(--text-xs);
+  text-align: center !important;
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+  padding: var(--spacing-1) var(--spacing-3);
+}
+
+/* First column of each group gets left border for separation */
+.thSubFirst {
+  border-left: 3px solid var(--color-bg-main);
+}
+
+.thVital {
+  text-align: center !important;
+  min-width: 160px;
+}
+
+.vitalName {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: var(--font-medium);
+  position: sticky;
+  left: 0;
+  background-color: inherit;
+  z-index: 1;
+}
+
+.vitalCode {
+  font-weight: var(--font-semibold);
+  color: var(--color-accent-primary);
+}
+
+.vitalFullName {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-normal);
+}
+
+.numCell {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.numCellFirst {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  border-left: 3px solid var(--color-bg-main);
+}
+
+.ciCell {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* Table 2b specific styles */
+.tableBContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.factorSection {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4);
+}
+
+.factorTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-2);
+  border-bottom: 2px solid var(--color-accent-primary);
+}
+
+.categoryLabel {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  text-align: left !important;
+  position: sticky;
+  left: 0;
+  background-color: inherit;
+  z-index: 1;
+}
+
+.effectCell {
+  text-align: center !important;
+  padding: var(--spacing-1) var(--spacing-2) !important;
+}
+
+.effectValue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.estimate {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ci {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Forest Plots Grid */
+.forestPlotsSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: var(--spacing-6);
+}
+
+/* View Toggle */
+.viewToggle {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+
+.viewToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewToggleBtn:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-emphasis);
+}
+
+.viewToggleBtnActive {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: white;
+}
+
+.viewToggleBtnActive:hover {
+  background-color: var(--color-accent-primary);
+  opacity: 0.9;
+}
+
+/* Data Type Toggle */
+.dataToggle {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-left: auto;
+}
+
+.dataToggleLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.dataToggleLabel input {
+  accent-color: var(--color-accent-primary);
+}
+
+/* Forest Plot Container Styles */
+.allForestPlots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  width: 100%;
+}
+
+.forestPlotContainer {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4);
+  width: 100%;
+}
+
+.forestPlotEmptyCell {
+  /* Empty placeholder cell for grid alignment */
+  min-width: 0;
+}
+
+.forestPlotGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-4);
+  width: 100%;
+}
+
+.forestPlotTitleCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-accent-primary);
+  min-width: 0;
+}
+
+.forestPlotChart {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-2);
+  border: 1px solid var(--color-border-subtle);
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Combined View Styles */
+.combinedView {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  width: 100%;
+}
+
+.factorCombinedSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border-default);
+  width: 100%;
+}
+
+.factorCombinedSection:last-of-type {
+  border-bottom: none;
+}
+
+.chartLegend {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-6);
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-4);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legendDotObserved {
+  background-color: #10B981;
+}
+
+.legendDotBase {
+  background-color: #635BFF;
+}
+
+.legendDotModel {
+  background-color: #E82127;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--spacing-4);
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .description {
+    font-size: var(--text-base);
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gridCorner,
+  .gridRowHeader {
+    width: 60px;
+  }
+
+  .gridCell {
+    min-width: 50px;
+  }
+}

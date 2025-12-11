@@ -1,0 +1,109 @@
+/* Glossary Term (inline) */
+.term {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-accent-primary);
+  cursor: help;
+  border-bottom: 1px dotted var(--color-accent-primary);
+  transition: color var(--transition-fast);
+}
+
+.term:hover,
+.term:focus {
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.termIcon {
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.term:hover .termIcon,
+.term:focus .termIcon {
+  opacity: 1;
+}
+
+/* Floating Tooltip */
+.tooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  max-width: 360px;
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-emphasis);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  animation: tooltipFadeIn 0.15s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+.tooltipTerm {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+.tooltipCategory {
+  font-size: var(--text-xs);
+  color: var(--color-accent-secondary);
+  background-color: rgba(var(--color-accent-secondary-rgb), 0.15);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.tooltipDefinition {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Info Tooltip (simpler version) */
+.infoTrigger {
+  position: relative;
+  display: inline;
+}
+
+.infoTooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  max-width: 280px;
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  transform: translateX(-50%);
+  animation: tooltipFadeIn 0.15s ease-out;
+}
+
+/* Light theme adjustments */
+:global(.light-theme) .tooltip,
+:global(.light-theme) .infoTooltip {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-border-default);
+}

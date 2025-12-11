@@ -1,0 +1,469 @@
+/* ============================================
+   Component Factor Effects Tab - Chart-Centered Layout
+   ============================================ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  height: calc((100vh - 120px) * 0.75); /* Account for header and padding, reduced by 25% */
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-4);
+}
+
+/* Top Toolbar - Compact horizontal controls */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-default);
+}
+
+.toolbarSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.toolbarSection:not(:last-child) {
+  padding-right: var(--spacing-4);
+  border-right: 1px solid var(--color-border-default);
+}
+
+.toolbarLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Pills for selections */
+.pillGroup {
+  display: flex;
+  gap: var(--spacing-1);
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.pill:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-emphasis);
+}
+
+.pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pill.active {
+  color: white;
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+}
+
+.categoryPill {
+  font-size: var(--text-xs);
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
+.miniBtn {
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.miniBtn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-emphasis);
+}
+
+/* Time Range - Dual-handle slider with editable inputs */
+.timeRangeControl {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  min-width: 260px;
+}
+
+.timeInput {
+  width: 52px;
+  padding: var(--spacing-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 2px var(--color-accent-primary-transparent);
+}
+
+/* Hide spin buttons for number inputs */
+.timeInput::-webkit-outer-spin-button,
+.timeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.timeInput[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Dual Range Slider Container */
+.dualRangeSlider {
+  position: relative;
+  flex: 1;
+  height: 20px;
+  min-width: 120px;
+}
+
+/* Background track */
+.sliderTrack {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+}
+
+/* Highlighted range between handles */
+.sliderRange {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+}
+
+/* The actual range inputs - stacked on top of each other */
+.dualSliderInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  outline: none;
+}
+
+/* Only the thumb should be interactive */
+.dualSliderInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-primary);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.dualSliderInput::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.dualSliderInput::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-primary);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+/* Remove default track styling */
+.dualSliderInput::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.dualSliderInput::-moz-range-track {
+  background: transparent;
+}
+
+/* Mode Toggle - Absolute/Relative buttons */
+.modeToggle {
+  display: flex;
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.modeToggleBtn {
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.modeToggleBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.modeToggleBtn.active {
+  color: white;
+  background-color: var(--color-accent-primary);
+}
+
+/* Display Options - Inline toggles */
+.displayToggles {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+.toggleOption {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  cursor: pointer;
+}
+
+.toggleCheckbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-accent-primary);
+  cursor: pointer;
+}
+
+.toggleText {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.toggleOption:hover .toggleText {
+  color: var(--color-text-primary);
+}
+
+/* Main Content Area - Charts centered */
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+  height: 100%;
+  width: 100%;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--color-border-default);
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Charts Container */
+.chartsContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.chartCard {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-3);
+  min-height: 0;
+  height: 100%;
+}
+
+.chartWrapper {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  height: 100%;
+}
+
+.exportBtn {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  z-index: 10;
+}
+
+.chartCard:hover .exportBtn {
+  opacity: 1;
+}
+
+.exportBtn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-emphasis);
+}
+
+/* Data Info - Compact summary below chart */
+.dataInfo {
+  padding: var(--spacing-3);
+  background-color: var(--color-bg-card-secondary);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-3);
+}
+
+.dataInfo h4 {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-2);
+}
+
+.infoList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  font-size: var(--text-sm);
+}
+
+.infoList dt {
+  display: inline;
+  color: var(--color-text-muted);
+}
+
+.infoList dt::after {
+  content: ': ';
+}
+
+.infoList dd {
+  display: inline;
+  color: var(--color-text-primary);
+  font-weight: var(--font-medium);
+  margin: 0;
+  margin-right: var(--spacing-4);
+}
+
+/* Model Descriptions - Hidden by default, shown inline */
+.modelDescriptions {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .toolbar {
+    gap: var(--spacing-3);
+  }
+
+  .toolbarSection {
+    padding-right: var(--spacing-3);
+  }
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbarSection {
+    padding-right: 0;
+    border-right: none;
+    padding-bottom: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  .toolbarSection:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .pillGroup {
+    flex-wrap: wrap;
+  }
+
+  .displayToggles {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 var(--spacing-2);
+  }
+
+  .timeRangeControl {
+    min-width: 200px;
+  }
+}

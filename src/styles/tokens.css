@@ -1,0 +1,190 @@
+:root {
+  /* ═══════════════════════════════════════════════════════════════
+     COLOR TOKENS - DARK THEME (DEFAULT)
+     Premium Design System - Modern Digital Experience
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* Background Colors */
+  --color-bg-main: #0a0a0a;
+  --color-bg-primary: #0a0a0a;   /* Alias for bg-main */
+  --color-bg-card: #141414;
+  --color-bg-secondary: #141414; /* Alias for bg-card */
+  --color-bg-elevated: #1c1c1c;
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-card-secondary: rgba(255, 255, 255, 0.05);
+
+  /* Text Colors */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.78);
+  --color-text-tertiary: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.38);
+
+  /* Accent Colors */
+  --color-accent-highlight: #E82127;  /* SCANDAT/Tesla Red */
+  --color-accent-highlight-rgb: 232, 33, 39;
+  --color-accent-primary: #0A84FF;    /* Apple Blue */
+  --color-accent-primary-rgb: 10, 132, 255;
+  --color-accent-secondary: #635BFF;  /* Stripe Purple */
+  --color-accent-secondary-rgb: 99, 91, 255;
+  --color-accent-tertiary: #E62B1E;   /* Orange-Red */
+  --color-accent-tertiary-rgb: 230, 43, 30;
+
+  /* Gradient Definitions */
+  --gradient-highlight: linear-gradient(135deg, #E82127 0%, #FF4B59 100%);
+  --gradient-secondary: linear-gradient(135deg, #635BFF 0%, #9C62FF 100%);
+  --gradient-tertiary: linear-gradient(135deg, #E62B1E 0%, #FF5B44 100%);
+  --gradient-primary: linear-gradient(135deg, #0A84FF 0%, #60A5FA 100%);
+
+  /* Semantic Colors */
+  --color-error: #FF4B59;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-info: #0A84FF;
+
+  /* Border Colors */
+  --color-border-default: rgba(255, 255, 255, 0.12);
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-emphasis: rgba(255, 255, 255, 0.2);
+
+  /* Chart Colors (8-color palette) */
+  --color-chart-1: #635BFF;  /* Purple */
+  --color-chart-2: #E82127;  /* Red */
+  --color-chart-3: #10B981;  /* Green */
+  --color-chart-4: #F59E0B;  /* Orange */
+  --color-chart-5: #0A84FF;  /* Blue */
+  --color-chart-6: #8B5CF6;  /* Purple accent */
+  --color-chart-7: #EC4899;  /* Pink */
+  --color-chart-8: #06B6D4;  /* Cyan */
+  
+  /* ═══════════════════════════════════════════════════════════════
+     SPACING TOKENS
+     ═══════════════════════════════════════════════════════════════ */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  
+  /* ═══════════════════════════════════════════════════════════════
+     TYPOGRAPHY TOKENS
+     ═══════════════════════════════════════════════════════════════ */
+  
+  /* Font Families */
+  --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Roboto Mono', 'SF Mono', Consolas, monospace;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* ═══════════════════════════════════════════════════════════════
+     LAYOUT TOKENS
+     ═══════════════════════════════════════════════════════════════ */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Box Shadows - Premium depth */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Container widths */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Chart dimensions */
+  --chart-height-sm: 300px;
+  --chart-height-md: 400px;
+  --chart-height-lg: 500px;
+  --chart-max-width: 1056px;
+  
+  /* ═══════════════════════════════════════════════════════════════
+     TRANSITION TOKENS
+     ═══════════════════════════════════════════════════════════════ */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  
+  /* ═══════════════════════════════════════════════════════════════
+     Z-INDEX SCALE
+     ═══════════════════════════════════════════════════════════════ */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal-backdrop: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+.light-theme {
+  /* Background Colors */
+  --color-bg-main: #f8f9fa;
+  --color-bg-primary: #f8f9fa;   /* Alias for bg-main */
+  --color-bg-card: #ffffff;
+  --color-bg-secondary: #ffffff; /* Alias for bg-card */
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: rgba(0, 0, 0, 0.05);
+  --color-bg-card-secondary: rgba(0, 0, 0, 0.02);
+
+  /* Text Colors */
+  --color-text-primary: #111827;
+  --color-text-secondary: rgba(17, 24, 39, 0.7);
+  --color-text-tertiary: rgba(17, 24, 39, 0.5);
+  --color-text-muted: rgba(17, 24, 39, 0.38);
+
+  /* Border Colors */
+  --color-border-default: rgba(0, 0, 0, 0.1);
+  --color-border-subtle: rgba(0, 0, 0, 0.05);
+  --color-border-emphasis: rgba(0, 0, 0, 0.2);
+
+  /* Box Shadows for light theme */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+
+  /* Light theme chart colors (slightly darker for visibility) */
+  --color-chart-1: #4F46E5;
+  --color-chart-2: #DC2626;
+  --color-chart-3: #059669;
+  --color-chart-4: #D97706;
+  --color-chart-5: #0369A1;
+  --color-chart-6: #7C3AED;
+  --color-chart-7: #DB2777;
+  --color-chart-8: #0891B2;
+}

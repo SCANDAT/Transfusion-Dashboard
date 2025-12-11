@@ -1,0 +1,314 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  max-width: var(--container-2xl);
+  margin: 0 auto;
+  padding: 0 var(--spacing-4);
+}
+
+.loading,
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+}
+
+.error {
+  color: var(--color-error);
+}
+
+/* Page Header */
+.header {
+  text-align: center;
+  padding: var(--spacing-4) 0;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-light);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-4) 0;
+}
+
+.pageDescription {
+  max-width: 82%;
+  margin: 0 auto var(--spacing-6) auto;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  font-size: var(--text-base);
+  text-align: center;
+}
+
+/* Guide Box */
+.guideBox {
+  background-color: var(--color-bg-card-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4) var(--spacing-6);
+  border-left: 3px solid var(--color-accent-primary);
+}
+
+.guideContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.guideText {
+  flex: 1;
+  min-width: 300px;
+}
+
+.guideText h3 {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+}
+
+.guideText p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.guideText strong {
+  color: var(--color-text-primary);
+}
+
+.guideText svg {
+  display: inline-block;
+  vertical-align: middle;
+  color: var(--color-text-muted);
+}
+
+.expandAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-6);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.expandAllBtn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-primary);
+  background-color: rgba(var(--color-accent-primary-rgb), 0.1);
+}
+
+.expandAllBtn.active {
+  background: var(--gradient-secondary);
+  color: white;
+  border-color: transparent;
+}
+
+/* Two Column Layout */
+.twoColumnLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-8);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.columnTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+  padding-bottom: var(--spacing-2);
+  border-bottom: 2px solid var(--color-accent-highlight);
+}
+
+/* Stat Block (Table + Chart) */
+.statBlock {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  overflow: hidden;
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.statTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.chartToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background-color: transparent;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.chartToggleBtn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-primary);
+  background-color: rgba(var(--color-accent-primary-rgb), 0.1);
+}
+
+.chartToggleBtn.active {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: white;
+}
+
+/* Stats Table */
+.statsTable {
+  width: 100%;
+  font-size: var(--text-sm);
+  border-collapse: collapse;
+}
+
+.statsTable th,
+.statsTable td {
+  padding: var(--spacing-2) var(--spacing-4);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.statsTable th {
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-card-secondary);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statsTable td {
+  color: var(--color-text-primary);
+}
+
+.statsTable tbody tr:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.statsTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Center numeric columns (headers and values) */
+.statsTable th:not(:first-child),
+.statsTable td.numCell {
+  text-align: center;
+}
+
+.numCell {
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  font-weight: var(--font-semibold);
+  background-color: var(--color-bg-elevated);
+}
+
+.totalRow td {
+  border-top: 2px solid var(--color-border-default);
+}
+
+.summaryRow {
+  background-color: var(--color-bg-card-secondary);
+}
+
+.summaryRow td {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Chart Container */
+.chartContainer {
+  padding: var(--spacing-4);
+  border-top: 1px solid var(--color-border-subtle);
+  background-color: var(--color-bg-card-secondary);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 400px;
+  }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .twoColumnLayout {
+    gap: var(--spacing-6);
+  }
+}
+
+@media (max-width: 1024px) {
+  .twoColumnLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .pageDescription {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-2);
+  }
+
+  .pageTitle {
+    font-size: var(--text-2xl);
+  }
+
+  .statsTable th,
+  .statsTable td {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--text-xs);
+  }
+
+  .statHeader {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+
+  .statTitle {
+    font-size: var(--text-xs);
+  }
+}
