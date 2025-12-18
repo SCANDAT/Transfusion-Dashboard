@@ -1,7 +1,3 @@
-/* ============================================
-   Component Factor Effects Tab - Chart-Centered Layout
-   ============================================ */
-
 .container {
   display: flex;
   flex-direction: column;

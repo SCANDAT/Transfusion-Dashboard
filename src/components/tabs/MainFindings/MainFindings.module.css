@@ -376,7 +376,6 @@
   color: var(--color-text-muted);
 }
 
-/* Old forestPlot grid layout - replaced by new layout below */
 
 .forestPlotLabels {
   display: flex;
@@ -849,7 +848,6 @@
 }
 
 .forestPlotEmptyCell {
-  /* Empty placeholder cell for grid alignment */
   min-width: 0;
 }
 

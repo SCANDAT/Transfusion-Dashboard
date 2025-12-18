@@ -24,10 +24,6 @@ interface CategoryData {
   fullModel?: { mean: number; lower: number; upper: number }
 }
 
-/**
- * Forest plot for a single component factor
- * Shows effect estimates with confidence intervals for each category
- */
 export function FactorForestPlot({
   factorCode,
   factorName,
@@ -37,10 +33,8 @@ export function FactorForestPlot({
   showBaseModel = false,
   showFullModel = true,
 }: FactorForestPlotProps) {
-  // Get data for each vital parameter
   const vitalPlots = useMemo(() => {
     return VITAL_PARAM_CODES.map(vitalCode => {
-      // Filter data for this vital and factor (allow '0' as valid category)
       const obsForVital = observedData.filter(
         row => row.Abbreviation === vitalCode &&
                row.FactorName === factorCode &&
@@ -56,8 +50,6 @@ export function FactorForestPlot({
         return null
       }
 
-      // Get all categories
-      // For weekdays, use Monday-Sunday order (2,3,4,5,6,7,1)
       const categories = [...new Set([
         ...obsForVital.map(r => r.FactorCategory),
         ...modelForVital.map(r => r.FactorCategory),
@@ -115,7 +107,6 @@ export function FactorForestPlot({
   return (
     <div className={styles.forestPlotContainer}>
       <div className={styles.forestPlotGrid}>
-        {/* 4x2 grid: Title + 7 charts (MAP, SBP, DBP, HR, SpO2, Temp, FIO2) */}
         <div className={styles.forestPlotTitleCell}>{factorName}</div>
         {vitalPlots.map(plot => plot && (
           <ForestPlotChart
@@ -141,14 +132,12 @@ interface ForestPlotChartProps {
 }
 
 function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel, showFullModel }: ForestPlotChartProps) {
-  // Store error bar data
   const errorBars = useMemo(() => ({
     observed: categoryData.map(d => d.observed || { lower: 0, upper: 0, mean: 0 }),
     baseModel: categoryData.map(d => d.baseModel || { lower: 0, upper: 0, mean: 0 }),
     fullModel: categoryData.map(d => d.fullModel || { lower: 0, upper: 0, mean: 0 }),
   }), [categoryData])
 
-  // Calculate y-axis range to include all CIs
   const allValues = [
     ...errorBars.observed.flatMap(e => [e.lower, e.upper]),
     ...errorBars.baseModel.flatMap(e => [e.lower, e.upper]),
@@ -205,7 +194,6 @@ function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel,
     datasets,
   }
 
-  // Custom plugin for vertical error bars
   const errorBarPlugin = {
     id: 'verticalErrorBars',
     afterDatasetsDraw(chart: import('chart.js').Chart) {
@@ -217,7 +205,6 @@ function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel,
         const meta = chart.getDatasetMeta(datasetIndex)
         if (meta.hidden) return
 
-        // Select appropriate error data based on dataset label
         let errors: typeof errorBars.observed
         if (dataset.label === 'Observed') {
           errors = errorBars.observed
@@ -241,19 +228,16 @@ function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel,
           ctx.strokeStyle = color
           ctx.lineWidth = 1.5
 
-          // Vertical line
           ctx.beginPath()
           ctx.moveTo(x, yTop)
           ctx.lineTo(x, yBottom)
           ctx.stroke()
 
-          // Top cap
           ctx.beginPath()
           ctx.moveTo(x - capWidth, yTop)
           ctx.lineTo(x + capWidth, yTop)
           ctx.stroke()
 
-          // Bottom cap
           ctx.beginPath()
           ctx.moveTo(x - capWidth, yBottom)
           ctx.lineTo(x + capWidth, yBottom)
@@ -265,7 +249,6 @@ function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel,
     },
   }
 
-  // Plugin to draw horizontal zero line
   const zeroLinePlugin = {
     id: 'zeroLine',
     beforeDatasetsDraw(chart: import('chart.js').Chart) {
@@ -423,12 +406,10 @@ export function AllFactorForestPlots({
   showBaseModel = false,
   showFullModel = true,
 }: AllFactorForestPlotsProps) {
-  // Get factors that have data, in standard order from COMP_FACTOR_CODES
   const factors = useMemo(() => {
     const factorSet = new Set<string>()
     observedData.forEach(r => factorSet.add(r.FactorName))
     modelData.forEach(r => factorSet.add(r.FactorName))
-    // Return factors in COMP_FACTOR_CODES order, filtering to only those with data
     return COMP_FACTOR_CODES.filter(code => factorSet.has(code))
   }, [observedData, modelData])
 

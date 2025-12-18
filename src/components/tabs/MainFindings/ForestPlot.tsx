@@ -22,19 +22,16 @@ export function ForestPlot({
   showZeroLine = true,
   colorByIndex = true,
 }: ForestPlotProps) {
-  // Calculate x-axis range to include all CIs and zero
   const { minX, maxX, range, zeroPosition } = useMemo(() => {
     const allValues = data.flatMap(d => [d.lower, d.upper, d.estimate])
     let min = Math.min(...allValues)
     let max = Math.max(...allValues)
 
-    // Include zero in range if showing zero line
     if (showZeroLine) {
       min = Math.min(min, 0)
       max = Math.max(max, 0)
     }
 
-    // Add some padding (10%)
     const padding = (max - min) * 0.1
     min -= padding
     max += padding
@@ -58,7 +55,6 @@ export function ForestPlot({
       <h3 className={styles.forestPlotTitle}>{title}</h3>
 
       <div className={styles.forestPlotContainer}>
-        {/* Y-axis labels (left side) */}
         <div className={styles.forestPlotLabels}>
           {data.map((point, idx) => (
             <div key={idx} className={styles.forestPlotLabelRow}>
@@ -67,9 +63,7 @@ export function ForestPlot({
           ))}
         </div>
 
-        {/* Chart area */}
         <div className={styles.forestPlotChart}>
-          {/* Zero line */}
           {showZeroLine && zeroPosition !== null && (
             <div
               className={styles.forestPlotZeroLine}
@@ -77,7 +71,6 @@ export function ForestPlot({
             />
           )}
 
-          {/* Plot points with CI bars */}
           {data.map((point, idx) => {
             const estimatePos = ((point.estimate - minX) / range) * 100
             const lowerPos = ((point.lower - minX) / range) * 100
@@ -89,7 +82,6 @@ export function ForestPlot({
 
             return (
               <div key={idx} className={styles.forestPlotRow}>
-                {/* CI bar */}
                 <div
                   className={styles.forestPlotCIBar}
                   style={{
@@ -99,7 +91,6 @@ export function ForestPlot({
                     borderColor: color as string,
                   }}
                 />
-                {/* Point estimate diamond */}
                 <div
                   className={styles.forestPlotDiamond}
                   style={{
@@ -112,7 +103,6 @@ export function ForestPlot({
             )
           })}
 
-          {/* X-axis */}
           <div className={styles.forestPlotXAxis}>
             <span className={styles.forestPlotAxisMin}>{minX.toFixed(1)}</span>
             {showZeroLine && <span className={styles.forestPlotAxisZero}>0</span>}
@@ -120,7 +110,6 @@ export function ForestPlot({
           </div>
         </div>
 
-        {/* Values column (right side) */}
         <div className={styles.forestPlotValues}>
           {data.map((point, idx) => (
             <div key={idx} className={styles.forestPlotValueRow}>

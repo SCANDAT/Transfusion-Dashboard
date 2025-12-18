@@ -1,11 +1,3 @@
-/**
- * Chart container styles
- *
- * Provides a responsive container for Chart.js charts with proper positioning
- * and sizing. The container handles responsive behavior while charts maintain
- * their configured dimensions.
- */
-
 .chartContainer {
   position: relative;
   width: 100%;

@@ -93,9 +93,6 @@
 }
 
 /* Key Findings */
-.keyFindings {
-  /* padding: var(--spacing-8) 0; */
-}
 
 .findingsIntro {
   font-size: var(--text-base);
@@ -174,9 +171,6 @@
 }
 
 /* Interpretation Section */
-.interpretation {
-  /* padding: var(--spacing-8) 0; */
-}
 
 .interpretationContent {
   display: grid;
@@ -207,9 +201,6 @@
 }
 
 /* Navigation Guide */
-.navigationGuide {
-  /* padding: var(--spacing-8) 0; */
-}
 
 .navIntro {
   font-size: var(--text-base);

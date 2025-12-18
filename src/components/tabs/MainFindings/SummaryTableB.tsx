@@ -18,9 +18,6 @@ export interface GroupedFactorData {
   }>>
 }
 
-/**
- * Hook to group factor data - shared between table and chart components
- */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useGroupedFactorData(
   observedData: FactorObservedSummaryRow[],
@@ -29,9 +26,7 @@ export function useGroupedFactorData(
   return useMemo(() => {
     const factorGroups = new Map<string, GroupedFactorData>()
 
-    // Process observed data
     for (const row of observedData) {
-      // Skip rows without a category, but allow '0' as a valid category
       if (row.FactorCategory === undefined || row.FactorCategory === null || row.FactorCategory === '' || row.FactorCategory === '.') continue
 
       const factorCode = row.FactorName
@@ -61,9 +56,7 @@ export function useGroupedFactorData(
       vitalMap.get(row.FactorCategory)!.observed = row
     }
 
-    // Process model data
     for (const row of modelData) {
-      // Skip rows without a category, but allow '0' as a valid category
       if (row.FactorCategory === undefined || row.FactorCategory === null || row.FactorCategory === '' || row.FactorCategory === '.') continue
 
       const factorCode = row.FactorName
@@ -82,16 +75,13 @@ export function useGroupedFactorData(
       vitalMap.get(row.FactorCategory)!.model = row
     }
 
-    // Sort categories numerically if possible
-    // For weekdays, use Monday-Sunday order (2,3,4,5,6,7,1)
     factorGroups.forEach(group => {
       group.categories.sort((a, b) => {
         const numA = parseFloat(String(a))
         const numB = parseFloat(String(b))
         if (!isNaN(numA) && !isNaN(numB)) {
-          // Special handling for weekdays: Monday(2) through Sunday(1)
           if (group.factorCode === 'wdy_donation') {
-            const orderA = numA === 1 ? 8 : numA // Sunday becomes 8 (last)
+            const orderA = numA === 1 ? 8 : numA
             const orderB = numB === 1 ? 8 : numB
             return orderA - orderB
           }
@@ -101,7 +91,6 @@ export function useGroupedFactorData(
       })
     })
 
-    // Return factors in COMP_FACTOR_CODES order
     return COMP_FACTOR_CODES
       .filter(code => factorGroups.has(code))
       .map(code => factorGroups.get(code)!)
@@ -167,9 +156,6 @@ export function getCategoryLabel(factorCode: string, category: string | number):
   return categoryLabels[factorCode]?.[catStr] || catStr
 }
 
-/**
- * Single factor table component - can be used standalone or in combined view
- */
 interface SingleFactorTableProps {
   factorGroup: GroupedFactorData
   vitalsWithData: string[]
@@ -249,14 +235,9 @@ export function SingleFactorTable({ factorGroup, vitalsWithData, showTitle = tru
   )
 }
 
-/**
- * Table 2b: Component Factor Effects Summary
- * Shows factor-specific effects grouped by component factor, with vitals as columns
- */
 export function SummaryTableB({ observedData, modelData }: SummaryTableBProps) {
   const groupedData = useGroupedFactorData(observedData, modelData)
 
-  // Get vitals that have data (use standard order from VITAL_PARAM_CODES)
   const vitalsWithData = VITAL_PARAM_CODES.filter(vital =>
     groupedData.some(g => g.dataByVital.has(vital))
   )

@@ -43,17 +43,14 @@ export default defineConfig(({ mode }) => {
             'vendor-data': ['papaparse', 'lodash-es'],
             'vendor-state': ['zustand'],
           },
-          // Consistent chunk naming for caching
           chunkFileNames: 'assets/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',
         },
       },
 
-      // Target modern browsers for smaller bundle
       target: 'es2020',
 
-      // Enable minification in production (using esbuild - built into Vite)
       minify: mode === 'production' ? 'esbuild' : false,
     },
   }

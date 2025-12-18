@@ -1,8 +1,3 @@
-/* ============================================
-   Control Components - Shared Styles
-   Uses CSS variables for theming
-   ============================================ */
-
 /* Base Control Group */
 .controlGroup {
   display: flex;

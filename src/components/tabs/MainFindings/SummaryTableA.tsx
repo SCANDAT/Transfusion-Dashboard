@@ -8,12 +8,7 @@ interface SummaryTableAProps {
   modelData: ModelVitalSummaryRow[]
 }
 
-/**
- * Table 2a: Vital Parameter Summary
- * Shows pre/post transfusion values with observed and model-based estimates
- */
 export function SummaryTableA({ observedData, modelData }: SummaryTableAProps) {
-  // Merge observed and model data by VitalParam
   const mergedData = useMemo(() => {
     return observedData.map(obs => {
       const model = modelData.find(m => m.Abbreviation === obs.Abbreviation)
@@ -31,7 +26,6 @@ export function SummaryTableA({ observedData, modelData }: SummaryTableAProps) {
     return `[${formatValue(lower, decimals)}, ${formatValue(upper, decimals)}]`
   }
 
-  // Calculate SE from 95% CI: SE ≈ (UCL - LCL) / (2 * 1.96)
   const calculateSE = (lower: number | undefined, upper: number | undefined) => {
     if (lower === undefined || upper === undefined) return undefined
     return (upper - lower) / (2 * 1.96)

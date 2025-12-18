@@ -492,7 +492,6 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
           <BothIcon /> Both
         </button>
 
-        {/* Data type toggle - only show when charts are visible */}
         {(viewMode === 'chart' || viewMode === 'both') && (
           <div className={styles.dataToggle}>
             <label className={styles.dataToggleLabel}>
@@ -523,7 +522,6 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
         )}
       </div>
 
-      {/* Chart Legend */}
       {(viewMode === 'chart' || viewMode === 'both') && (
         <div className={styles.chartLegend}>
           {showObserved && (
@@ -547,7 +545,6 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
         </div>
       )}
 
-      {/* Content based on view mode */}
       {viewMode === 'table' && (
         <SummaryTableB observedData={factorObserved} modelData={factorModel} />
       )}
@@ -575,9 +572,6 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
   )
 }
 
-/**
- * Interleaved view showing table then chart for each factor
- */
 interface InterleavedProps {
   factorObserved: import('@/types').FactorObservedSummaryRow[]
   factorModel: import('@/types').FactorModelSummaryRow[]
@@ -589,7 +583,6 @@ interface InterleavedProps {
 function InterleavedTableAndCharts({ factorObserved, factorModel, showObserved, showBaseModel, showFullModel }: InterleavedProps) {
   const groupedData = useGroupedFactorData(factorObserved, factorModel)
 
-  // Get vitals that have data
   const vitalsWithData = VITAL_PARAM_CODES.filter(vital =>
     groupedData.some(g => g.dataByVital.has(vital))
   )
@@ -606,12 +599,10 @@ function InterleavedTableAndCharts({ factorObserved, factorModel, showObserved, 
     <div className={styles.combinedView}>
       {groupedData.map(factorGroup => (
         <div key={factorGroup.factorCode} className={styles.factorCombinedSection}>
-          {/* Table for this factor */}
           <SingleFactorTable
             factorGroup={factorGroup}
             vitalsWithData={vitalsWithData}
           />
-          {/* Chart for this factor */}
           <FactorForestPlot
             factorCode={factorGroup.factorCode}
             factorName={factorNames[factorGroup.factorCode] || factorGroup.factorName}
