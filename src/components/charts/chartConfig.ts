@@ -9,6 +9,7 @@ import {
   BarController,
   ArcElement,
   DoughnutController,
+  PieController,
   Title,
   Tooltip,
   Legend,
@@ -32,6 +33,7 @@ import { verticalLinePlugin } from './plugins/verticalLinePlugin'
  * - BarController: Controller for bar charts
  * - ArcElement: For pie/doughnut charts
  * - DoughnutController: Controller for doughnut charts
+ * - PieController: Controller for pie charts
  * - Title: For chart titles
  * - Tooltip: For interactive tooltips
  * - Legend: For chart legends
@@ -50,6 +52,7 @@ ChartJS.register(
   BarController,
   ArcElement,
   DoughnutController,
+  PieController,
   Title,
   Tooltip,
   Legend,
