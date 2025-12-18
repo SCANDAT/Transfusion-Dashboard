@@ -12,9 +12,6 @@ const DEFAULT_OPTIONS: ParseOptions = {
   skipEmptyLines: true,
 }
 
-/**
- * Helper to trim string values in an object
- */
 function trimObjectValues<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj
   if (typeof obj !== 'object') return obj
@@ -37,7 +34,6 @@ export function parseCSV<T>(csvString: string, options: ParseOptions = {}): T[] 
   if (realErrors.length > 0) {
     console.warn('CSV parse warnings:', realErrors)
   }
-  // Trim all string values to handle CSV files with trailing spaces
   return result.data.map(row => trimObjectValues(row))
 }
 
@@ -50,10 +46,6 @@ export async function fetchCSV<T>(url: string, options: ParseOptions = {}): Prom
   return parseCSV<T>(csvString, options)
 }
 
-/**
- * Fetch CSV with fallback paths
- * Tries primary path first, then fallback paths in order
- */
 export async function fetchCSVWithFallback<T>(
   paths: string[],
   options: ParseOptions = {}

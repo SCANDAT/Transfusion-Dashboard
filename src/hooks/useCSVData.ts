@@ -7,10 +7,6 @@ interface AsyncDataResult<T> {
   refetch: () => void
 }
 
-/**
- * Hook for loading async data with proper dependency tracking
- * Uses a stable key derived from dependencies to trigger refetches
- */
 export function useAsyncData<T>(
   fetchFn: () => Promise<T>,
   deps: unknown[] = []
@@ -20,7 +16,6 @@ export function useAsyncData<T>(
   const [error, setError] = useState<Error | null>(null)
   const [refetchCount, setRefetchCount] = useState(0)
 
-  // Use ref to store the latest fetchFn to avoid stale closures
   const fetchFnRef = useRef(fetchFn)
   fetchFnRef.current = fetchFn
 
@@ -28,7 +23,6 @@ export function useAsyncData<T>(
     setRefetchCount(c => c + 1)
   }, [])
 
-  // Create a stable dependency key from the deps array
   const depsKey = JSON.stringify(deps)
 
   useEffect(() => {

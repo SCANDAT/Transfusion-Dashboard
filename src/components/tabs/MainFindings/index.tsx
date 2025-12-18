@@ -90,7 +90,6 @@ export function MainFindingsTab() {
 
   return (
     <div className={styles.container}>
-      {/* Header Section */}
       <section className={styles.hero}>
         <h2 className={styles.title}>Key Results</h2>
         <p className={styles.description}>
@@ -100,7 +99,6 @@ export function MainFindingsTab() {
         </p>
       </section>
 
-      {/* How to Read This Section */}
       <section className={styles.guideSection}>
         <div className={styles.guideHeader}>
           <HelpIcon />
@@ -124,7 +122,6 @@ export function MainFindingsTab() {
         </div>
       </section>
 
-      {/* Summary Cards */}
       {summaryStats && (
         <section className={styles.summarySection}>
           <div className={styles.summaryGrid}>
@@ -152,7 +149,6 @@ export function MainFindingsTab() {
         </section>
       )}
 
-      {/* Table 2a: Vital Parameter Summary */}
       {vitalSummary && modelVitalSummary && (
         <section className={styles.tableSection}>
           <div className={styles.sectionHeader}>
@@ -172,7 +168,6 @@ export function MainFindingsTab() {
         </section>
       )}
 
-      {/* Model Summary Chart */}
       {modelVitalSummary && vitalSummary && (
         <section className={styles.chartSection}>
           <h2 className={styles.sectionTitle}>Effect Size Comparison</h2>
@@ -184,7 +179,6 @@ export function MainFindingsTab() {
         </section>
       )}
 
-      {/* Small Multiples Grid */}
       <section className={styles.gridSection}>
         <h2 className={styles.sectionTitle}>Trajectory Overview Grid</h2>
         <p className={styles.sectionDescription}>
@@ -200,7 +194,6 @@ export function MainFindingsTab() {
         <VirtualizedGrid vizIndex={vizIndex} />
       </section>
 
-      {/* Table 2b: Component Factor Effects */}
       {factorObserved && factorModel && (
         <FactorEffectsSection
           factorObserved={factorObserved}
@@ -210,10 +203,6 @@ export function MainFindingsTab() {
     </div>
   )
 }
-
-// ─────────────────────────────────────────────────────────────────
-// Sub-components
-// ─────────────────────────────────────────────────────────────────
 
 function SummaryCard({
   label,
@@ -234,7 +223,6 @@ function SummaryCard({
 }
 
 function ModelSummaryChart({ modelData, observedData }: { modelData: ModelVitalSummaryRow[], observedData: VitalSummaryRow[] }) {
-  // Merge data by abbreviation to ensure alignment (case-insensitive comparison)
   const mergedData = modelData.map(model => {
     const observed = observedData.find(obs =>
       obs.Abbreviation.toUpperCase() === model.Abbreviation.toUpperCase()
@@ -242,7 +230,6 @@ function ModelSummaryChart({ modelData, observedData }: { modelData: ModelVitalS
     return { model, observed }
   })
 
-  // Store CI data for the error bar plugin
   const errorBars = {
     observed: mergedData.map(({ observed }) =>
       observed ? { lower: observed.Diff_LCL, upper: observed.Diff_UCL } : { lower: 0, upper: 0 }
@@ -251,7 +238,6 @@ function ModelSummaryChart({ modelData, observedData }: { modelData: ModelVitalS
     full: mergedData.map(({ model }) => ({ lower: model.Full_Diff_LCL, upper: model.Full_Diff_UCL })),
   }
 
-  // Calculate y-axis range to include all confidence intervals
   const allLower = [
     ...errorBars.observed.map(e => e.lower),
     ...errorBars.base.map(e => e.lower),
@@ -264,7 +250,7 @@ function ModelSummaryChart({ modelData, observedData }: { modelData: ModelVitalS
   ]
   const minY = Math.min(...allLower)
   const maxY = Math.max(...allUpper)
-  const padding = (maxY - minY) * 0.1 // 10% padding
+  const padding = (maxY - minY) * 0.1
 
   const chartData: ChartData<'bar'> = {
     labels: mergedData.map(({ model }) => VITAL_PARAMS[model.Abbreviation]?.shortName || model.Abbreviation),
@@ -296,7 +282,6 @@ function ModelSummaryChart({ modelData, observedData }: { modelData: ModelVitalS
     ],
   }
 
-  // Custom plugin to draw error bars
   const errorBarPlugin = {
     id: 'errorBars',
     afterDatasetsDraw(chart: import('chart.js').Chart) {

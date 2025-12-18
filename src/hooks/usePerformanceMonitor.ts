@@ -10,13 +10,6 @@ interface PerformanceMetrics {
 
 const metricsStore = new Map<string, PerformanceMetrics>()
 
-/**
- * Hook for monitoring component performance
- * Tracks mount time, render counts, and render duration
- *
- * @param componentName - Unique identifier for the component
- * @param enabled - Whether to collect metrics (default: development only)
- */
 export function usePerformanceMonitor(
   componentName: string,
   enabled: boolean = import.meta.env.DEV
@@ -26,7 +19,6 @@ export function usePerformanceMonitor(
   const totalRenderTime = useRef<number>(0)
   const mountTime = useRef<number>(0)
 
-  // Track mount time
   useEffect(() => {
     if (!enabled) return
 
@@ -40,7 +32,6 @@ export function usePerformanceMonitor(
     }
 
     return () => {
-      // Log lifetime metrics on unmount
       const lifetime = performance.now() - mountTime.current
 
       if (import.meta.env.DEV) {
@@ -53,7 +44,6 @@ export function usePerformanceMonitor(
         })
       }
 
-      // Clean up marks
       try {
         performance.clearMarks(markName)
       } catch {
@@ -62,7 +52,6 @@ export function usePerformanceMonitor(
     }
   }, [componentName, enabled])
 
-  // Track each render
   useEffect(() => {
     if (!enabled) return
 
@@ -70,7 +59,6 @@ export function usePerformanceMonitor(
     renderCount.current += 1
     totalRenderTime.current += renderTime
 
-    // Update metrics store
     metricsStore.set(componentName, {
       componentName,
       mountTime: mountTime.current,
@@ -79,7 +67,6 @@ export function usePerformanceMonitor(
       averageRenderTime: totalRenderTime.current / renderCount.current
     })
 
-    // Reset for next render
     renderStartTime.current = performance.now()
   })
 
@@ -90,16 +77,11 @@ export function usePerformanceMonitor(
   }
 }
 
-/**
- * Report Web Vitals metrics
- * Should be called once in the app entry point
- */
 export function reportWebVitals(onReport?: (metric: WebVitalMetric) => void) {
   if (typeof window === 'undefined' || !('PerformanceObserver' in window)) {
     return
   }
 
-  // Largest Contentful Paint
   try {
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries()
@@ -120,7 +102,6 @@ export function reportWebVitals(onReport?: (metric: WebVitalMetric) => void) {
     // LCP not supported
   }
 
-  // First Input Delay
   try {
     const fidObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries()
@@ -144,7 +125,6 @@ export function reportWebVitals(onReport?: (metric: WebVitalMetric) => void) {
     // FID not supported
   }
 
-  // Cumulative Layout Shift
   try {
     let clsValue = 0
     const clsObserver = new PerformanceObserver((list) => {
@@ -187,23 +167,14 @@ interface LayoutShiftEntry extends PerformanceEntry {
   hadRecentInput: boolean
 }
 
-/**
- * Get all collected component metrics
- */
 export function getAllMetrics(): PerformanceMetrics[] {
   return Array.from(metricsStore.values())
 }
 
-/**
- * Clear all collected metrics
- */
 export function clearMetrics(): void {
   metricsStore.clear()
 }
 
-/**
- * Hook for measuring async operation duration
- */
 export function useAsyncTiming() {
   const timings = useRef<Map<string, number>>(new Map())
 

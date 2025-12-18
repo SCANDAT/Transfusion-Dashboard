@@ -21,17 +21,11 @@ const DEFAULT_TIME_RANGE: TimeRange = [-720, 720]
 export const useDashboardStore = create<DashboardStore>()(
   persist(
     (set) => ({
-      // ═══════════════════════════════════════════════════════════════
-      // STATE
-      // ═══════════════════════════════════════════════════════════════
-
-      // UI State
       theme: 'dark',
       activeTab: 'overview',
       isLoading: false,
       error: null,
 
-      // Component Factor Effects Tab State
       selectedVital: null,
       selectedCompFactor: null,
       selectedComparisons: [],
@@ -39,35 +33,24 @@ export const useDashboardStore = create<DashboardStore>()(
       displayOptions: { ...DEFAULT_DISPLAY_OPTIONS },
       visualizationData: null,
 
-      // RBC Transfusions Tab State
       transfusionSelectedVitals: [],
       transfusionTimeRange: DEFAULT_TIME_RANGE,
       transfusionDisplayOptions: { ...DEFAULT_DISPLAY_OPTIONS },
 
-      // Available options
       availableVitals: [],
       availableCompFactors: [],
 
-      // ═══════════════════════════════════════════════════════════════
-      // ACTIONS
-      // ═══════════════════════════════════════════════════════════════
-
-      // Theme
       setTheme: (theme: Theme) => set({ theme }),
       toggleTheme: () =>
         set(state => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
 
-      // Navigation
       setActiveTab: (activeTab: TabId) => set({ activeTab }),
 
-      // Loading & Error
       setLoading: (isLoading: boolean) => set({ isLoading }),
       setError: (error: string | null) => set({ error }),
       clearError: () => set({ error: null }),
 
-      // Component Factor Effects Tab - Cascading Selection
       setSelectedVital: (vital: VitalParamCode | null) => {
-        // Cascade reset: changing vital resets factor and comparisons
         set({
           selectedVital: vital,
           selectedCompFactor: null,
@@ -77,7 +60,6 @@ export const useDashboardStore = create<DashboardStore>()(
       },
 
       setSelectedCompFactor: (factor: CompFactorCode | null) => {
-        // Cascade reset: changing factor resets comparisons
         set({
           selectedCompFactor: factor,
           selectedComparisons: [],
@@ -115,7 +97,6 @@ export const useDashboardStore = create<DashboardStore>()(
       setVisualizationData: (data: VisualizationData | null) =>
         set({ visualizationData: data }),
 
-      // RBC Transfusions Tab
       toggleTransfusionVital: (vital: VitalParamCode) =>
         set(state => {
           const current = state.transfusionSelectedVitals
@@ -141,14 +122,12 @@ export const useDashboardStore = create<DashboardStore>()(
           },
         })),
 
-      // Available options setters
       setAvailableVitals: (availableVitals: VitalParamCode[]) =>
         set({ availableVitals }),
 
       setAvailableCompFactors: (availableCompFactors: CompFactorCode[]) =>
         set({ availableCompFactors }),
 
-      // Reset functions
       resetComponentFactorState: () =>
         set({
           selectedVital: null,
@@ -168,7 +147,6 @@ export const useDashboardStore = create<DashboardStore>()(
     }),
     {
       name: 'scandat-dashboard-storage',
-      // Only persist theme and activeTab
       partialize: state => ({
         theme: state.theme,
         activeTab: state.activeTab,
@@ -177,13 +155,6 @@ export const useDashboardStore = create<DashboardStore>()(
   )
 )
 
-// ═══════════════════════════════════════════════════════════════
-// SELECTORS
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Select component factor effects tab state
- */
 export const selectComponentFactorState = (state: DashboardStore) => ({
   selectedVital: state.selectedVital,
   selectedCompFactor: state.selectedCompFactor,
@@ -193,18 +164,12 @@ export const selectComponentFactorState = (state: DashboardStore) => ({
   visualizationData: state.visualizationData,
 })
 
-/**
- * Select transfusion tab state
- */
 export const selectTransfusionState = (state: DashboardStore) => ({
   selectedVitals: state.transfusionSelectedVitals,
   timeRange: state.transfusionTimeRange,
   displayOptions: state.transfusionDisplayOptions,
 })
 
-/**
- * Select UI state
- */
 export const selectUIState = (state: DashboardStore) => ({
   theme: state.theme,
   activeTab: state.activeTab,
@@ -212,24 +177,13 @@ export const selectUIState = (state: DashboardStore) => ({
   error: state.error,
 })
 
-/**
- * Select theme
- */
 export const selectTheme = (state: DashboardStore) => state.theme
 
-/**
- * Select active tab
- */
 export const selectActiveTab = (state: DashboardStore) => state.activeTab
 
-/**
- * Hook to sync theme to DOM and return current theme
- * Should be called in App component to keep DOM in sync
- */
 export function useThemeSync() {
   const theme = useDashboardStore(selectTheme)
 
-  // Sync on mount and theme change - MUST be in useEffect to avoid render-phase side effects
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', theme)
@@ -240,13 +194,6 @@ export function useThemeSync() {
   return theme
 }
 
-// ═══════════════════════════════════════════════════════════════
-// OPTIMIZED SELECTOR HOOKS (use useShallow for object selections)
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Hook for Component Factor Effects tab - only re-renders when relevant state changes
- */
 export function useComponentFactorEffectsState() {
   return useDashboardStore(
     useShallow((state) => ({
@@ -262,9 +209,6 @@ export function useComponentFactorEffectsState() {
   )
 }
 
-/**
- * Hook for Component Factor Effects tab actions
- */
 export function useComponentFactorEffectsActions() {
   return useDashboardStore(
     useShallow((state) => ({
@@ -282,9 +226,6 @@ export function useComponentFactorEffectsActions() {
   )
 }
 
-/**
- * Hook for RBC Transfusions tab - only re-renders when relevant state changes
- */
 export function useTransfusionState() {
   return useDashboardStore(
     useShallow((state) => ({
@@ -296,9 +237,6 @@ export function useTransfusionState() {
   )
 }
 
-/**
- * Hook for RBC Transfusions tab actions
- */
 export function useTransfusionActions() {
   return useDashboardStore(
     useShallow((state) => ({
@@ -311,18 +249,12 @@ export function useTransfusionActions() {
   )
 }
 
-/**
- * Hook for navigation - only re-renders when activeTab changes
- */
 export function useNavigation() {
   const activeTab = useDashboardStore(selectActiveTab)
   const setActiveTab = useDashboardStore((state) => state.setActiveTab)
   return { activeTab, setActiveTab }
 }
 
-/**
- * Hook for MainFindings tab navigation actions
- */
 export function useMainFindingsNavigation() {
   return useDashboardStore(
     useShallow((state) => ({
@@ -333,9 +265,6 @@ export function useMainFindingsNavigation() {
   )
 }
 
-/**
- * Hook for error state
- */
 export function useErrorState() {
   return useDashboardStore(
     useShallow((state) => ({

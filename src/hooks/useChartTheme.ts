@@ -7,7 +7,6 @@ export interface ChartTheme {
   axisColor: string
   backgroundColor: string
   fontFamily: string
-  // Aliases for compatibility
   tickColor: string
   legendColor: string
   tooltipBackground: string
@@ -27,7 +26,6 @@ export function useChartTheme(): ChartTheme {
       axisColor: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
       backgroundColor,
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      // Aliases
       tickColor: textColor,
       legendColor: textColor,
       tooltipBackground: backgroundColor,
@@ -37,21 +35,18 @@ export function useChartTheme(): ChartTheme {
 }
 
 export const CHART_COLORS = [
-  '#635BFF', // Purple
-  '#E82127', // Red
-  '#10B981', // Green
-  '#F59E0B', // Orange
-  '#0A84FF', // Blue
-  '#8B5CF6', // Purple accent
-  '#EC4899', // Pink
-  '#06B6D4', // Cyan
+  '#635BFF',
+  '#E82127',
+  '#10B981',
+  '#F59E0B',
+  '#0A84FF',
+  '#8B5CF6',
+  '#EC4899',
+  '#06B6D4',
 ] as const
 
 export const SCANDAT_RED = '#E82127'
 
-/**
- * Get chart color by index (cycles through palette)
- */
 export function getChartColor(index: number): string {
   return CHART_COLORS[index % CHART_COLORS.length] as string
 }

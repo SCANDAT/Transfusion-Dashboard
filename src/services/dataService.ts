@@ -21,7 +21,6 @@ import type {
 } from '@/types'
 import { VITAL_PARAMS, COMP_FACTORS, VITAL_PARAM_CODES, COMP_FACTOR_CODES } from '@/types'
 
-// Raw CSV row types (field names as they appear in CSV files)
 interface RawAgeGroupRow {
   Age_Group?: string
   ageGroup?: string
@@ -70,16 +69,9 @@ interface RawStorageRow {
   No_of_Transfused_Units?: number
 }
 
-// Base path for data files - uses Vite's base path for GitHub Pages compatibility
 const DATA_BASE_PATH = `${import.meta.env.BASE_URL}data`
 
-/**
- * Helper to fetch CSV with case-insensitive fallback
- * Tries uppercase first, then lowercase
- */
 async function fetchCSVWithFallback<T>(fileName: string): Promise<T[]> {
-  // Files have uppercase names but lowercase .csv extension
-  // e.g., VIZ_ARTM_DONORHB_CAT.csv
   const baseName = fileName.replace(/\.csv$/i, '')
   const upperPath = `${DATA_BASE_PATH}/${baseName.toUpperCase()}.csv`
   const lowerPath = `${DATA_BASE_PATH}/${baseName.toLowerCase()}.csv`
@@ -91,32 +83,22 @@ async function fetchCSVWithFallback<T>(fileName: string): Promise<T[]> {
   }
 }
 
-/**
- * Load visualization index
- */
 export async function loadVizIndex(): Promise<VizIndexEntry[]> {
   const cacheKey = 'viz_index'
   const cached = dataCache.get<VizIndexEntry[]>(cacheKey)
   if (cached) return cached
 
   const data = await fetchCSV<VizIndexEntry>(`${DATA_BASE_PATH}/viz_index.csv`)
-  dataCache.set(cacheKey, data, 30) // Cache for 30 minutes
+  dataCache.set(cacheKey, data, 30)
   return data
 }
 
-/**
- * Get available vital parameters from index, sorted by canonical order
- */
 export async function getAvailableVitalParams(): Promise<VitalParamCode[]> {
   const index = await loadVizIndex()
   const vitalsSet = new Set(index.map(entry => entry.VitalParam))
-  // Return in canonical order defined in VITAL_PARAM_CODES
   return VITAL_PARAM_CODES.filter(code => vitalsSet.has(code))
 }
 
-/**
- * Get available component factors for a vital parameter, sorted by canonical order
- */
 export async function getAvailableCompFactors(
   vitalParam: VitalParamCode
 ): Promise<CompFactorCode[]> {
@@ -126,13 +108,9 @@ export async function getAvailableCompFactors(
       .filter(entry => entry.VitalParam === vitalParam)
       .map(entry => entry.CompFactor)
   )
-  // Return in canonical order defined in COMP_FACTOR_CODES
   return COMP_FACTOR_CODES.filter(code => factorsSet.has(code))
 }
 
-/**
- * Load visualization data for a specific vital/factor combination
- */
 export async function loadVisualizationData(
   vitalParam: VitalParamCode,
   compFactor: CompFactorCode
@@ -145,17 +123,13 @@ export async function loadVisualizationData(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawRows = await fetchCSVWithFallback<any>(fileName)
 
-  // Map the factor column (e.g., DonorSex) to CompValue
-  // The CSV has the comparison value in a column named after the factor
   const rows: VisualizationDataRow[] = rawRows.map((row) => ({
     ...row,
     CompValue: row[compFactor] ?? row.CompValue,
   }))
 
-  // Extract unique comparison values
   const comparisonValues = [...new Set(rows.map(row => row.CompValue))].filter(v => v !== undefined)
 
-  // Get metadata
   const vitalInfo = VITAL_PARAMS[vitalParam]
   const compInfo = COMP_FACTORS[compFactor]
 
@@ -182,9 +156,6 @@ export async function loadVisualizationData(
   return data
 }
 
-/**
- * Load transfusion data for a vital parameter
- */
 export async function loadTransfusionData(
   vitalParam: VitalParamCode
 ): Promise<TransfusionDataRow[]> {
@@ -198,9 +169,6 @@ export async function loadTransfusionData(
   return data
 }
 
-/**
- * Load all LOESS smoothing data
- */
 export async function loadLoessData(): Promise<LoessDataRow[]> {
   const cacheKey = 'loess_all'
   const cached = dataCache.get<LoessDataRow[]>(cacheKey)
@@ -216,9 +184,6 @@ export async function loadLoessData(): Promise<LoessDataRow[]> {
   }
 }
 
-/**
- * Get LOESS data filtered for a specific vital parameter
- */
 export async function getLoessDataForVital(
   vitalParam: VitalParamCode
 ): Promise<LoessDataRow[]> {
@@ -234,10 +199,6 @@ export async function getLoessDataForVital(
   return filtered
 }
 
-/**
- * Load LOESS data with multiple smoothing span values (10-90)
- * This data allows interactive smoothness adjustment via slider
- */
 export async function loadLoessMultiSpanData(): Promise<LoessMultiSpanRow[]> {
   const cacheKey = 'loess_multispan_all'
   const cached = dataCache.get<LoessMultiSpanRow[]>(cacheKey)
@@ -253,16 +214,10 @@ export async function loadLoessMultiSpanData(): Promise<LoessMultiSpanRow[]> {
   }
 }
 
-/**
- * Available LOESS span values (10-90, representing 0.10-0.90)
- */
 export const LOESS_SPAN_VALUES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90] as const
 
 export type LoessSpanValue = typeof LOESS_SPAN_VALUES[number]
 
-/**
- * Extract prediction values for a specific span from multi-span LOESS data
- */
 export function extractLoessForSpan(
   data: LoessMultiSpanRow[],
   span: LoessSpanValue
@@ -281,9 +236,6 @@ export function extractLoessForSpan(
   }))
 }
 
-/**
- * Load observed data summary
- */
 export async function loadObservedDataSummary(): Promise<ObservedSummaryRow[]> {
   const cacheKey = 'observed_summary'
   const cached = dataCache.get<ObservedSummaryRow[]>(cacheKey)
@@ -294,9 +246,6 @@ export async function loadObservedDataSummary(): Promise<ObservedSummaryRow[]> {
   return data
 }
 
-/**
- * Load model-based summary
- */
 export async function loadModelBasedSummary(): Promise<ModelSummaryRow[]> {
   const cacheKey = 'model_summary'
   const cached = dataCache.get<ModelSummaryRow[]>(cacheKey)
@@ -307,16 +256,11 @@ export async function loadModelBasedSummary(): Promise<ModelSummaryRow[]> {
   return data
 }
 
-/**
- * Load all descriptive statistics
- * Loads all 11 CSV files in parallel
- */
 export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics> {
   const cacheKey = 'descriptive_stats'
   const cached = dataCache.get<DescriptiveStatistics>(cacheKey)
   if (cached) return cached
 
-  // Load all 11 files in parallel
   const [
     uniquePatientsData,
     totalUnitsData,
@@ -343,7 +287,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     fetchCSV<RawStorageRow>(`${DATA_BASE_PATH}/storage_distribution.csv`),
   ])
 
-  // Transform patient sex data
   const totalPatients = patientSexData.reduce((sum, row) => sum + row.No_of_Patients, 0)
   const patientSex: PatientSexDistribution[] = patientSexData.map(row => ({
     sex: row.Patient_Sex === 'U' ? 'Unknown' : row.Patient_Sex,
@@ -351,11 +294,10 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     percentage: (row.No_of_Patients / totalPatients) * 100,
   }))
 
-  // Transform patient age data
   const ageRow = patientAgeData[0]
   const patientAge: PatientAgeStats = {
     mean: ageRow?.Mean_Age ?? 0,
-    sd: 0, // Not in CSV
+    sd: 0,
     median: ageRow?.Median_Age ?? 0,
     q1: ageRow?.Q1_Age ?? 0,
     q3: ageRow?.Q3_Age ?? 0,
@@ -370,7 +312,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     patientAge,
     ageGroups: (ageGroupsData as RawAgeGroupRow[]).map((row) => {
       const rawGroup = row.Age_Group || row.ageGroup || 'Unknown'
-      // Map to cleaner names with full ranges
       const ageGroupMap: Record<string, string> = {
         '<20': '<20',
         '20-': '20-29',
@@ -387,7 +328,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
         percentage: row.PERCENT || row.percentage || 0,
       }
     }).sort((a, b) => {
-      // Sort by age group order (youngest to oldest)
       const order = ['<20', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '≥80']
       return order.indexOf(a.ageGroup) - order.indexOf(b.ageGroup)
     }),
@@ -400,7 +340,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       const count = row.No_of_Transfused_Units || 0
       const total = donorHbData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const rawCategory = row.donorhb_category || row.category || 'Unknown'
-      // Map to cleaner names
       const hbMap: Record<string, string> = {
         '<125': '<125',
         '125-139': '125-139',
@@ -414,7 +353,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
         percentage: total > 0 ? (count / total) * 100 : 0,
       }
     }).sort((a, b) => {
-      // Sort by hemoglobin level (lowest to highest)
       const order = ['<125', '125-139', '140-154', '155-169', '≥170']
       return order.indexOf(a.category) - order.indexOf(b.category)
     }),
@@ -460,7 +398,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       const count = row.No_of_Transfused_Units || 0
       const total = storageData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
       const rawCategory = row.storagecat || row.Storage_Category || 'Unknown'
-      // Map to cleaner names
       const storageMap: Record<string, string> = {
         '<10': '<10',
         '10-19': '10-19',
@@ -474,7 +411,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
         percentage: total > 0 ? (count / total) * 100 : 0,
       }
     }).sort((a, b) => {
-      // Sort by storage time (shortest to longest)
       const order = ['<10', '10-19', '20-29', '30-39', '≥40']
       return order.indexOf(a.category) - order.indexOf(b.category)
     }),
@@ -484,9 +420,6 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
   return stats
 }
 
-/**
- * Load factor observed data summary (Table 2b data)
- */
 export async function loadFactorObservedSummary(): Promise<FactorObservedSummaryRow[]> {
   const cacheKey = 'factor_observed_summary'
   const cached = dataCache.get<FactorObservedSummaryRow[]>(cacheKey)
@@ -494,7 +427,6 @@ export async function loadFactorObservedSummary(): Promise<FactorObservedSummary
 
   const data = await fetchCSV<FactorObservedSummaryRow>(`${DATA_BASE_PATH}/factor_observed_data_summary.csv`)
 
-  // Normalize abbreviations to match VITAL_PARAMS keys
   const normalizedData = data.map(row => ({
     ...row,
     Abbreviation: normalizeVitalAbbreviation(row.Abbreviation) as VitalParamCode,
@@ -504,9 +436,6 @@ export async function loadFactorObservedSummary(): Promise<FactorObservedSummary
   return normalizedData
 }
 
-/**
- * Load factor model-based summary (Table 2b data)
- */
 export async function loadFactorModelSummary(): Promise<FactorModelSummaryRow[]> {
   const cacheKey = 'factor_model_summary'
   const cached = dataCache.get<FactorModelSummaryRow[]>(cacheKey)
@@ -514,7 +443,6 @@ export async function loadFactorModelSummary(): Promise<FactorModelSummaryRow[]>
 
   const data = await fetchCSV<FactorModelSummaryRow>(`${DATA_BASE_PATH}/factor_model_based_summary.csv`)
 
-  // Normalize abbreviations to match VITAL_PARAMS keys
   const normalizedData = data.map(row => ({
     ...row,
     Abbreviation: normalizeVitalAbbreviation(row.Abbreviation) as VitalParamCode,
@@ -524,22 +452,14 @@ export async function loadFactorModelSummary(): Promise<FactorModelSummaryRow[]>
   return normalizedData
 }
 
-/**
- * Normalize vital parameter abbreviations from CSV to standard codes
- * CSV uses: FIO2(u), SpO2, VE(u), Hjärtfrekv (Swedish for heart rate)
- * Standard: FIO2, SPO2, VE, HR
- */
 function normalizeVitalAbbreviation(abbrev: string | undefined): string {
   if (!abbrev) return ''
-  // Remove (u) suffix if present
   const normalized = abbrev.replace(/\(u\)$/i, '')
 
-  // Handle Swedish abbreviation for Heart Rate
   if (normalized === 'Hjärtfrekv' || normalized.toLowerCase() === 'hjärtfrekv') {
     return 'HR'
   }
 
-  // Handle specific case mappings
   if (normalized.toLowerCase() === 'spo2') {
     return 'SPO2'
   }
@@ -550,13 +470,9 @@ function normalizeVitalAbbreviation(abbrev: string | undefined): string {
     return 'VE'
   }
 
-  // Return as-is for ARTm, ARTs, ARTd, HR (already correct case)
   return normalized
 }
 
-/**
- * Load vital parameter summary (observed data)
- */
 export async function loadVitalSummary(): Promise<VitalSummaryRow[]> {
   const cacheKey = 'vital_summary'
   const cached = dataCache.get<VitalSummaryRow[]>(cacheKey)
@@ -564,7 +480,6 @@ export async function loadVitalSummary(): Promise<VitalSummaryRow[]> {
 
   const data = await fetchCSV<VitalSummaryRow>(`${DATA_BASE_PATH}/observed_data_summary.csv`)
 
-  // Normalize abbreviations to match VITAL_PARAMS keys
   const normalizedData = data.map(row => ({
     ...row,
     Abbreviation: normalizeVitalAbbreviation(row.Abbreviation) as VitalSummaryRow['Abbreviation'],
@@ -574,9 +489,6 @@ export async function loadVitalSummary(): Promise<VitalSummaryRow[]> {
   return normalizedData
 }
 
-/**
- * Load model-based vital parameter summary
- */
 export async function loadModelVitalSummary(): Promise<ModelVitalSummaryRow[]> {
   const cacheKey = 'model_vital_summary'
   const cached = dataCache.get<ModelVitalSummaryRow[]>(cacheKey)
@@ -584,7 +496,6 @@ export async function loadModelVitalSummary(): Promise<ModelVitalSummaryRow[]> {
 
   const data = await fetchCSV<ModelVitalSummaryRow>(`${DATA_BASE_PATH}/model_based_summary.csv`)
 
-  // Normalize abbreviations to match VITAL_PARAMS keys
   const normalizedData = data.map(row => ({
     ...row,
     Abbreviation: normalizeVitalAbbreviation(row.Abbreviation) as ModelVitalSummaryRow['Abbreviation'],
@@ -594,9 +505,6 @@ export async function loadModelVitalSummary(): Promise<ModelVitalSummaryRow[]> {
   return normalizedData
 }
 
-/**
- * Preload critical data on app initialization
- */
 export async function preloadData(): Promise<void> {
   await Promise.all([
     loadVizIndex(),
@@ -608,9 +516,6 @@ export async function preloadData(): Promise<void> {
   ])
 }
 
-/**
- * Clear data cache
- */
 export function clearDataCache(): void {
   dataCache.clear()
 }

@@ -1,11 +1,5 @@
-// Re-export all types from submodules
-// Note: Types are consolidated to avoid duplicate export conflicts
-
-// Vitals (includes both vital params and comp factor definitions)
 export * from './vitals'
 
-// Data types (visualization data, transfusion data, etc.)
-// Using explicit re-exports to avoid duplicates with statistics.ts
 export type {
   VizIndexEntry,
   VisualizationDataRow,
@@ -24,7 +18,6 @@ export type {
   ModelVitalSummaryRow,
 } from './data'
 
-// Statistics types (descriptive statistics only)
 export type {
   DescriptiveStatistics,
   PatientSexDistribution,
@@ -38,7 +31,6 @@ export type {
   DonationWeekdayDistribution,
 } from './statistics'
 
-// Chart types (excludes ChartDisplayOptions to avoid duplicate with store.ts)
 export type {
   BaseChartProps,
   ChartTheme,
@@ -49,5 +41,4 @@ export type {
 } from './charts'
 export { CHART_COLORS, getChartColor } from './charts'
 
-// Store types (ChartDisplayOptions is the canonical export from here)
 export * from './store'

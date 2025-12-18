@@ -15,19 +15,6 @@ export interface UseKeyboardNavigationOptions {
   enabled?: boolean
 }
 
-/**
- * Hook for handling keyboard navigation and shortcuts
- *
- * @example
- * useKeyboardNavigation({
- *   shortcuts: [
- *     { key: '1', action: () => setActiveTab('main-findings'), description: 'Go to Main Findings' },
- *     { key: '2', action: () => setActiveTab('rbc-transfusions'), description: 'Go to RBC Transfusions' },
- *     { key: 't', action: () => toggleTheme(), description: 'Toggle theme' },
- *     { key: 'e', ctrl: true, action: () => exportChart(), description: 'Export chart' },
- *   ]
- * })
- */
 export function useKeyboardNavigation({
   shortcuts,
   enabled = true
@@ -38,7 +25,6 @@ export function useKeyboardNavigation({
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!enabled) return
 
-    // Ignore if user is typing in an input, textarea, or contenteditable
     const target = event.target as HTMLElement
     if (
       target.tagName === 'INPUT' ||
@@ -72,9 +58,6 @@ export function useKeyboardNavigation({
   }, [handleKeyDown])
 }
 
-/**
- * Hook for arrow key navigation within a list of items
- */
 export function useArrowKeyNavigation(
   itemCount: number,
   currentIndex: number,
@@ -159,9 +142,6 @@ export function useArrowKeyNavigation(
   }, [handleKeyDown])
 }
 
-/**
- * Format a keyboard shortcut for display
- */
 export function formatShortcut(shortcut: KeyboardShortcut): string {
   const parts: string[] = []
 

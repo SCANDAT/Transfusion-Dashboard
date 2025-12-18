@@ -9,10 +9,6 @@ import type { ChartDisplayOptions } from '@/types/store'
 
 export type TimeRange = [number, number]
 
-/**
- * Memoized hook for preparing visualization chart data
- * Prevents unnecessary re-computation when dependencies haven't changed
- */
 export function useMemoizedVisualizationData(
   rows: VisualizationDataRow[] | null,
   comparisonColumn: CompFactorCode | null,
@@ -20,7 +16,6 @@ export function useMemoizedVisualizationData(
   timeRange: TimeRange,
   displayOptions: ChartDisplayOptions
 ) {
-  // Extract to stable primitive variables for dependency array
   const timeMin = timeRange[0]
   const timeMax = timeRange[1]
   const showCI = displayOptions.showConfidenceInterval
@@ -32,7 +27,6 @@ export function useMemoizedVisualizationData(
       return null
     }
 
-    // Reconstruct objects inside useMemo to use current values
     const range: TimeRange = [timeMin, timeMax]
     const options: ChartDisplayOptions = {
       showConfidenceInterval: showCI,
@@ -59,9 +53,6 @@ export function useMemoizedVisualizationData(
   ])
 }
 
-/**
- * Memoized hook for preparing transfusion chart data
- */
 export function useMemoizedTransfusionData(
   rows: TransfusionDataRow[] | null,
   timeRange: TimeRange,
@@ -95,9 +86,6 @@ export function useMemoizedTransfusionData(
   ])
 }
 
-/**
- * Memoized hook for filtering data by time range
- */
 export function useMemoizedTimeFilter<T extends { TimeFromTransfusion: number }>(
   data: T[] | null,
   timeRange: TimeRange
@@ -114,9 +102,6 @@ export function useMemoizedTimeFilter<T extends { TimeFromTransfusion: number }>
   }, [data, timeMin, timeMax])
 }
 
-/**
- * Memoized hook for grouping data by a comparison column
- */
 export function useMemoizedGroupBy<T extends Record<string, unknown>>(
   data: T[] | null,
   groupKey: keyof T
@@ -137,9 +122,6 @@ export function useMemoizedGroupBy<T extends Record<string, unknown>>(
   }, [data, groupKey])
 }
 
-/**
- * Memoized hook for computing unique values from a column
- */
 export function useMemoizedUniqueValues<T extends Record<string, unknown>>(
   data: T[] | null,
   columnKey: keyof T

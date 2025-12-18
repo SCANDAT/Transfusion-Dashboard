@@ -2,10 +2,8 @@ import { createContext, useContext, useState, useCallback, useRef, useEffect } f
 import type { ReactNode } from 'react'
 import styles from './Glossary.module.css'
 
-// Glossary definitions for technical terms
 // eslint-disable-next-line react-refresh/only-export-components
 export const GLOSSARY: Record<string, { term: string; definition: string; category?: string }> = {
-  // Statistical Terms
   'loess': {
     term: 'LOESS',
     definition: 'Locally Estimated Scatterplot Smoothing - a method that creates a smooth curve through data points by fitting simple models to localized subsets of the data. It helps reveal underlying trends without assuming a specific mathematical relationship.',
@@ -36,8 +34,6 @@ export const GLOSSARY: Record<string, { term: string; definition: string; catego
     definition: 'A measure of the uncertainty in an estimate. Smaller standard errors indicate more precise estimates.',
     category: 'Statistics',
   },
-
-  // Medical Terms
   'rbc': {
     term: 'RBC (Red Blood Cell)',
     definition: 'Red blood cells carry oxygen from the lungs to body tissues. RBC transfusions are given to patients with low blood counts or significant blood loss.',
@@ -73,8 +69,6 @@ export const GLOSSARY: Record<string, { term: string; definition: string; catego
     definition: 'The concentration of oxygen in the air a patient breathes. Room air is 21% (0.21 FiO2). ICU patients often receive supplemental oxygen, resulting in higher FiO2.',
     category: 'Vital Signs',
   },
-
-  // Component Factors
   'donor-hemoglobin': {
     term: 'Donor Hemoglobin',
     definition: 'The hemoglobin level of the blood donor at the time of donation. Higher donor hemoglobin may result in RBC units with greater oxygen-carrying capacity.',
@@ -95,8 +89,6 @@ export const GLOSSARY: Record<string, { term: string; definition: string; catego
     definition: 'For female donors, whether they have previously been pregnant (parous) or not (nulliparous). Pregnancy can cause the immune system to develop antibodies that might affect transfusion outcomes.',
     category: 'Component Factors',
   },
-
-  // Study-specific Terms
   'base-model': {
     term: 'Base Model',
     definition: 'Our simpler statistical model that adjusts for time since transfusion, patient age, number of previous transfusions, sex, and which ICU the patient was in.',
@@ -114,7 +106,6 @@ export const GLOSSARY: Record<string, { term: string; definition: string; catego
   },
 }
 
-// Context for managing tooltip state
 interface GlossaryContextType {
   showTooltip: (term: string, rect: DOMRect) => void
   hideTooltip: () => void
@@ -151,7 +142,6 @@ export function useGlossary() {
   return context
 }
 
-// The floating tooltip component
 function GlossaryTooltip() {
   const { activeTooltip, hideTooltip } = useGlossary()
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -163,11 +153,9 @@ function GlossaryTooltip() {
       const tooltip = tooltipRef.current
       const tooltipRect = tooltip.getBoundingClientRect()
 
-      // Calculate position (prefer below the term, centered)
       let top = rect.bottom + 8
       let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2)
 
-      // Adjust if would go off screen
       if (top + tooltipRect.height > window.innerHeight) {
         top = rect.top - tooltipRect.height - 8
       }
@@ -203,7 +191,6 @@ function GlossaryTooltip() {
   )
 }
 
-// The inline term component that triggers tooltips
 interface GlossaryTermProps {
   termKey: string
   children?: ReactNode
@@ -245,7 +232,6 @@ export function GlossaryTerm({ termKey, children }: GlossaryTermProps) {
   )
 }
 
-// Simple info tooltip for custom explanations (not from glossary)
 interface InfoTooltipProps {
   content: string
   children: ReactNode

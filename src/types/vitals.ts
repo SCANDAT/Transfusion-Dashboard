@@ -1,22 +1,15 @@
-/**
- * Vital Parameter Codes
- * These match the VitalParam column values in viz_index.csv
- */
 export const VITAL_PARAM_CODES = [
-  'ARTm',   // Mean Arterial Pressure (MAP)
-  'ARTs',   // Systolic Arterial Pressure (SBP)
-  'ARTd',   // Diastolic Arterial Pressure (DBP)
-  'HR',     // Heart Rate
-  'FIO2',   // Fraction of Inspired Oxygen
-  'SPO2',   // Oxygen Saturation
-  'VE',     // Minute Ventilation
+  'ARTm',
+  'ARTs',
+  'ARTd',
+  'HR',
+  'FIO2',
+  'SPO2',
+  'VE',
 ] as const
 
 export type VitalParamCode = typeof VITAL_PARAM_CODES[number]
 
-/**
- * Vital Parameter Display Information
- */
 export const VITAL_PARAMS: Record<VitalParamCode, VitalParamInfo> = {
   ARTm: {
     code: 'ARTm',
@@ -101,25 +94,16 @@ export interface VitalParamInfo {
   color: string
 }
 
-/**
- * Component Factor Codes
- * These match the CompFactor column values in viz_index.csv
- * Order: Donor Hemoglobin, Storage Time, Donation Weekday, Donor Sex, Donor Parity
- */
 export const COMP_FACTOR_CODES = [
-  'DonorHb_Cat',    // Donor Hemoglobin Category
-  'Storage_Cat',    // RBC Storage Time Category
-  'wdy_donation',   // Weekday of Donation (lowercase to match CSV data)
-  'DonorSex',       // Donor Sex
-  'DonorParity',    // Donor Parity (female donors)
+  'DonorHb_Cat',
+  'Storage_Cat',
+  'wdy_donation',
+  'DonorSex',
+  'DonorParity',
 ] as const
 
 export type CompFactorCode = typeof COMP_FACTOR_CODES[number]
 
-/**
- * Component Factor Display Information
- * Order: Donor Hemoglobin, Storage Time, Donation Weekday, Donor Sex, Donor Parity
- */
 export const COMP_FACTORS: Record<CompFactorCode, CompFactorInfo> = {
   DonorHb_Cat: {
     code: 'DonorHb_Cat',
@@ -166,9 +150,6 @@ export interface CompFactorInfo {
   categories: string[]
 }
 
-/**
- * Type Guards
- */
 export function isVitalParamCode(value: unknown): value is VitalParamCode {
   return typeof value === 'string' && VITAL_PARAM_CODES.includes(value as VitalParamCode)
 }

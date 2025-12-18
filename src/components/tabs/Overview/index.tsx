@@ -64,7 +64,6 @@ export function OverviewTab() {
 
   return (
     <div className={styles.container}>
-      {/* Hero Section */}
       <section className={styles.hero}>
         <h1 className={styles.title}>
           Understanding RBC Transfusion Effects in ICU Patients
@@ -79,7 +78,6 @@ export function OverviewTab() {
         </p>
       </section>
 
-      {/* Study At A Glance */}
       <section className={styles.studyGlance}>
         <h2 className={styles.sectionTitle}>The Study at a Glance</h2>
         <div className={styles.statsRow}>
@@ -109,7 +107,6 @@ export function OverviewTab() {
         </p>
       </section>
 
-      {/* Key Findings */}
       <section className={styles.keyFindings}>
         <h2 className={styles.sectionTitle}>Key Findings</h2>
         <p className={styles.findingsIntro}>
@@ -177,7 +174,6 @@ export function OverviewTab() {
         </div>
       </section>
 
-      {/* What This Means */}
       <section className={styles.interpretation}>
         <h2 className={styles.sectionTitle}>What This Means</h2>
         <div className={styles.interpretationContent}>
@@ -208,7 +204,6 @@ export function OverviewTab() {
         </div>
       </section>
 
-      {/* Navigation Guide */}
       <section className={styles.navigationGuide}>
         <h2 className={styles.sectionTitle}>Explore the Data</h2>
         <p className={styles.navIntro}>
@@ -282,7 +277,6 @@ export function OverviewTab() {
         </div>
       </section>
 
-      {/* Methodology Note */}
       <section className={styles.methodology}>
         <div className={styles.methodologyHeader}>
           <InfoIcon />

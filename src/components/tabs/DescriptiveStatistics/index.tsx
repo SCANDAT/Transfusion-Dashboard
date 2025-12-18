@@ -56,11 +56,9 @@ export function DescriptiveStatisticsTab() {
     setAllExpanded(!allExpanded)
   }, [allExpanded])
 
-  // Prepare chart configurations
   const chartConfigs = useMemo(() => {
     if (!stats) return null
 
-    // Color scheme matching legacy dashboard
     const bloodRed = 'rgba(170, 15, 25, 0.8)'
     const darkBlue = 'rgba(25, 80, 150, 0.8)'
 
@@ -205,11 +203,9 @@ export function DescriptiveStatisticsTab() {
       },
       weekday: {
         data: {
-          // Order: Monday through Sunday
           labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
           datasets: [{
             label: 'Number of Units',
-            // Sort data: Monday(2) through Saturday(7), then Sunday(1)
             data: [...stats.donationWeekday].sort((a, b) => {
               const orderA = a.dayNumber === 1 ? 8 : a.dayNumber
               const orderB = b.dayNumber === 1 ? 8 : b.dayNumber
@@ -246,7 +242,6 @@ export function DescriptiveStatisticsTab() {
 
   return (
     <div className={styles.container}>
-      {/* Page Header */}
       <section className={styles.header}>
         <h2 className={styles.pageTitle}>Study Population</h2>
         <p className={styles.pageDescription}>
@@ -256,7 +251,6 @@ export function DescriptiveStatisticsTab() {
         </p>
       </section>
 
-      {/* Guide Box */}
       <section className={styles.guideBox}>
         <div className={styles.guideContent}>
           <div className={styles.guideText}>
@@ -276,13 +270,10 @@ export function DescriptiveStatisticsTab() {
         </div>
       </section>
 
-      {/* Two-column layout matching legacy */}
       <div className={styles.twoColumnLayout}>
-        {/* Left Column - Table 1a: Patient Characteristics */}
         <div className={styles.column}>
           <h3 className={styles.columnTitle}>Table 1a. Characteristics of Transfused Patients</h3>
 
-          {/* Patient Sex Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>Patient Sex Distribution</h4>
@@ -324,7 +315,6 @@ export function DescriptiveStatisticsTab() {
             )}
           </div>
 
-          {/* Patient Age Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>Patient Age Distribution</h4>
@@ -376,7 +366,6 @@ export function DescriptiveStatisticsTab() {
             )}
           </div>
 
-          {/* RBC Units Received */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>RBC Units Received</h4>
@@ -419,11 +408,9 @@ export function DescriptiveStatisticsTab() {
           </div>
         </div>
 
-        {/* Right Column - Table 1b: Blood Component Characteristics */}
         <div className={styles.column}>
           <h3 className={styles.columnTitle}>Table 1b. Characteristics of Transfused Blood Components</h3>
 
-          {/* Donor Hemoglobin Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>Donor Hemoglobin Distribution</h4>
@@ -465,7 +452,6 @@ export function DescriptiveStatisticsTab() {
             )}
           </div>
 
-          {/* Storage Time Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>RBC Storage Time Distribution</h4>
@@ -507,7 +493,6 @@ export function DescriptiveStatisticsTab() {
             )}
           </div>
 
-          {/* Weekday Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>Donation Weekday Distribution</h4>
@@ -528,9 +513,7 @@ export function DescriptiveStatisticsTab() {
                 </tr>
               </thead>
               <tbody>
-                {/* Order: Monday through Sunday */}
                 {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                  // Map day names to day numbers: Monday=2, Tuesday=3, ..., Saturday=7, Sunday=1
                   const dayNumMap: Record<string, number> = {
                     'Monday': 2, 'Tuesday': 3, 'Wednesday': 4, 'Thursday': 5,
                     'Friday': 6, 'Saturday': 7, 'Sunday': 1
@@ -559,7 +542,6 @@ export function DescriptiveStatisticsTab() {
             )}
           </div>
 
-          {/* Donor Sex Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>Donor Sex Distribution</h4>
@@ -601,7 +583,6 @@ export function DescriptiveStatisticsTab() {
             )}
           </div>
 
-          {/* Donor Parity Distribution */}
           <div className={styles.statBlock}>
             <div className={styles.statHeader}>
               <h4 className={styles.statTitle}>Donor Parity Distribution</h4>

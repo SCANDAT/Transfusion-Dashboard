@@ -41,7 +41,6 @@ export class DataCache {
   }
 
   stats(): { size: number; keys: string[] } {
-    // Clean expired entries before returning stats
     const validKeys: string[] = []
     for (const key of this.cache.keys()) {
       if (this.has(key)) {
