@@ -32,8 +32,10 @@ function trimObjectValues<T>(obj: T): T {
 export function parseCSV<T>(csvString: string, options: ParseOptions = {}): T[] {
   const mergedOptions = { ...DEFAULT_OPTIONS, ...options }
   const result = Papa.parse<T>(csvString, mergedOptions)
-  if (result.errors.length > 0) {
-    console.warn('CSV parse warnings:', result.errors)
+  // Only log actual errors, not delimiter detection warnings for single-column CSVs
+  const realErrors = result.errors.filter(e => e.code !== 'UndetectableDelimiter')
+  if (realErrors.length > 0) {
+    console.warn('CSV parse warnings:', realErrors)
   }
   // Trim all string values to handle CSV files with trailing spaces
   return result.data.map(row => trimObjectValues(row))
@@ -63,7 +65,7 @@ export async function fetchCSVWithFallback<T>(
       return await fetchCSV<T>(path, options)
     } catch (error) {
       lastError = error as Error
-      console.debug(`Failed to load ${path}, trying next...`)
+      // Silent fallback - no console output for expected path failures
     }
   }
 

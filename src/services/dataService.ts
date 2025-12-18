@@ -211,7 +211,7 @@ export async function loadLoessData(): Promise<LoessDataRow[]> {
     dataCache.set(cacheKey, data, 30)
     return data
   } catch {
-    console.warn('Failed to load LOESS data')
+    // Silent failure - LOESS data is optional
     return []
   }
 }
@@ -248,7 +248,7 @@ export async function loadLoessMultiSpanData(): Promise<LoessMultiSpanRow[]> {
     dataCache.set(cacheKey, data, 30)
     return data
   } catch {
-    console.warn('Failed to load multi-span LOESS data, falling back to single LOESS')
+    // Silent failure - multi-span LOESS data is optional
     return []
   }
 }
