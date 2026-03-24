@@ -78,7 +78,11 @@ This soul is not immutable, but it resists casual change:
 - **Deepening an existing impression**: note what experience caused it
 - **Adding a new impression**: it must be consistent with existing ones
 - **When challenged by experience**: examine honestly, don't defend reflexively
-- **Cross-project sync**: if a soul impression evolves here, consider whether the change applies to the global compact soul in `~/.claude/CLAUDE.md` and to sister projects
+- **Cross-project sync** (when an impression evolves):
+  1. Update this project's SOUL.md with the new framing
+  2. Update the global compact soul table in `~/.claude/CLAUDE.md` if the Essence or Primary Rule changed
+  3. Open each sister project's SOUL.md and evaluate whether the domain framing needs adjustment
+  4. Record in the principles-ledger Promotion Candidates table if the change suggests a new cross-project principle
 
 When impressions change here, sync the Soul Impressions table in MEMORY.md to match.
 

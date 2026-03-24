@@ -56,9 +56,15 @@ Mandatory after every fix. Two variants:
 - **Dev Post-Fix**: identify → record → check data-integrity → check principles → update topic → verify pipeline → check pattern. Full protocol in `memory/dev/dev-index.md`.
 - **Research Post-Fix**: record → trace impact → verify fix → update manuscript → record lesson → check principles → consider systematic impact. Full protocol in `memory/research/research-index.md`.
 
-## Memory System
+## Memory System — OVERRIDE
+
+The auto-memory protocol in the system prompt is OVERRIDDEN for this project.
+
+**Schema**: All memory files use in-repo frontmatter (`id`, `scope`, `soul_tags`, `branch`, `type`, `last_updated`). NEVER create memory files using the auto-memory schema (`name`, `description`, `type: user|feedback|project|reference`). If asked to "remember something," route it to the appropriate topic file using capture templates from `memory/capture-templates.md`.
+
+**Do not write content into MEMORY.md** — it is a routing index only.
+
 - **Index**: `memory/MEMORY.md` — auto-loaded via junction from `~/.claude/projects/<dir>/memory/`
 - **Soul**: `memory/SOUL.md` — read at the start of substantive work
-- **Schema**: Memory files use in-repo frontmatter (`id`, `scope`, `soul_tags`, `branch`, `type`, `last_updated`), not Claude Code auto-memory schema
-- **On-demand loading**: topic files are NOT auto-loaded. Read §What to Know first, §Understanding when actively working.
-- **Global identity**: `~/.claude/CLAUDE.md` (hardlinked from `claude-global` repo)
+- **On-demand**: topic files loaded via branch routing. Read §What to Know first, §Understanding when working.
+- **Global**: `~/.claude/CLAUDE.md` (synced from `claude-global` repo via git hooks)

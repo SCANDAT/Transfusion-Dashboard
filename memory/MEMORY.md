@@ -37,25 +37,25 @@ This file is auto-loaded into every Claude Code session via a filesystem junctio
 
 ## File Manifest
 
-| File | Lines | Scope |
-|------|-------|-------|
-| **Shared** | | |
-| [SOUL.md](SOUL.md) | 85 | Deep convictions — 11 impressions governing all decisions |
-| [principles-ledger.md](principles-ledger.md) | 111 | Soul-tagged principles from Post-Fix Protocol + promotion candidates |
-| [data-integrity.md](data-integrity.md) | 128 | Data quality diseases: SAS encoding, CSV pipeline, model consistency |
-| [capture-templates.md](capture-templates.md) | 127 | 6 template types for structured knowledge capture |
-| [cross-cutting.md](cross-cutting.md) | 22 | Multi-file read patterns for tasks spanning topic boundaries |
-| **Dev branch** | | |
-| [dev/dev-index.md](dev/dev-index.md) | 145 | Dev branch entry: frontend, SAS, testing, deployment, Post-Fix |
-| [dev/frontend-patterns.md](dev/frontend-patterns.md) | 79 | React 18 / TS 5 / Zustand 4 / Chart.js 4 architecture |
-| [dev/sas-pipeline.md](dev/sas-pipeline.md) | 89 | SAS scripts, PowerShell runners, data pipeline |
-| [dev/testing-patterns.md](dev/testing-patterns.md) | 80 | Vitest infrastructure, coverage, conventions |
-| **Research branch** | | |
-| [research/research-index.md](research/research-index.md) | 147 | Research branch entry: methodology, manuscript, SCANDAT, Post-Fix |
-| [research/methodology.md](research/methodology.md) | 104 | Model specs, inference approach, interactions, assumptions |
-| [research/manuscript.md](research/manuscript.md) | 83 | STROBE manuscript, table/figure correspondence, conversion |
-| [research/analytical-experience.md](research/analytical-experience.md) | 95 | CI fix, model evolution, null findings, data quality lessons |
-| [research/scandat.md](research/scandat.md) | 94 | SCANDAT3-S registry, variables, ethics, study population |
+| File | Scope |
+|------|-------|
+| **Shared** | |
+| [SOUL.md](SOUL.md) | Deep convictions — 11 impressions governing all decisions |
+| [principles-ledger.md](principles-ledger.md) | Soul-tagged principles from Post-Fix Protocol + promotion workflow |
+| [data-integrity.md](data-integrity.md) | Data quality diseases: SAS encoding, CSV pipeline, model consistency |
+| [capture-templates.md](capture-templates.md) | 6 template types for structured knowledge capture |
+| [cross-cutting.md](cross-cutting.md) | Multi-file read patterns for tasks spanning topic boundaries |
+| **Dev branch** | |
+| [dev/dev-index.md](dev/dev-index.md) | Dev branch entry: frontend, SAS, testing, deployment, Post-Fix |
+| [dev/frontend-patterns.md](dev/frontend-patterns.md) | React 18 / TS 5 / Zustand 4 / Chart.js 4 architecture |
+| [dev/sas-pipeline.md](dev/sas-pipeline.md) | SAS scripts, PowerShell runners, data pipeline |
+| [dev/testing-patterns.md](dev/testing-patterns.md) | Vitest infrastructure, coverage, conventions |
+| **Research branch** | |
+| [research/research-index.md](research/research-index.md) | Research branch entry: methodology, manuscript, SCANDAT, Post-Fix |
+| [research/methodology.md](research/methodology.md) | Model specs, inference approach, interactions, assumptions |
+| [research/manuscript.md](research/manuscript.md) | STROBE manuscript, table/figure correspondence, conversion |
+| [research/analytical-experience.md](research/analytical-experience.md) | CI fix, model evolution, null findings, data quality lessons |
+| [research/scandat.md](research/scandat.md) | SCANDAT3-S registry, variables, ethics, study population |
 
 ---
 

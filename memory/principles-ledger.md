@@ -95,17 +95,32 @@ Read during periodic review or when tracing a principle to its soul impression.
 
 ### Growth Protocol
 
-New principles are added via the Post-Fix Protocol (dev or research variant). Each entry must have:
+**Adding a principle**: Via the Post-Fix Protocol (dev or research variant). Each entry must have:
 1. Principle name (SCREAMING_SNAKE_CASE)
 2. Soul tags (at least one, full name format)
 3. One-line rule
 4. Link to the topic file where full details live
 
-Principles may be promoted from project-level to global `~/.claude/CLAUDE.md` via the Promotion Candidates table below.
+**Promoting a principle**: From project-level to global `~/.claude/CLAUDE.md` Cross-Project Conventions.
+
+Promotion criteria — all three must hold:
+1. **Confirmed in 2+ projects**: The same principle emerged independently in different repos
+2. **Domain-independent**: The principle applies regardless of the specific project domain (e.g., "CSV_IS_THE_CONTRACT" is domain-independent; "SPLINE_KNOTS_JUSTIFIED" is not)
+3. **Soul-connected**: The principle traces to at least one of the 11 impressions
+
+Promotion workflow:
+1. First project confirms principle → add to the Promotion Candidates table below with source and evidence
+2. Second project encounters the same pattern → update the table with the confirming project
+3. Both confirmations present → promote to global `~/.claude/CLAUDE.md` under Cross-Project Conventions
+4. Remove from this table after promotion (the global file is now authoritative)
+
+**Demoting a principle**: If a promoted principle is contradicted by experience in a later project:
+1. Note the contradiction in this table with the counter-evidence
+2. If the contradiction is confirmed (not a one-off edge case), remove from global CLAUDE.md
+3. The principle may remain in individual project ledgers if it still holds locally
 
 ### Promotion Candidates
-*Promote to global `~/.claude/CLAUDE.md` after second project confirms pattern.*
 
-| Principle | Source | Reason |
-|-----------|--------|--------|
-| *(empty — populate via Post-Fix Protocol)* | | |
+| Principle | Source Project | Evidence | Confirming Project | Status |
+|-----------|--------------|----------|--------------------|--------|
+| *(populate via Post-Fix Protocol when a principle appears domain-independent)* | | | | |
