@@ -2,4 +2,17 @@ node_modules
 dist
 .env
 .env.local
-.claude
+# Claude Code (project instructions tracked, local settings ignored)
+.claude/settings.local.json
+.claude/settings.json
+
+# Analysis outputs
+/analysis
+/sas_logs
+/script_data
+/plots
+/sas_temporary_work*
+/sas_output
+/sas_viz*
+*.lst
+*.log
