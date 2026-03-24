@@ -41,10 +41,10 @@ This file is auto-loaded into every Claude Code session via a filesystem junctio
 |------|-------|-------|
 | **Shared** | | |
 | [SOUL.md](SOUL.md) | 85 | Deep convictions — 11 impressions governing all decisions |
-| [principles-ledger.md](principles-ledger.md) | 109 | Soul-tagged principles from Post-Fix Protocol + promotion candidates |
+| [principles-ledger.md](principles-ledger.md) | 111 | Soul-tagged principles from Post-Fix Protocol + promotion candidates |
 | [data-integrity.md](data-integrity.md) | 128 | Data quality diseases: SAS encoding, CSV pipeline, model consistency |
 | [capture-templates.md](capture-templates.md) | 127 | 6 template types for structured knowledge capture |
-| [cross-cutting.md](cross-cutting.md) | 24 | Multi-file read patterns for tasks spanning topic boundaries |
+| [cross-cutting.md](cross-cutting.md) | 22 | Multi-file read patterns for tasks spanning topic boundaries |
 | **Dev branch** | | |
 | [dev/dev-index.md](dev/dev-index.md) | 145 | Dev branch entry: frontend, SAS, testing, deployment, Post-Fix |
 | [dev/frontend-patterns.md](dev/frontend-patterns.md) | 79 | React 18 / TS 5 / Zustand 4 / Chart.js 4 architecture |
@@ -63,7 +63,7 @@ This file is auto-loaded into every Claude Code session via a filesystem junctio
 
 | Direction | Status |
 |-----------|--------|
-| Memory stack refactor | In progress — establishing junctions and lightweight index (2026-03-24) |
+| Memory stack | Operational — junctions, auto-sync hooks, validation script (2026-03-24) |
 | Dashboard | Feature-complete, deployed to GitHub Pages |
 | SAS pipeline | Functional, 3 scripts running, CI fix applied |
 | Manuscript | Advanced draft, pending journal submission |

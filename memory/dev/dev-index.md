@@ -125,7 +125,7 @@ Honest assessment of the dev layer:
 | SAS → public/data/ sync | Manual | Copy step not automated |
 | Accessibility | Minimal | Keyboard navigation hook exists, no a11y audit |
 | LOESS UI | Fragile | Span selector may not exist in all tabs |
-| `nul` file in repo root | Artifact | Windows artifact, should be removed |
+| Memory validation | Automated | `npm run validate:memory` checks manifest, links, code refs, tags, junction |
 
 ### Priority sequencing
 

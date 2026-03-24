@@ -12,8 +12,13 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "analyze": "npx vite-bundle-visualizer",
-    "ci": "npm run lint && npm run typecheck && npm run test:run && npm run build"
+    "analysis": "npm run analysis:sample",
+    "analysis:sample": "powershell -ExecutionPolicy Bypass -File \"./sas_code/run_analysis.ps1\" -Dataset sample",
+    "analysis:full": "powershell -ExecutionPolicy Bypass -File \"./sas_code/run_analysis.ps1\" -Dataset full",
+    "analysis:kill": "powershell -ExecutionPolicy Bypass -File \"./sas_code/kill_analysis.ps1\"",
+    "monitor": "powershell -ExecutionPolicy Bypass -File \"./sas_code/monitor_analysis.ps1\"",
+    "ci": "npm run lint && npm run typecheck && npm run test:run && npm run build",
+    "validate:memory": "bash memory/validate.sh"
   },
   "dependencies": {
     "chart.js": "^4.4.1",
