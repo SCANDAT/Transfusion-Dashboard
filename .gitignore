@@ -6,6 +6,12 @@ dist
 .claude/settings.local.json
 .claude/settings.json
 
+# Manuscript (working drafts — published separately via peer review)
+/manuscript
+
+# SAS working copies with real paths (sanitized versions in sas_code_public/)
+/sas_code
+
 # Analysis outputs
 /analysis
 /sas_logs
