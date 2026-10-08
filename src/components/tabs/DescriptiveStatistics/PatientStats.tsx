@@ -117,7 +117,7 @@ export function PatientStats({
           <tbody>
             <tr>
               <td>Mean (SD)</td>
-              <td>{ageStats.mean.toFixed(1)} ({ageStats.sd.toFixed(1)})</td>
+              <td>{ageStats.mean.toFixed(1)} ({ageStats.sd === undefined ? 'SD not reported' : ageStats.sd.toFixed(1)})</td>
             </tr>
             <tr>
               <td>Median</td>

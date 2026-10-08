@@ -22,7 +22,7 @@ export {
 } from './prepareChartData'
 
 // Export functionality
-export { exportChartAsSVG } from './exportChart'
+export { exportChartAsPNG } from './exportChart'
 
 // Custom plugins
 export { verticalLinePlugin } from './plugins/verticalLinePlugin'

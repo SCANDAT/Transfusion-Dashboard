@@ -1,0 +1,53 @@
+DEVELOPMENT CHECKPOINT - 8 OCTOBER 2026
+
+Branch: work/publication-preparation-20261008
+Purpose: preserve reviewed development work. This is not a scientific release,
+a deployment, or approval to run the unfinished analysis package.
+
+RESUME IN THE AUTHORISED LOCAL WORKSPACE
+- Read manuscript/review_audit/RESUME_HERE.txt first, then publication_execution.md
+  and sas_revision/workstation/workstation_package_status.json beside it.
+- Those private files contain the decisions, evidence, exact next tasks and
+  workstation-package state. They intentionally do not accompany a Git clone.
+- Metadata intake is complete; do not ask the operator to repeat that step.
+- Next: review the saved linkage-diagnostic draft, implement its synthetic tests,
+  then complete and validate the shared sample/full analysis package.
+- Manuscript revision comes after validated outputs. Preserve the original;
+  use the private tracked-editing contract and keep coauthor comments visible.
+
+ENGINEERING SAVED IN THIS BRANCH
+- Strict CSV decoding/schema and error/retry handling; optional data lazy loading.
+- Cache retirement, faithful chart preparation, native-unit outcome panels,
+  corrected labels and display of point estimates while inference is reviewed.
+- Reproducible figure renderer and allowlisted publication-package builder.
+- Synthetic tests and build/deployment validation hooks.
+- Public result CSVs are unchanged. Scientific consistency and release gates
+  remain open; a passing dashboard test does not resolve those questions.
+
+VALIDATION
+- Checkpoint validation:199 tests in18 files,lint,types,production build; exit0.
+- Publication-package exclusion tests:18 passed.
+- Private metadata validator:26 passed,1 host-dependent symlink test skipped;
+  simulated reparse rejection passed. Both returned bundles validated.
+- Linkage diagnostic draft has not been run or independently reviewed. Its
+  current synthetic-test file is a design placeholder only.
+- Local shutdown caveat: Vitest printed a shutdown warning. After Vite reported
+  build success, a read-only network-drive enumeration child stalled. Stopping
+  only that verified owned helper allowed npm run ci to exit0. Revisit the local
+  shutdown behavior later; no drive mappings or unrelated processes changed.
+- Review latest commit/CI and the private record for subsequent results.
+
+REPOSITORY AND PRIVACY BOUNDARIES
+- Push this checkpoint branch, not main: main automatically deploys Pages.
+- New SCANDAT/Transfusion-Dashboard-publication remains empty/private as last
+  verified; populate it later only from a reviewed minimal allowlist.
+- Never force-add manuscript/private inputs/analysis files, source datasets,
+  raw logs, session identifiers or private research notes.
+- No source data access is authorised for the assistant. Original programs may
+  embed identifiers; use the documented screened-code workflow when needed.
+- Git history treatment and final output screening remain separate release work.
+- Verify the research GitHub account before remote writes: another local project
+  uses a different account. Never copy credentials into code or logs.
+
+Private working material remains on the authorised project workspace and is
+not backed up by this public checkpoint branch. Preserve that workspace.

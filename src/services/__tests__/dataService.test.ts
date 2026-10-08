@@ -4,6 +4,8 @@ import {
   loadVisualizationData,
   loadTransfusionData,
   loadLoessData,
+  loadLoessMultiSpanData,
+  extractLoessForSpan,
   getLoessDataForVital,
   getAvailableVitalParams,
   getAvailableCompFactors,
@@ -16,6 +18,10 @@ import {
   clearDataCache,
 } from '../dataService'
 
+
+function toBytes(text: string): ArrayBuffer {
+  return new TextEncoder().encode(text).buffer as ArrayBuffer
+}
 // Mock fetch globally
 const mockFetch = vi.fn()
 global.fetch = mockFetch
@@ -23,7 +29,7 @@ global.fetch = mockFetch
 describe('dataService', () => {
   beforeEach(() => {
     clearDataCache()
-    mockFetch.mockClear()
+    mockFetch.mockReset()
   })
 
   afterEach(() => {
@@ -40,7 +46,7 @@ SPO2,DonorSex,Donor Sex,Oxygen Saturation,SpO2 (%),Change in SpO2 (%)`
     it('fetches and parses viz index', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockIndexCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockIndexCSV)),
       })
 
       const result = await loadVizIndex()
@@ -54,7 +60,7 @@ SPO2,DonorSex,Donor Sex,Oxygen Saturation,SpO2 (%),Change in SpO2 (%)`
     it('uses cache on subsequent calls', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(mockIndexCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockIndexCSV)),
       })
 
       await loadVizIndex()
@@ -86,7 +92,7 @@ HR,DonorSex,Sex,HR,HR,dHR`
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const vitals = await getAvailableVitalParams()
@@ -108,7 +114,7 @@ HR,DonorHb_Cat,Donor Hb,HR,HR,dHR`
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const factors = await getAvailableCompFactors('ARTm')
@@ -125,7 +131,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const factors = await getAvailableCompFactors('SPO2')
@@ -144,7 +150,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('loads and structures visualization data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockVizCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockVizCSV)),
       })
 
       const result = await loadVisualizationData('ARTm', 'DonorHb_Cat')
@@ -166,7 +172,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
         // Second call (lowercase) succeeds
         .mockResolvedValueOnce({
           ok: true,
-          text: () => Promise.resolve(mockVizCSV),
+          arrayBuffer: () => Promise.resolve(toBytes(mockVizCSV)),
         })
 
       const result = await loadVisualizationData('ARTm', 'DonorHb_Cat')
@@ -178,7 +184,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('caches visualization data', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(mockVizCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockVizCSV)),
       })
 
       await loadVisualizationData('ARTm', 'DonorHb_Cat')
@@ -198,7 +204,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('loads transfusion data for vital parameter', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockTransfusionCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockTransfusionCSV)),
       })
 
       const result = await loadTransfusionData('ARTm')
@@ -212,13 +218,59 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('caches transfusion data', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(mockTransfusionCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockTransfusionCSV)),
       })
 
       await loadTransfusionData('ARTm')
       await loadTransfusionData('ARTm')
 
       expect(mockFetch.mock.calls.length).toBeLessThanOrEqual(2) // May have fallback
+    })
+  })
+
+  describe('trajectory ingestion', () => {
+    const csv = 'TimeFromTransfusion,VitalParam,PredVal_Full,Lower_Full,Upper_Full,Delta_Full\n0,ARTm,0,-1,1,0'
+
+    it.each(['Infinity', 'NaN', '1e999', ''])('rejects invalid time coordinates (%s)', async time => {
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(csv.replace('\n0,', `\n${time},`)) })
+      await expect(loadTransfusionData('ARTm')).rejects.toThrow('TimeFromTransfusion')
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('rejects a mismatched vital parameter', async () => {
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(csv.replace('ARTm', 'HR')) })
+      await expect(loadTransfusionData('ARTm')).rejects.toThrow('does not match')
+    })
+
+    it('accepts the exported SpO2 alias for the SPO2 file', async () => {
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(csv.replace('ARTm', 'SpO2')) })
+      await expect(loadTransfusionData('SPO2')).resolves.toHaveLength(1)
+    })
+
+    it('rejects renamed required prediction columns', async () => {
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(csv.replace('PredVal_Full', 'Unexpected_Pred')) })
+      await expect(loadTransfusionData('ARTm')).rejects.toThrow('Missing trajectory column')
+    })
+
+    it('preserves a missing prediction as a gap', async () => {
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(csv.replace('ARTm,0,', 'ARTm,,')) })
+      const rows = await loadTransfusionData('ARTm')
+      expect(rows[0]?.PredVal_Full).toBeNull()
+      expect(rows[0]?.Delta_Full).toBe(0)
+    })
+
+    it('rejects a nonnumeric prediction', async () => {
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(csv.replace('ARTm,0,', 'ARTm,NaN,')) })
+      await expect(loadTransfusionData('ARTm')).rejects.toThrow('PredVal_Full')
+    })
+
+    it('preserves numeric category zero and rejects an absent category', async () => {
+      const factorCsv = 'TimeFromTransfusion,VitalParam,CompFactor,DonorParity,PredVal_Full,Lower_Full,Upper_Full,Delta_Full\n0,ARTm,DonorParity,0,0,-1,1,0'
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(factorCsv) })
+      expect((await loadVisualizationData('ARTm', 'DonorParity')).comparisonValues).toEqual([0])
+      clearDataCache()
+      mockFetch.mockResolvedValue({ ok: true, arrayBuffer: async () => toBytes(factorCsv.replace('DonorParity,0,', 'DonorParity,,')) })
+      await expect(loadVisualizationData('ARTm', 'DonorParity')).rejects.toThrow('category')
     })
   })
 
@@ -231,7 +283,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('loads LOESS smoothing data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockLoessCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockLoessCSV)),
       })
 
       const result = await loadLoessData()
@@ -241,8 +293,8 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
       expect(result[0]?.Pred).toBe(75)
     })
 
-    it('returns empty array on failure', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+    it('returns empty array only when the optional file is absent', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
 
       const result = await loadLoessData()
 
@@ -260,7 +312,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('filters LOESS data by vital parameter', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockLoessCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockLoessCSV)),
       })
 
       const result = await getLoessDataForVital('ARTm')
@@ -272,7 +324,7 @@ ARTm,DonorHb_Cat,Donor Hb,MAP,MAP,dMAP`
     it('caches filtered LOESS data', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(mockLoessCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockLoessCSV)),
       })
 
       await getLoessDataForVital('ARTm')
@@ -291,7 +343,7 @@ HR,80.0,85.0`
     it('loads observed data summary', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const result = await loadObservedDataSummary()
@@ -310,7 +362,7 @@ HR,5.0,3.0,7.0`
     it('loads model-based summary', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const result = await loadModelBasedSummary()
@@ -320,50 +372,96 @@ HR,5.0,3.0,7.0`
   })
 
   describe('loadDescriptiveStatistics', () => {
-    it('loads all 11 CSV files in parallel', async () => {
-      // Mock all 11 CSV responses
-      mockFetch
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('No_of_Unique_Patients\n1500') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('No_of_Transfused_Units\n3500') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('Patient_Sex,No_of_Patients\nMale,800\nFemale,700') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('Mean_Age,Median_Age,Min_Age,Max_Age,Q1_Age,Q3_Age\n65.5,67.0,18,95,55,78') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('ageGroup,count,percentage\n18-30,100,6.7') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('unitsReceived,count,percentage\n1,500,33.3') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('category,count,percentage\nLow,1000,28.6') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('sex,count,percentage\nMale,2000,57.1') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('parity,count,percentage\nNulliparous,500,40.0') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('weekday,count,percentage\nMonday,500,14.3') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('category,count,percentage\n1-7 days,1000,28.6') })
+    // Synthetic data with the column names verified in the public SAS exports.
+    const csvs: Record<string, string> = {
+      'unique_patients_count.csv': 'No_of_Unique_Patients\n1500',
+      'total_transfused_units.csv': 'No_of_Transfused_Units\n3500',
+      'patient_sex_distribution.csv': 'Patient_Sex,No_of_Patients\nMale,800\nFemale,700',
+      'patient_age_stats.csv': 'Mean_Age,Median_Age,Min_Age,Max_Age,Q1_Age,Q3_Age\n65.5,67.0,18,95,55,78',
+      'patient_age_groups.csv': 'Age_Group,COUNT,PERCENT\n60-,1500,100',
+      'rbc_units_per_patient.csv': 'Unit_Category,COUNT,Relative_Frequency\n1,1500,100',
+      'donorhb_distribution.csv': 'donorhb_category,No_of_Transfused_Units\n140-154,3500',
+      'donor_sex_distribution.csv': 'donor_sex_label,No_of_Transfused_Units\nMale,3500',
+      'donor_parity_distribution.csv': 'donor_parity_label,No_of_Transfused_Units\n0,3500',
+      'donation_weekday_distribution.csv': 'wdy_donation,No_of_Transfused_Units\n2,3500',
+      'storage_distribution.csv': 'storagecat,No_of_Transfused_Units\n10-19,3500',
+    }
 
+    function mockDescriptiveFiles(overrides: Record<string, string> = {}) {
+      const files = { ...csvs, ...overrides }
+      mockFetch.mockImplementation(async (url: string) => {
+        const csv = files[url.split('/').pop()!]
+        return csv === undefined
+          ? { ok: false, status: 404 }
+          : { ok: true, arrayBuffer: async () => toBytes(csv) }
+      })
+    }
+
+    it('loads all 11 CSV files and keeps absent age SD unreported', async () => {
+      mockDescriptiveFiles()
       const result = await loadDescriptiveStatistics()
-
+      expect(mockFetch).toHaveBeenCalledTimes(11)
       expect(result.uniquePatients).toBe(1500)
       expect(result.totalUnits).toBe(3500)
       expect(result.patientSex).toHaveLength(2)
       expect(result.patientAge.mean).toBe(65.5)
       expect(result.patientAge.median).toBe(67)
+      expect(result.patientAge.sd).toBeUndefined()
+      expect(result.donorHb[0]?.count).toBe(3500)
+      expect(result.donationWeekday[0]?.weekday).toBe('Monday')
     })
 
-    it('handles missing data gracefully', async () => {
-      // Mock with empty/minimal data
-      mockFetch
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('No_of_Unique_Patients\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('No_of_Transfused_Units\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('Patient_Sex,No_of_Patients\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('Mean_Age,Median_Age,Min_Age,Max_Age,Q1_Age,Q3_Age\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('ageGroup,count,percentage\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('unitsReceived,count,percentage\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('category,count,percentage\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('sex,count,percentage\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('parity,count,percentage\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('weekday,count,percentage\n') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('category,count,percentage\n') })
-
+    it('keeps parity labels faithful and preserves unknown or missing categories', async () => {
+      mockDescriptiveFiles({
+        'donor_parity_distribution.csv': 'donor_parity_label,No_of_Transfused_Units\n0,1000\n1,2000\nUnknown,200\n.,200\n2,100',
+      })
       const result = await loadDescriptiveStatistics()
+      expect(result.donorParity.map(row => row.parity)).toEqual([
+        'Parity 0 (includes male donors)', 'Parity 1', 'Unknown', 'Missing', '2',
+      ])
+      expect(result.donorParity.map(row => row.count)).toEqual([1000, 2000, 200, 200, 100])
+    })
 
-      // Should return defaults for missing values
-      expect(result.uniquePatients).toBe(0)
-      expect(result.totalUnits).toBe(0)
+    it('rejects header-only outputs instead of fabricating zero statistics', async () => {
+      mockDescriptiveFiles({ 'unique_patients_count.csv': 'No_of_Unique_Patients\n' })
+      await expect(loadDescriptiveStatistics()).rejects.toThrow('CSV contains no data rows')
+    })
+
+    it.each(['', '.', 'NaN', 'Infinity', '1e999', '-1', '0.5'])('rejects an invalid or missing count (%s)', async count => {
+      mockDescriptiveFiles({ 'donor_sex_distribution.csv': `donor_sex_label,No_of_Transfused_Units\nMale,${count}` })
+      await expect(loadDescriptiveStatistics()).rejects.toThrow('column')
+    })
+
+    it('rejects a renamed required numeric field', async () => {
+      mockDescriptiveFiles({ 'patient_age_stats.csv': csvs['patient_age_stats.csv']!.replace('Mean_Age', 'Unexpected_Age') })
+      await expect(loadDescriptiveStatistics()).rejects.toThrow('Mean_Age')
+    })
+
+    it('rejects invalid age values rather than displaying zero', async () => {
+      mockDescriptiveFiles({ 'patient_age_stats.csv': csvs['patient_age_stats.csv']!.replace('65.5', 'NaN') })
+      await expect(loadDescriptiveStatistics()).rejects.toThrow('Mean_Age')
+    })
+
+    it('preserves real zero counts and percentages', async () => {
+      mockDescriptiveFiles({
+        'patient_age_groups.csv': 'Age_Group,COUNT,PERCENT\n<20,0,0\n60-,1500,100',
+        'donor_sex_distribution.csv': 'donor_sex_label,No_of_Transfused_Units\nMale,0\nFemale,3500',
+      })
+      const result = await loadDescriptiveStatistics()
+      expect(result.ageGroups[0]).toEqual({ ageGroup: '<20', count: 0, percentage: 0 })
+      expect(result.donorSex[0]).toEqual({ sex: 'Male', count: 0, percentage: 0 })
+    })
+
+    it('rejects a zero distribution denominator', async () => {
+      mockDescriptiveFiles({ 'donor_sex_distribution.csv': 'donor_sex_label,No_of_Transfused_Units\nMale,0' })
+      await expect(loadDescriptiveStatistics()).rejects.toThrow('distribution total')
+    })
+
+    it('does not cache a malformed descriptive result', async () => {
+      mockDescriptiveFiles({ 'donor_sex_distribution.csv': 'donor_sex_label,Wrong_Column\nMale,3500' })
+      await expect(loadDescriptiveStatistics()).rejects.toThrow('No_of_Transfused_Units')
+      mockDescriptiveFiles()
+      await expect(loadDescriptiveStatistics()).resolves.toMatchObject({ totalUnits: 3500 })
     })
   })
 
@@ -374,7 +472,7 @@ DonorHb_Cat,Low,ARTm,75.0,78.0`
     it('loads factor observed summary', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const result = await loadFactorObservedSummary()
@@ -390,7 +488,7 @@ DonorHb_Cat,Low,ARTm,2.5,1.5,3.5`
     it('loads factor model summary', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       const result = await loadFactorModelSummary()
@@ -399,33 +497,57 @@ DonorHb_Cat,Low,ARTm,2.5,1.5,3.5`
     })
   })
 
+  describe('LOESS integrity', () => {
+    it.each([loadLoessData, loadLoessMultiSpanData])('propagates invalid optional files', async loader => {
+      mockFetch.mockResolvedValueOnce({ ok: true, arrayBuffer: async () => toBytes('<html>error</html>') })
+      await expect(loader()).rejects.toThrow('Expected CSV')
+    })
+
+    it.each([loadLoessData, loadLoessMultiSpanData])('propagates network failure', async loader => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection failed'))
+      await expect(loader()).rejects.toThrow('Connection failed')
+    })
+
+    it.each([loadLoessData, loadLoessMultiSpanData])('decodes the known Windows-1252 LOESS exports', async loader => {
+      const csv = 'TimeFromTransfusion,VitalParam,Abbreviation,Pred\n0,HR,Hj\u00e4rtfrekv,0'
+      const bytes = Uint8Array.from(csv, character => character.charCodeAt(0)).buffer
+      mockFetch.mockResolvedValueOnce({ ok: true, arrayBuffer: async () => bytes })
+      const result = await loader()
+      expect(result[0]?.Abbreviation).toBe('Hj\u00e4rtfrekv')
+      expect(result[0]?.Pred).toBe(0)
+    })
+
+    it('does not replace missing selected-span values with a different smoother', () => {
+      const rows = [{ TimeFromTransfusion: 0, VitalParam: 'ARTm' as const, Pred: 4, LCL: 3, UCL: 5, Pred_25: null }]
+      expect(extractLoessForSpan(rows, 25)[0]).toMatchObject({ Pred: null, LCL: undefined, UCL: undefined })
+    })
+
+    it('preserves zero estimates for the selected span', () => {
+      const rows = [{ TimeFromTransfusion: 0, VitalParam: 'ARTm' as const, Pred: 4, Pred_25: 0, LCL_25: -1, UCL_25: 1 }]
+      expect(extractLoessForSpan(rows, 25)[0]).toMatchObject({ Pred: 0, LCL: -1, UCL: 1 })
+    })
+  })
+
   describe('preloadData', () => {
     it('preloads critical data in parallel', async () => {
       // Mock responses for all preloaded data
       mockFetch.mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve('col\nval'),
+        arrayBuffer: () => Promise.resolve(toBytes('col\nval')),
       })
 
       await preloadData()
 
-      // Should have called fetch for: viz_index, observed_summary, model_summary, loess, factor_observed, factor_model
-      expect(mockFetch).toHaveBeenCalledTimes(6)
+      // Preload summaries used by Main Findings; the optional LOESS file is not needed.
+      expect(mockFetch).toHaveBeenCalledTimes(5)
+      expect(mockFetch.mock.calls.every(([url]) => !String(url).includes('LOESS'))).toBe(true)
     })
 
-    it('handles partial failures gracefully', async () => {
-      // Some succeed, some fail
-      mockFetch
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('VitalParam,CompFactor,CompName,VitalName,YLabel,DeltaYLabel\nARTm,DonorHb_Cat,Hb,MAP,MAP,dMAP') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('col\nval') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('col\nval') })
-        .mockRejectedValueOnce(new Error('LOESS failed')) // LOESS fails but returns []
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('col\nval') })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('col\nval') })
-
-      // Should not throw - LOESS failure is handled gracefully
-      await expect(preloadData()).resolves.toBeUndefined()
+    it('propagates a required summary failure', async () => {
+      mockFetch.mockResolvedValue({ ok: false, status: 500 })
+      await expect(preloadData()).rejects.toThrow('HTTP 500')
     })
+
   })
 
   describe('clearDataCache', () => {
@@ -434,7 +556,7 @@ DonorHb_Cat,Low,ARTm,2.5,1.5,3.5`
 
       mockFetch.mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(mockCSV),
+        arrayBuffer: () => Promise.resolve(toBytes(mockCSV)),
       })
 
       // Load data (caches it)

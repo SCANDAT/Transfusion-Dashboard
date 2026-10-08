@@ -1,6 +1,6 @@
 import { useRef, useCallback, useMemo, memo } from 'react'
 import type { Chart as ChartInstance, ChartOptions } from 'chart.js'
-import { BaseChart, exportChartAsSVG } from '@/components/charts'
+import { BaseChart, exportChartAsPNG, prepareTransfusionChartData } from '@/components/charts'
 import { VITAL_PARAMS } from '@/types'
 import type { VitalParamCode, TransfusionDataRow, LoessDataRow } from '@/types'
 import { CHART_COLORS } from '@/hooks/useChartTheme'
@@ -11,6 +11,9 @@ interface PlotPairProps {
   vitalParam: VitalParamCode
   transfusionData: TransfusionDataRow[]
   loessData: LoessDataRow[]
+  loessLoading?: boolean
+  loessError?: Error | null
+  onRetryLoess?: () => void
   timeRange: [number, number]
   displayOptions: {
     showConfidenceInterval: boolean
@@ -27,6 +30,9 @@ export const PlotPair = memo(function PlotPair({
   vitalParam,
   transfusionData,
   loessData,
+  loessLoading = false,
+  loessError = null,
+  onRetryLoess,
   timeRange,
   displayOptions,
   modelMode,
@@ -42,14 +48,6 @@ export const PlotPair = memo(function PlotPair({
   // For 1-2 charts use fixed height, for 3+ use flexible height
   const chartHeight = useFlexibleHeight ? "100%" : 280
 
-  // Memoize filtered data - only recalculate when data or timeRange changes
-  const filteredData = useMemo(() =>
-    transfusionData.filter(
-      row => row.TimeFromTransfusion >= timeRange[0] && row.TimeFromTransfusion <= timeRange[1]
-    ),
-    [transfusionData, timeRange]
-  )
-
   const filteredLoess = useMemo(() =>
     loessData.filter(
       row => row.TimeFromTransfusion >= timeRange[0] && row.TimeFromTransfusion <= timeRange[1]
@@ -63,14 +61,13 @@ export const PlotPair = memo(function PlotPair({
     [filteredLoess]
   )
 
-  // Memoize model chart data based on modelMode
-  const modelChartData = useMemo(() => {
-    if (modelMode === 'absolute') {
-      return prepareAbsolutePlotData(filteredData, displayOptions)
-    } else {
-      return prepareRelativePlotData(filteredData, displayOptions)
-    }
-  }, [filteredData, displayOptions, modelMode])
+  const modelChartData = useMemo(() =>
+    prepareTransfusionChartData(transfusionData, timeRange, {
+      ...displayOptions,
+      showDeltaPlot: modelMode === 'relative',
+    }),
+    [transfusionData, timeRange, displayOptions, modelMode]
+  )
 
   // Chart options for LOESS plot
   const loessOptions: ChartOptions<'line'> = {
@@ -82,6 +79,15 @@ export const PlotPair = memo(function PlotPair({
       },
       title: {
         display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const value = context.parsed.y
+            return typeof value === 'number' && Number.isFinite(value)
+              ? `LOESS: ${value.toFixed(2)} z-score` : 'LOESS: unavailable'
+          },
+        },
       },
     },
     scales: {
@@ -98,7 +104,7 @@ export const PlotPair = memo(function PlotPair({
       y: {
         title: {
           display: true,
-          text: vitalInfo.yAxisLabel,
+          text: 'Standardized value (z-score)',
           font: { size: 11 },
         },
       },
@@ -147,13 +153,13 @@ export const PlotPair = memo(function PlotPair({
 
   const handleExportLoess = useCallback(() => {
     if (loessChartRef.current) {
-      exportChartAsSVG(loessChartRef.current, `${vitalParam}_loess.svg`)
+      exportChartAsPNG(loessChartRef.current, `${vitalParam}_loess.png`)
     }
   }, [vitalParam])
 
   const handleExportModel = useCallback(() => {
     if (modelChartRef.current) {
-      exportChartAsSVG(modelChartRef.current, `${vitalParam}_${modelMode}.svg`)
+      exportChartAsPNG(modelChartRef.current, `${vitalParam}_${modelMode}.png`)
     }
   }, [vitalParam, modelMode])
 
@@ -177,20 +183,33 @@ export const PlotPair = memo(function PlotPair({
       {/* LOESS Plot */}
       {chartDisplay !== 'model' && (
         <div className={styles.plotContainer}>
-          <div className={styles.plotLabel}>Observed Data (LOESS Smoothed)</div>
-          <div className={styles.chartWrapper}>
-            <BaseChart
-              type="line"
-              data={loessChartData}
-              options={loessOptions}
-              height={chartHeight}
-              showVerticalLine
-              onChartReady={(chart) => { loessChartRef.current = chart }}
-            />
-          </div>
-          <button className={styles.exportBtn} onClick={handleExportLoess}>
-            Export
-          </button>
+          <div className={styles.plotLabel}>Standardized Observations (LOESS)</div>
+          {loessLoading ? (
+            <p role="status" className={styles.plotLabel}>Loading LOESS data...</p>
+          ) : loessError ? (
+            <div role="alert" className={styles.plotLabel}>
+              Unable to load LOESS data.
+              {onRetryLoess && <button onClick={onRetryLoess}>Retry LOESS data</button>}
+            </div>
+          ) : filteredLoess.length === 0 ? (
+            <p role="note" className={styles.plotLabel}>No LOESS data are available for this selection.</p>
+          ) : (
+            <>
+              <div className={styles.chartWrapper}>
+                <BaseChart
+                  type="line"
+                  data={loessChartData}
+                  options={loessOptions}
+                  height={chartHeight}
+                  showVerticalLine
+                  onChartReady={(chart) => { loessChartRef.current = chart }}
+                />
+              </div>
+              <button className={styles.exportBtn} onClick={handleExportLoess}>
+                Export PNG
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -200,6 +219,11 @@ export const PlotPair = memo(function PlotPair({
           <div className={styles.plotLabel}>
             Model Prediction ({modelMode === 'absolute' ? 'Absolute' : 'Change from Baseline'})
           </div>
+          {modelMode === 'relative' && (
+            <p role="note" className={styles.plotLabel}>
+              Confidence intervals for change are unavailable; only point estimates are shown.
+            </p>
+          )}
           <div className={styles.chartWrapper}>
             <BaseChart
               type="line"
@@ -211,7 +235,7 @@ export const PlotPair = memo(function PlotPair({
             />
           </div>
           <button className={styles.exportBtn} onClick={handleExportModel}>
-            Export
+            Export PNG
           </button>
         </div>
       )}
@@ -231,134 +255,14 @@ function prepareLoessPlotData(loess: LoessDataRow[]) {
 
   if (sortedLoess.length > 0) {
     datasets.push({
-      label: 'LOESS Smooth',
+      label: 'LOESS (z-score)',
       data: sortedLoess.map((r: LoessDataRow) => ({ x: r.TimeFromTransfusion, y: r.Pred })),
       borderColor: loessColor,
       backgroundColor: loessColor,
       borderWidth: 2,
       pointRadius: 0,
-      tension: 0.3,
-    })
-  }
-
-  return { datasets }
-}
-
-/**
- * Prepare absolute (predicted values) plot data
- */
-function prepareAbsolutePlotData(
-  data: TransfusionDataRow[],
-  options: { showConfidenceInterval: boolean; showBaseModel: boolean }
-) {
-  const sorted = sortBy(data, 'TimeFromTransfusion')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const datasets: any[] = []
-  const mainColor = CHART_COLORS[0]
-
-  // CI bands - upper line first (no fill), then lower line fills up to upper
-  if (options.showConfidenceInterval) {
-    datasets.push({
-      label: 'CI Upper',
-      data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.Upper_Full })),
-      borderColor: 'transparent',
-      backgroundColor: 'transparent',
-      fill: false,
-      pointRadius: 0,
-      tension: 0.3,
-    })
-    datasets.push({
-      label: 'CI Lower',
-      data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.Lower_Full })),
-      borderColor: 'transparent',
-      backgroundColor: `${mainColor}20`,
-      fill: '-1', // Fill up to previous dataset (upper CI)
-      pointRadius: 0,
-      tension: 0.3,
-    })
-  }
-
-  // Main line (Fully Adjusted Model)
-  datasets.push({
-    label: 'Full Model',
-    data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.PredVal_Full })),
-    borderColor: mainColor,
-    backgroundColor: mainColor,
-    borderWidth: 2,
-    pointRadius: 0,
-    tension: 0.3,
-  })
-
-  // Base model
-  if (options.showBaseModel) {
-    datasets.push({
-      label: 'Base Model',
-      data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.PredVal_Base ?? r.PredVal_Full })),
-      borderColor: mainColor,
-      borderWidth: 1,
-      borderDash: [5, 5],
-      pointRadius: 0,
-      tension: 0.3,
-    })
-  }
-
-  return { datasets }
-}
-
-/**
- * Prepare relative (change from baseline) plot data
- */
-function prepareRelativePlotData(
-  data: TransfusionDataRow[],
-  options: { showConfidenceInterval: boolean; showBaseModel: boolean }
-) {
-  const sorted = sortBy(data, 'TimeFromTransfusion')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const datasets: any[] = []
-  const mainColor = CHART_COLORS[0]
-
-  // CI bands - upper line first (no fill), then lower line fills up to upper
-  if (options.showConfidenceInterval) {
-    datasets.push({
-      label: 'CI Upper',
-      data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.Delta_Upper ?? r.Delta_Full })),
-      borderColor: 'transparent',
-      backgroundColor: 'transparent',
-      fill: false,
-      pointRadius: 0,
-      tension: 0.3,
-    })
-    datasets.push({
-      label: 'CI Lower',
-      data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.Delta_Lower ?? r.Delta_Full })),
-      borderColor: 'transparent',
-      backgroundColor: `${mainColor}20`,
-      fill: '-1', // Fill up to previous dataset (upper CI)
-      pointRadius: 0,
-      tension: 0.3,
-    })
-  }
-
-  datasets.push({
-    label: 'Full Model',
-    data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.Delta_Full })),
-    borderColor: mainColor,
-    backgroundColor: mainColor,
-    borderWidth: 2,
-    pointRadius: 0,
-    tension: 0.3,
-  })
-
-  if (options.showBaseModel) {
-    datasets.push({
-      label: 'Base Model',
-      data: sorted.map((r: TransfusionDataRow) => ({ x: r.TimeFromTransfusion, y: r.Delta_Base ?? r.Delta_Full })),
-      borderColor: mainColor,
-      borderWidth: 1,
-      borderDash: [5, 5],
-      pointRadius: 0,
-      tension: 0.3,
+      tension: 0,
+      spanGaps: false,
     })
   }
 

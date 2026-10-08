@@ -1,7 +1,10 @@
+import { getFactorCategoryLabel } from '@/utils/factorLabels'
+import { isFiniteNumber } from '@/components/charts/formatChartEstimate'
 import React, { useMemo } from 'react'
 import type { FactorObservedSummaryRow, FactorModelSummaryRow } from '@/types'
 import { VITAL_PARAMS, COMP_FACTORS, VITAL_PARAM_CODES, COMP_FACTOR_CODES } from '@/types'
 import styles from './MainFindings.module.css'
+import { FactorSummaryNotes } from './FactorSummaryNotes'
 
 interface SummaryTableBProps {
   observedData: FactorObservedSummaryRow[]
@@ -60,9 +63,16 @@ export function useGroupedFactorData(
       if (row.FactorCategory === undefined || row.FactorCategory === null || row.FactorCategory === '' || row.FactorCategory === '.') continue
 
       const factorCode = row.FactorName
-      if (!factorGroups.has(factorCode)) continue
-
+      if (!factorGroups.has(factorCode)) {
+        factorGroups.set(factorCode, {
+          factorCode,
+          factorName: COMP_FACTORS[factorCode as keyof typeof COMP_FACTORS]?.name || factorCode,
+          categories: [],
+          dataByVital: new Map(),
+        })
+      }
       const group = factorGroups.get(factorCode)!
+      if (!group.categories.includes(row.FactorCategory)) group.categories.push(row.FactorCategory)
 
       if (!group.dataByVital.has(row.Abbreviation)) {
         group.dataByVital.set(row.Abbreviation, new Map())
@@ -98,63 +108,13 @@ export function useGroupedFactorData(
 }
 
 const formatValue = (val: number | undefined, decimals = 2) => {
-  if (val === undefined || val === null || isNaN(val)) return '—'
+  if (!isFiniteNumber(val)) return '—'
   return val.toFixed(decimals)
 }
 
-const formatCI = (lower: number | undefined, upper: number | undefined, decimals = 2) => {
-  if (lower === undefined || upper === undefined) return ''
-  return `[${formatValue(lower, decimals)}, ${formatValue(upper, decimals)}]`
-}
-
-/**
- * Get human-readable category label
- */
+// Preserve the existing helper export for callers.
 // eslint-disable-next-line react-refresh/only-export-components
-export function getCategoryLabel(factorCode: string, category: string | number): string {
-  const catStr = String(category)
-  const categoryLabels: Record<string, Record<string, string>> = {
-    DonorHb_Cat: {
-      '1': '<125 g/L',
-      '2': '125-139 g/L',
-      '3': '140-154 g/L',
-      '4': '155-169 g/L',
-      '5': '≥170 g/L',
-    },
-    Storage_Cat: {
-      '1': '<10 days',
-      '2': '10-19 days',
-      '3': '20-29 days',
-      '4': '30-39 days',
-      '5': '≥40 days',
-    },
-    wdy_donation: {
-      '1': 'Sunday',
-      '2': 'Monday',
-      '3': 'Tuesday',
-      '4': 'Wednesday',
-      '5': 'Thursday',
-      '6': 'Friday',
-      '7': 'Saturday',
-    },
-    DonorSex: {
-      'Male': 'Male',
-      'Female': 'Female',
-      'M': 'Male',
-      'F': 'Female',
-      '1': 'Male',
-      '2': 'Female',
-    },
-    DonorParity: {
-      'Nulliparous': 'Nulliparous',
-      'Parous': 'Parous',
-      '0': 'Nulliparous',
-      '1': 'Parous',
-    },
-  }
-
-  return categoryLabels[factorCode]?.[catStr] || catStr
-}
+export const getCategoryLabel = getFactorCategoryLabel
 
 interface SingleFactorTableProps {
   factorGroup: GroupedFactorData
@@ -174,6 +134,8 @@ export function SingleFactorTable({ factorGroup, vitalsWithData, showTitle = tru
               {vitalsWithData.map(vital => (
                 <th key={vital} colSpan={2} className={styles.thVital}>
                   {VITAL_PARAMS[vital as keyof typeof VITAL_PARAMS]?.shortName || vital}
+                  {' ('}{VITAL_PARAMS[vital as keyof typeof VITAL_PARAMS]?.unit === '%'
+                    ? 'percentage points' : VITAL_PARAMS[vital as keyof typeof VITAL_PARAMS]?.unit}{')'}
                 </th>
               ))}
             </tr>
@@ -182,7 +144,7 @@ export function SingleFactorTable({ factorGroup, vitalsWithData, showTitle = tru
               {vitalsWithData.map(vital => (
                 <React.Fragment key={`${vital}-headers`}>
                   <th className={styles.thSub}>Observed</th>
-                  <th className={styles.thSub}>Full<sup>1</sup></th>
+                  <th className={styles.thSub}>No-interaction model<sup>1</sup></th>
                 </React.Fragment>
               ))}
             </tr>
@@ -205,9 +167,6 @@ export function SingleFactorTable({ factorGroup, vitalsWithData, showTitle = tru
                             <span className={styles.estimate}>
                               {formatValue(catData.observed.Diff_Mean)}
                             </span>
-                            <span className={styles.ci}>
-                              {formatCI(catData.observed.Diff_LCL, catData.observed.Diff_UCL)}
-                            </span>
                           </div>
                         ) : '—'}
                       </td>
@@ -216,9 +175,6 @@ export function SingleFactorTable({ factorGroup, vitalsWithData, showTitle = tru
                           <div className={styles.effectValue}>
                             <span className={styles.estimate}>
                               {formatValue(catData.model.Full_Diff)}
-                            </span>
-                            <span className={styles.ci}>
-                              {formatCI(catData.model.Full_Diff_LCL, catData.model.Full_Diff_UCL)}
                             </span>
                           </div>
                         ) : '—'}
@@ -253,11 +209,7 @@ export function SummaryTableB({ observedData, modelData }: SummaryTableBProps) {
           />
         ))}
       </div>
-      <div className={styles.tableFootnotes}>
-        <p>
-          <sup>1</sup><strong>Model Estimates:</strong> Based on the Fully Adjusted Model described in Table 2a, which includes all covariates from the Base Model plus cumulative crystalloid fluid and vasopressor volumes (1h and 24h prior), and sedative administration indicators.
-        </p>
-      </div>
+      <FactorSummaryNotes />
     </>
   )
 }

@@ -78,3 +78,26 @@ When adding a new feature or fixing a bug, include tests that cover the changed 
 **For new components**: At minimum, add a smoke-render test using React Testing Library's render function to verify the component mounts without throwing. Interaction tests (clicking buttons, changing selectors) are encouraged but not yet enforced.
 
 **For store changes**: Any new action or state field in dashboardStore should have a corresponding test in dashboardStore.test.ts verifying the state transition and ensuring persist partialize still excludes transient fields.
+
+### Publication preparation verification (2026-10-01)
+
+`npm run ci` completed with exit code 0: lint, TypeScript, 114 tests in 9 files, and the production build passed. Added checks cover CSV rejection, faithful trajectory preparation, missing versus zero estimates, factor legend grouping and PNG export/theme restoration. Local Node 25 required `NODE_OPTIONS=--no-experimental-webstorage` for the installed jsdom environment; repository CI remains on its configured Node 20. Vitest emitted a shutdown timeout warning, but all checks completed and the full command exited successfully. This does not replace pending browser, cache, performance, privacy or scientific validation. The private execution checklist records remaining work.
+
+### Verification on 8 October 2026
+
+Integrated `npm run ci` exited 0: lint, TypeScript, 157 tests in 11 files and the production build passed. A subsequent CSS-only fix was rebuilt and checked at 320/390/768/1280 pixel widths. Production browser smoke verified default model rendering with zero LOESS requests, model availability during a synthetic optional 503 failure, and retry behaviour. Full cross-engine, cache-upgrade, accessibility and performance-budget checks remain pending. The private package builder has 18 passing regressions and blocks an unapproved preview. Local tests use Node 25 with experimental WebStorage disabled and the existing mapped path to avoid the installed Vite UNC path bug.
+
+
+### Account/cache follow-up verification - 8 October 2026
+
+Full npm run ci exited 0 with lint, TypeScript, 178 tests in 13 files and production build. New coverage includes 14 worker-lifecycle/startup tests and seven Main Findings required-download/retry tests. Chromium synthetic migration testing reproduces legacy fallback, blocks failed update before result loading, succeeds after retry, preserves sibling/unrelated cache entries and rejects unavailable results after retirement. Other browser engines and immutable release consistency remain open. Package guard tests: 18 passed.
+
+
+### Summary display checks - 8 October 2026
+
+Integrated CI exited 0: lint, type checks, 199 tests in 18 files, production build. A later CSS-only summary-card fix was rebuilt successfully. Synthetic Chromium checks at 320/390/768/1280px found no document overflow or out-of-panel SVG text after the fix; all seven panels, historical parity and model labels were present, uncertainty sentinels absent, zero page errors. Light/dark screenshots inspected. All data requests were intercepted with invented fixtures or blocked. This is bounded layout testing, not scientific data validation or a full performance benchmark. Publication packager: 18 tests passed.
+
+
+### Checkpoint validation on 8 October 2026
+
+Repeated lint, type checking, all199 tests in18 files and production build succeeded; npm run ci exited0. Vitest reported a shutdown timeout warning. After the build-success message, a read-only net-use enumeration spawned by Vite stalled; only that verified owned helper was stopped, allowing the command to exit. No drive mapping or unrelated process was altered. Investigate local shutdown behavior when resuming. The18 synthetic publication-package tests passed. No scientific release or SAS runtime validation is implied.

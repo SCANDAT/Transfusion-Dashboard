@@ -22,3 +22,26 @@ dist
 /sas_viz*
 *.lst
 *.log
+
+# SAS source and intermediate datasets are never publication artifacts
+*.sas7bdat
+*.sas7bndx
+*.sas7bvew
+
+# Private SAS stores/transports and generated Python bytecode
+*.sas7bcat
+*.sas7bitm
+*.xpt
+*.sashdat
+__pycache__/
+*.py[cod]
+
+# Private incoming workstation schema reports (filed under manuscript after review)
+/sample_schema_*/
+/full_schema_*/
+
+# Private agent session resume identifiers
+/resume_agents.txt
+
+# Private manuscript and analysis review notes (resume record stays local)
+/memory/research/analysis-of-record.md

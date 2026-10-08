@@ -35,7 +35,7 @@ export function RBCTransfusionsTab() {
   const [modelMode, setModelMode] = useState<'absolute' | 'relative'>('absolute')
 
   // Local state for which charts to display
-  const [chartDisplay, setChartDisplay] = useState<'both' | 'loess' | 'model'>('both')
+  const [chartDisplay, setChartDisplay] = useState<'both' | 'loess' | 'model'>('model')
 
   // Local state for time range inputs (for manual text editing)
   const [localTimeMin, setLocalTimeMin] = useState(transfusionTimeRange[0])
@@ -57,8 +57,10 @@ export function RBCTransfusionsTab() {
     }
   }, [vitals, setAvailableVitals, transfusionSelectedVitals.length, toggleTransfusionVital])
 
-  // Load multi-span LOESS data once at tab level (optimization: avoid loading per-vital)
-  const { data: allLoessMultiSpanData } = useAsyncData(loadLoessMultiSpanData, [])
+  // Load the large optional smoother export only when the reader selects it.
+  const { data: allLoessMultiSpanData, loading: loessLoading, error: loessError, refetch: retryLoess } = useAsyncData(
+    loadLoessMultiSpanData, [], { enabled: chartDisplay !== 'model' }
+  )
 
   useEffect(() => {
     if (vitalsError) {
@@ -319,6 +321,9 @@ export function RBCTransfusionsTab() {
                 timeRange={transfusionTimeRange}
                 displayOptions={transfusionDisplayOptions}
                 allLoessData={allLoessMultiSpanData}
+                loessLoading={loessLoading}
+                loessError={loessError}
+                onRetryLoess={retryLoess}
                 loessSpan={loessSpan}
                 modelMode={modelMode}
                 chartDisplay={chartDisplay}
@@ -347,6 +352,9 @@ interface TransfusionPlotPairProps {
     showDeltaPlot: boolean
   }
   allLoessData: LoessMultiSpanRow[] | null
+  loessLoading: boolean
+  loessError: Error | null
+  onRetryLoess: () => void
   loessSpan: LoessSpanValue
   modelMode: 'absolute' | 'relative'
   chartDisplay: 'both' | 'loess' | 'model'
@@ -359,6 +367,9 @@ const TransfusionPlotPair = memo(function TransfusionPlotPair({
   timeRange,
   displayOptions,
   allLoessData,
+  loessLoading,
+  loessError,
+  onRetryLoess,
   loessSpan,
   modelMode,
   chartDisplay,
@@ -382,7 +393,7 @@ const TransfusionPlotPair = memo(function TransfusionPlotPair({
     return extractLoessForSpan(filteredForVital, loessSpan)
   }, [allLoessData, vitalParam, loessSpan])
 
-  if (loadingTrans || !allLoessData) {
+  if (loadingTrans) {
     return <div className={styles.loadingPlot}>Loading {vitalParam}...</div>
   }
 
@@ -395,6 +406,9 @@ const TransfusionPlotPair = memo(function TransfusionPlotPair({
       vitalParam={vitalParam}
       transfusionData={transfusionData}
       loessData={loessData}
+      loessLoading={loessLoading}
+      loessError={loessError}
+      onRetryLoess={onRetryLoess}
       timeRange={timeRange}
       displayOptions={displayOptions}
       modelMode={modelMode}

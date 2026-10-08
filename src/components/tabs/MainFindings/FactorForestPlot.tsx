@@ -1,3 +1,6 @@
+import { getFactorCategoryLabel } from '@/utils/factorLabels'
+import { isFiniteNumber } from '@/components/charts/formatChartEstimate'
+import { formatChangeValue } from './summaryChangePanels'
 import { useMemo } from 'react'
 import type { FactorObservedSummaryRow, FactorModelSummaryRow } from '@/types'
 import { VITAL_PARAMS, VITAL_PARAM_CODES, COMP_FACTOR_CODES } from '@/types'
@@ -5,6 +8,7 @@ import { BaseChart } from '@/components/charts'
 import { CHART_COLORS } from '@/hooks/useChartTheme'
 import type { ChartData, ChartOptions } from 'chart.js'
 import styles from './MainFindings.module.css'
+import { FactorSummaryNotes } from './FactorSummaryNotes'
 
 interface FactorForestPlotProps {
   factorCode: string
@@ -19,9 +23,9 @@ interface FactorForestPlotProps {
 interface CategoryData {
   category: string
   label: string
-  observed?: { mean: number; lower: number; upper: number }
-  baseModel?: { mean: number; lower: number; upper: number }
-  fullModel?: { mean: number; lower: number; upper: number }
+  observed?: number
+  baseModel?: number
+  fullModel?: number
 }
 
 export function FactorForestPlot({
@@ -73,28 +77,17 @@ export function FactorForestPlot({
 
         return {
           category: cat,
-          label: getCategoryLabel(factorCode, cat),
-          observed: obs ? {
-            mean: obs.Diff_Mean,
-            lower: obs.Diff_LCL,
-            upper: obs.Diff_UCL,
-          } : undefined,
-          baseModel: mod ? {
-            mean: mod.Base_Diff,
-            lower: mod.Base_Diff_LCL,
-            upper: mod.Base_Diff_UCL,
-          } : undefined,
-          fullModel: mod ? {
-            mean: mod.Full_Diff,
-            lower: mod.Full_Diff_LCL,
-            upper: mod.Full_Diff_UCL,
-          } : undefined,
+          label: getFactorCategoryLabel(factorCode, cat),
+          observed: obs?.Diff_Mean,
+          baseModel: mod?.Base_Diff,
+          fullModel: mod?.Full_Diff,
         }
       })
 
       return {
         vitalCode,
-        vitalName: VITAL_PARAMS[vitalCode]?.shortName || vitalCode,
+        vitalName: VITAL_PARAMS[vitalCode].shortName,
+        unit: VITAL_PARAMS[vitalCode].unit === '%' ? 'percentage points' : VITAL_PARAMS[vitalCode].unit,
         categoryData,
       }
     }).filter(Boolean)
@@ -112,6 +105,7 @@ export function FactorForestPlot({
           <ForestPlotChart
             key={plot.vitalCode}
             vitalName={plot.vitalName}
+            unit={plot.unit}
             categoryData={plot.categoryData}
             showObserved={showObserved}
             showBaseModel={showBaseModel}
@@ -125,128 +119,41 @@ export function FactorForestPlot({
 
 interface ForestPlotChartProps {
   vitalName: string
+  unit: string
   categoryData: CategoryData[]
   showObserved: boolean
   showBaseModel: boolean
   showFullModel: boolean
 }
 
-function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel, showFullModel }: ForestPlotChartProps) {
-  const errorBars = useMemo(() => ({
-    observed: categoryData.map(d => d.observed || { lower: 0, upper: 0, mean: 0 }),
-    baseModel: categoryData.map(d => d.baseModel || { lower: 0, upper: 0, mean: 0 }),
-    fullModel: categoryData.map(d => d.fullModel || { lower: 0, upper: 0, mean: 0 }),
-  }), [categoryData])
+function ForestPlotChart({ vitalName, unit, categoryData, showObserved, showBaseModel, showFullModel }: ForestPlotChartProps) {
+  const series = [
+    { visible: showObserved, label: 'Observed', key: 'observed', color: CHART_COLORS[2], pointStyle: 'circle' },
+    { visible: showBaseModel, label: 'No-interaction model (base)', key: 'baseModel', color: CHART_COLORS[0], pointStyle: 'triangle' },
+    { visible: showFullModel, label: 'No-interaction model (fully adjusted)', key: 'fullModel', color: CHART_COLORS[1], pointStyle: 'rectRot' },
+  ] as const
 
-  const allValues = [
-    ...errorBars.observed.flatMap(e => [e.lower, e.upper]),
-    ...errorBars.baseModel.flatMap(e => [e.lower, e.upper]),
-    ...errorBars.fullModel.flatMap(e => [e.lower, e.upper]),
-  ].filter(v => v !== 0)
+  const datasets: ChartData<'line'>['datasets'] = series.filter(item => item.visible).map(item => ({
+    label: item.label,
+    data: categoryData.map(category => isFiniteNumber(category[item.key]) ? category[item.key]! : null),
+    backgroundColor: item.color,
+    borderColor: item.color,
+    pointStyle: item.pointStyle,
+    pointRadius: 4,
+    pointHoverRadius: 6,
+    pointHitRadius: 10,
+    showLine: false,
+    spanGaps: false,
+  }))
 
-  const minY = allValues.length > 0 ? Math.min(...allValues) : -5
-  const maxY = allValues.length > 0 ? Math.max(...allValues) : 5
-  const padding = (maxY - minY) * 0.15
-
-  const datasets: ChartData<'bar'>['datasets'] = []
-
-  if (showObserved) {
-    datasets.push({
-      label: 'Observed',
-      data: categoryData.map(d => d.observed?.mean ?? null),
-      backgroundColor: CHART_COLORS[2] + '90',
-      borderColor: CHART_COLORS[2],
-      borderWidth: 1,
-      borderRadius: 2,
-      barPercentage: 0.6,
-      categoryPercentage: 0.85,
-    })
-  }
-
-  if (showBaseModel) {
-    datasets.push({
-      label: 'Base',
-      data: categoryData.map(d => d.baseModel?.mean ?? null),
-      backgroundColor: CHART_COLORS[0] + '90',
-      borderColor: CHART_COLORS[0],
-      borderWidth: 1,
-      borderRadius: 2,
-      barPercentage: 0.6,
-      categoryPercentage: 0.85,
-    })
-  }
-
-  if (showFullModel) {
-    datasets.push({
-      label: 'Full',
-      data: categoryData.map(d => d.fullModel?.mean ?? null),
-      backgroundColor: CHART_COLORS[1] + '90',
-      borderColor: CHART_COLORS[1],
-      borderWidth: 1,
-      borderRadius: 2,
-      barPercentage: 0.6,
-      categoryPercentage: 0.85,
-    })
-  }
-
-  const chartData: ChartData<'bar'> = {
-    labels: categoryData.map(d => d.label),
+  // Hidden series and legacy confidence limits must never determine the axis.
+  const values = datasets.flatMap(dataset => dataset.data).filter(isFiniteNumber)
+  const minimum = Math.min(0, ...values)
+  const maximum = Math.max(0, ...values)
+  const padding = (maximum - minimum || 1) * 0.15
+  const chartData: ChartData<'line'> = {
+    labels: categoryData.map(category => category.label),
     datasets,
-  }
-
-  const errorBarPlugin = {
-    id: 'verticalErrorBars',
-    afterDatasetsDraw(chart: import('chart.js').Chart) {
-      const { ctx, scales } = chart
-      const yScale = scales.y
-      if (!yScale) return
-
-      chart.data.datasets.forEach((dataset, datasetIndex) => {
-        const meta = chart.getDatasetMeta(datasetIndex)
-        if (meta.hidden) return
-
-        let errors: typeof errorBars.observed
-        if (dataset.label === 'Observed') {
-          errors = errorBars.observed
-        } else if (dataset.label === 'Base') {
-          errors = errorBars.baseModel
-        } else {
-          errors = errorBars.fullModel
-        }
-        const color = dataset.borderColor as string
-
-        meta.data.forEach((bar, index) => {
-          const error = errors[index]
-          if (!error || (error.lower === 0 && error.upper === 0)) return
-
-          const x = bar.x
-          const yTop = yScale.getPixelForValue(error.upper)
-          const yBottom = yScale.getPixelForValue(error.lower)
-          const capWidth = 3
-
-          ctx.save()
-          ctx.strokeStyle = color
-          ctx.lineWidth = 1.5
-
-          ctx.beginPath()
-          ctx.moveTo(x, yTop)
-          ctx.lineTo(x, yBottom)
-          ctx.stroke()
-
-          ctx.beginPath()
-          ctx.moveTo(x - capWidth, yTop)
-          ctx.lineTo(x + capWidth, yTop)
-          ctx.stroke()
-
-          ctx.beginPath()
-          ctx.moveTo(x - capWidth, yBottom)
-          ctx.lineTo(x + capWidth, yBottom)
-          ctx.stroke()
-
-          ctx.restore()
-        })
-      })
-    },
   }
 
   const zeroLinePlugin = {
@@ -255,31 +162,24 @@ function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel,
       const { ctx, scales, chartArea } = chart
       const yScale = scales.y
       if (!yScale) return
-
       const yZero = yScale.getPixelForValue(0)
-      if (yZero < chartArea.top || yZero > chartArea.bottom) return
-
       ctx.save()
       ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)'
       ctx.lineWidth = 1
       ctx.setLineDash([4, 4])
-
       ctx.beginPath()
       ctx.moveTo(chartArea.left, yZero)
       ctx.lineTo(chartArea.right, yZero)
       ctx.stroke()
-
       ctx.restore()
     },
   }
 
-  const chartOptions: ChartOptions<'bar'> = {
+  const chartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       title: {
         display: true,
         text: vitalName,
@@ -288,104 +188,44 @@ function ForestPlotChart({ vitalName, categoryData, showObserved, showBaseModel,
       },
       tooltip: {
         callbacks: {
-          label: (context) => {
-            const idx = context.dataIndex
-            const catData = categoryData[idx]
-            if (!catData) return ''
-            let data: typeof catData.observed
-            if (context.dataset.label === 'Observed') {
-              data = catData.observed
-            } else if (context.dataset.label === 'Base') {
-              data = catData.baseModel
-            } else {
-              data = catData.fullModel
-            }
-            if (!data) return ''
-            return `${context.dataset.label}: ${data.mean.toFixed(2)} [${data.lower.toFixed(2)}, ${data.upper.toFixed(2)}]`
+          label: context => {
+            const value = context.dataset.data[context.dataIndex]
+            return `${context.dataset.label}: ${isFiniteNumber(value) ? `${formatChangeValue(value)} ${unit}` : 'unavailable'}`
           },
         },
       },
     },
     scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
+      x: { grid: { display: false } },
       y: {
-        min: minY - padding,
-        max: maxY + padding,
-        title: {
-          display: false,
-        },
-        grid: {
-          color: 'rgba(128, 128, 128, 0.1)',
-        },
+        min: minimum - padding,
+        max: maximum + padding,
+        title: { display: true, text: `Change (${unit})` },
+        grid: { color: 'rgba(128, 128, 128, 0.1)' },
       },
     },
   }
 
-  const chartHeight = 200
+  const summary = datasets.map(dataset =>
+    `${dataset.label}: ${categoryData.map((category, index) => {
+      const value = dataset.data[index]
+      return `${category.label} ${isFiniteNumber(value) ? `${value} ${unit}` : 'unavailable'}`
+    }).join(', ')}`
+  ).join('; ')
 
   return (
-    <div className={styles.forestPlotChart}>
-      <BaseChart
-        type="bar"
-        data={chartData}
-        options={chartOptions}
-        height={chartHeight}
-        plugins={[errorBarPlugin, zeroLinePlugin]}
-      />
+    <div className={styles.forestPlotChart} role="img" aria-label={`${vitalName} within-category changes. ${summary}`}>
+      {datasets.length === 0 ? <p>Select estimates to display.</p> : (
+        <BaseChart
+          type="line"
+          data={chartData}
+          options={chartOptions}
+          height={220}
+          plugins={[zeroLinePlugin]}
+        />
+      )}
     </div>
   )
-}
-
-/**
- * Get human-readable category label
- */
-function getCategoryLabel(factorCode: string, category: string | number): string {
-  const catStr = String(category)
-  const categoryLabels: Record<string, Record<string, string>> = {
-    DonorHb_Cat: {
-      '1': '<125 g/L',
-      '2': '125-139',
-      '3': '140-154',
-      '4': '155-169',
-      '5': '≥170 g/L',
-    },
-    Storage_Cat: {
-      '1': '<10d',
-      '2': '10-19d',
-      '3': '20-29d',
-      '4': '30-39d',
-      '5': '≥40d',
-    },
-    wdy_donation: {
-      '1': 'Sun',
-      '2': 'Mon',
-      '3': 'Tue',
-      '4': 'Wed',
-      '5': 'Thu',
-      '6': 'Fri',
-      '7': 'Sat',
-    },
-    DonorSex: {
-      'Male': 'Male',
-      'Female': 'Female',
-      'M': 'Male',
-      'F': 'Female',
-      '1': 'Male',
-      '2': 'Female',
-    },
-    DonorParity: {
-      'Nulliparous': 'Nullip.',
-      'Parous': 'Parous',
-      '0': 'Nullip.',
-      '1': 'Parous',
-    },
-  }
-
-  return categoryLabels[factorCode]?.[catStr] || catStr
 }
 
 /**
@@ -423,6 +263,7 @@ export function AllFactorForestPlots({
 
   return (
     <div className={styles.allForestPlots}>
+      <FactorSummaryNotes />
       {factors.map(factor => (
         <FactorForestPlot
           key={factor}

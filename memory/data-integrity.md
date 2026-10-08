@@ -4,9 +4,13 @@ scope: "Data quality diseases: SAS encoding, CSV pipeline, missing data, model s
 soul_tags: [Weight, Honesty, Uniformity, Guardianship]
 branch: shared
 type: catalog
-last_updated: "2026-03-24"
+last_updated: "2026-10-01"
 ---
 # Data Integrity — Disease Catalog
+
+## Current verification status (8 October 2026)
+
+The historical method and completion claims below are not verified release facts. Analysis reconciliation and the corrected workstation package remain unfinished. Do not promote development-sample outputs or infer scientific validity from successful rendering or a passing build. Detailed manuscript and analysis review stays in the private local audit area; start with `manuscript/review_audit/RESUME_HERE.txt`. The public engineering checkpoint is `docs/RESUME_CHECKPOINT.txt`.
 
 ## What to Know
 
@@ -126,3 +130,26 @@ Most data integrity issues in this project involve encoding mismatches between S
 
 ### The CI Fix as Template
 The CI calculation fix (Disease #2) is the template for how methodology errors should be handled: (1) identify the statistical error, (2) implement the correct method, (3) rerun all affected analyses, (4) compare old vs new output quantitatively, (5) update the manuscript, (6) record the lesson. Every future methodology fix should follow this pattern.
+
+
+## Publication implementation (2026-10-01)
+
+Current local work rejects malformed CSVs rather than returning partial rows, removes unsupported delta confidence bands, retains nulls, draws exported model series without added smoothing, and exports chart rasters honestly as PNG. Deployment must run lint, type checks and tests before uploading its built artifact. These are presentation/engineering corrections; they do not repair model inference or change the original SAS CSVs. Verification is recorded in the ignored `manuscript/review_audit/publication_execution.md`.
+
+The source-dataset audit found no recognised SAS dataset filenames or signatures in available Git history and all locally present objects. This is distinct from the retained observed-response columns and singleton summaries in particular CSVs. No blanket data withdrawal is authorised or performed by these local fixes.
+
+## Verified additions on 8 October 2026
+
+The bounded archive recovery directly matched all 42 main/factor trajectory exports to archived CSVs. The recovered interaction-model factor summary matches all 588 curve endpoints, whereas the currently published summary is the no-interaction variant. Its point estimates are reusable; its independent-endpoint change intervals remain unsuitable for promotion. No complete fixed-effect covariance package was located within the bounded search. The owner has original-machine material to identify next; do not infer that a rerun is already necessary. Incoming unknown research files require metadata triage and screening before content reads.
+
+Dashboard ingestion now rejects corrupt encoding, non-finite required numbers and mismatched trajectory identity instead of silently substituting data or zero. Missing selected-span LOESS predictions remain gaps. Optional LOESS loading is demand-driven and cannot block model rendering. These are display/engineering corrections, not a scientific inference repair. Original result CSVs and the reviewed Word file remain unchanged.
+
+
+### Delivery integrity follow-up - 8 October 2026
+
+The legacy worker could substitute stale cached CSVs after network failure and delete unrelated caches on activation. It is replaced by a scope-restricted retirement worker; result requests wait for successful migration and use HTTP no-store. Main Findings now makes required-summary failures visible rather than silently dropping tables. Synthetic browser and regression tests confirm these behaviours without research data access. This affects delivery only: no SAS/CSV values or uncertainty calculations changed. Cross-request release consistency, invalid model-change intervals, factor model alignment and descriptive-label issues remain scientific/release blockers. Existing CSV_IS_THE_CONTRACT and CI_MUST_MATCH_MODEL principles apply; no new statistical rule or inference method was adopted.
+
+
+### Approved analysis preparation, 8 October 2026
+
+Lucas chose the fully adjusted same-trajectory change from minus one to plus one hour as primary, a female-only donor-parity analysis, and previous RBC units within the same ICU admission (strictly before index time) as the corrected count definition. Candidate code preparation is authorised; source-data access and SAS execution by the assistant are not. Changed model inputs/populations require affected refits; historical intervals cannot repair those changes. Current public result files remain unchanged. Historical parity labels describe the actual mixed donor population until a corrected result release is approved.

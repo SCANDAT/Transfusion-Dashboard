@@ -9,10 +9,12 @@ interface AsyncDataResult<T> {
 
 export function useAsyncData<T>(
   fetchFn: () => Promise<T>,
-  deps: unknown[] = []
+  deps: unknown[] = [],
+  options: { enabled?: boolean } = {}
 ): AsyncDataResult<T> {
+  const enabled = options.enabled ?? true
   const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<Error | null>(null)
   const [refetchCount, setRefetchCount] = useState(0)
 
@@ -27,8 +29,10 @@ export function useAsyncData<T>(
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
+    setData(null)
     setError(null)
+    setLoading(enabled)
+    if (!enabled) return
 
     fetchFnRef.current()
       .then(result => {
@@ -47,7 +51,7 @@ export function useAsyncData<T>(
     return () => {
       cancelled = true
     }
-  }, [depsKey, refetchCount])
+  }, [depsKey, refetchCount, enabled])
 
   return { data, loading, error, refetch }
 }

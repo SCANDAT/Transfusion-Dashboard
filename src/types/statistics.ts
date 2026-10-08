@@ -7,7 +7,7 @@ export interface PatientSexDistribution {
 export interface PatientAgeStats {
   mean: number
   median: number
-  sd: number
+  sd?: number
   min: number
   max: number
   q1: number

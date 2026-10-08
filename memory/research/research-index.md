@@ -30,6 +30,7 @@ must trace back to a statistical result from the SAS pipeline.
 
 | If touching... | Read first |
 |---|---|
+| Analysis or manuscript changes | Consult the private local resume record first; see `docs/RESUME_CHECKPOINT.txt` for routing |
 | Statistical models, p-values, CIs | [methodology.md](methodology.md) |
 | Manuscript text, tables, figures | [manuscript.md](manuscript.md) → verify against SAS output |
 | SCANDAT variables, linkage, registries | [scandat.md](scandat.md) |

@@ -52,6 +52,7 @@ This file is auto-loaded into every Claude Code session via a filesystem junctio
 | [dev/testing-patterns.md](dev/testing-patterns.md) | Vitest infrastructure, coverage, conventions |
 | **Research branch** | |
 | [research/research-index.md](research/research-index.md) | Research branch entry: methodology, manuscript, SCANDAT, Post-Fix |
+| Private analysis review (not in Git) | Start with the local `manuscript/review_audit/RESUME_HERE.txt`; public checkpoint: `docs/RESUME_CHECKPOINT.txt` |
 | [research/methodology.md](research/methodology.md) | Model specs, inference approach, interactions, assumptions |
 | [research/manuscript.md](research/manuscript.md) | STROBE manuscript, table/figure correspondence, conversion |
 | [research/analytical-experience.md](research/analytical-experience.md) | CI fix, model evolution, null findings, data quality lessons |
@@ -64,7 +65,8 @@ This file is auto-loaded into every Claude Code session via a filesystem junctio
 | Direction | Status |
 |-----------|--------|
 | Memory stack | Operational — junctions, auto-sync hooks, validation script (2026-03-24) |
-| Dashboard | Feature-complete, deployed to GitHub Pages |
-| SAS pipeline | Functional, 3 scripts running, CI fix applied |
-| Manuscript | Advanced draft, pending journal submission |
+| Publication alignment | Paused at author request (8 October 2026). Resume: `manuscript/review_audit/RESUME_HERE.txt`. Checklist: `manuscript/review_audit/publication_execution.md`; plan and review matrix beside it (private, git-ignored; 2026-10-01) |
+| Dashboard | Local corrections tested; checkpoint branch is not a deployment or approved scientific release |
+| SAS pipeline | Corrected package in preparation; runtime and scientific validation remain incomplete |
+| Manuscript | Private author review remains open; revision follows validated results |
 | Test coverage expansion | Planned — data transformation functions first |

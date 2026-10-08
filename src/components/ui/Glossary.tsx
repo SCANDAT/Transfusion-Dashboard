@@ -1,3 +1,4 @@
+import { PARITY_DESCRIPTION } from '@/utils/factorLabels'
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import styles from './Glossary.module.css'
@@ -76,7 +77,7 @@ export const GLOSSARY: Record<string, { term: string; definition: string; catego
   },
   'storage-time': {
     term: 'Storage Time',
-    definition: 'How long the RBC unit was stored before transfusion. Red blood cells can be stored for up to 42 days. Some studies have investigated whether older blood is less effective.',
+    definition: 'Duration of RBC storage before transfusion. The exported categories are labelled <10, 10-19, 20-29, 30-39 and ≥40 days.',
     category: 'Component Factors',
   },
   'donor-sex': {
@@ -86,7 +87,7 @@ export const GLOSSARY: Record<string, { term: string; definition: string; catego
   },
   'donor-parity': {
     term: 'Donor Parity',
-    definition: 'For female donors, whether they have previously been pregnant (parous) or not (nulliparous). Pregnancy can cause the immune system to develop antibodies that might affect transfusion outcomes.',
+    definition: PARITY_DESCRIPTION,
     category: 'Component Factors',
   },
   'base-model': {

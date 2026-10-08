@@ -15,9 +15,13 @@ last_updated: "2026-03-24"
 
 # SAS Pipeline
 
+## Current verified status (8 October 2026)
+
+Work is paused at the author's request. Start with the private local `manuscript/review_audit/RESUME_HERE.txt` and the tracked `docs/RESUME_CHECKPOINT.txt`. Metadata intake is complete. Linkage diagnostics, the complete sample/full analysis package and runtime validation remain unfinished. The historical model, interval and filename descriptions below are not an analysis specification; consult the private evidence record before making scientific changes. No source dataset access or SAS execution by the assistant has occurred.
+
 ## What to Know
 
-Three SAS scripts form the statistical backbone of the dashboard, orchestrated by PowerShell runners. Script 1 computes descriptive statistics using PROC SORT, PROC MEANS, and PROC FREQ. Script 2 estimates transfusion effects on vital parameters using PROC MIXED with natural cubic spline terms and a change-from-baseline model. Script 3 estimates component and factor interaction effects using PROC MIXED with interaction terms and Type 3 tests. All scripts read source data from D:\Clinisoft, assign SAS libraries under an analysis/ directory tree, and write CSV output to analysis/script_data/. That CSV output is manually copied to public/data/ for the frontend. Key macro variables governing the analysis window are interval_minutes=60, min_time=-720, and max_time=720 (a 24-hour window centered on transfusion events). The PowerShell runner run_analysis.ps1 accepts -Dataset (sample or full) and -Script (1, 2, 3, or 0 for all) parameters.
+Three SAS scripts form the statistical backbone of the dashboard, orchestrated by PowerShell runners. Script 1 computes descriptive statistics using PROC SORT, PROC MEANS, and PROC FREQ. Script 2 estimates transfusion effects on vital parameters using PROC MIXED with natural cubic spline terms and a change-from-baseline model. Script 3 estimates component and factor interaction effects using PROC MIXED with interaction terms and Type 3 tests. All scripts read source data from <SOURCE_DATA_PATH>, assign SAS libraries under an analysis/ directory tree, and write CSV output to analysis/script_data/. That CSV output is manually copied to public/data/ for the frontend. Key macro variables governing the analysis window are interval_minutes=60, min_time=-720, and max_time=720 (a 24-hour window centered on transfusion events). The PowerShell runner run_analysis.ps1 accepts -Dataset (sample or full) and -Script (1, 2, 3, or 0 for all) parameters.
 
 ## Understanding
 
@@ -35,7 +39,7 @@ All three scripts begin with a common preamble: libname assignments, macro varia
 
 The full data flow proceeds through several stages:
 
-1. **Source**: Raw clinical monitoring data resides on D:\Clinisoft as SAS datasets (.sas7bdat). These are read-only and managed outside this project.
+1. **Source**: Raw clinical monitoring data resides on <SOURCE_DATA_PATH> as SAS datasets (.sas7bdat). These are read-only and managed outside this project.
 2. **SAS work libraries**: Each script creates intermediate datasets in its assigned library (analysis/script1_work/, script2_work/, script3_work/). These intermediates can reach GB scale for the full dataset.
 3. **CSV export**: At the end of each script, PROC EXPORT writes final results to analysis/script_data/ as CSV files. File names encode the vital parameter and factor/component using uppercase codes matching the frontend's VITAL_PARAM_CODES and COMP_FACTOR_CODES constants.
 4. **Manual copy**: A human copies the CSV files from analysis/script_data/ to public/data/ in the web project. This manual step is intentional: it provides a review checkpoint before clinical results reach the dashboard.
@@ -78,7 +82,7 @@ Both revisions changed the output CSV column structure, which required correspon
 
 ### Known Hazards
 
-**Path dependencies**: All scripts hardcode D:\Clinisoft as the source data location. Running on a machine without this path mounted will fail immediately. The analysis/ output directory is also assumed to exist. There is no mkdir logic in the SAS scripts; the PowerShell runner should ensure directories exist before invocation but does not always do so reliably.
+**Path dependencies**: All scripts hardcode <SOURCE_DATA_PATH> as the source data location. Running on a machine without this path mounted will fail immediately. The analysis/ output directory is also assumed to exist. There is no mkdir logic in the SAS scripts; the PowerShell runner should ensure directories exist before invocation but does not always do so reliably.
 
 **Large intermediates**: Script 2 and Script 3 create intermediate SAS datasets that can exceed several GB on the full cohort. Disk space on the analysis drive must be monitored. If a script fails mid-run, these intermediates are not cleaned up automatically and can accumulate.
 

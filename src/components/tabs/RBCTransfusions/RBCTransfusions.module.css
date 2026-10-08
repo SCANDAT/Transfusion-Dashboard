@@ -570,7 +570,11 @@
     align-items: stretch;
   }
 
-  .toolbarSection {
+  .toolbarSection,
+  .toolbarSection:not(:last-child) {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
     padding-right: 0;
     border-right: none;
     padding-bottom: var(--spacing-3);

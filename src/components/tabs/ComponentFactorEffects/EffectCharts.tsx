@@ -1,57 +1,11 @@
+import { getFactorCategoryLabel } from '@/utils/factorLabels'
 import { useRef, useCallback, useMemo, memo } from 'react'
 import type { Chart as ChartInstance, ChartOptions } from 'chart.js'
-import { BaseChart, exportChartAsSVG, prepareVisualizationChartData } from '@/components/charts'
+import { BaseChart, exportChartAsPNG, prepareVisualizationChartData } from '@/components/charts'
 import { COMP_FACTORS } from '@/types'
 import type { VisualizationData, TimeRange, ChartDisplayOptions } from '@/types'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import styles from './ComponentFactorEffects.module.css'
-
-// Category labels for human-readable display
-const CATEGORY_LABELS: Record<string, Record<string, string>> = {
-  DonorHb_Cat: {
-    '1': '<125 g/L',
-    '2': '125-139 g/L',
-    '3': '140-154 g/L',
-    '4': '155-169 g/L',
-    '5': '≥170 g/L',
-  },
-  Storage_Cat: {
-    '1': '<10 days',
-    '2': '10-19 days',
-    '3': '20-29 days',
-    '4': '30-39 days',
-    '5': '≥40 days',
-  },
-  DonorSex: {
-    '1': 'Male',
-    '2': 'Female',
-  },
-  DonorParity: {
-    '0': 'Nulliparous',
-    '1': 'Parous',
-  },
-  wdy_donation: {
-    '1': 'Sunday',
-    '2': 'Monday',
-    '3': 'Tuesday',
-    '4': 'Wednesday',
-    '5': 'Thursday',
-    '6': 'Friday',
-    '7': 'Saturday',
-  },
-}
-
-/**
- * Get human-readable label for a category value
- */
-function getCategoryLabel(factor: string, value: string | number): string {
-  const factorLabels = CATEGORY_LABELS[factor]
-  if (factorLabels) {
-    const label = factorLabels[String(value)]
-    if (label) return label
-  }
-  return String(value)
-}
 
 interface EffectChartsProps {
   data: VisualizationData
@@ -100,6 +54,20 @@ export const EffectCharts = memo(function EffectCharts({
       legend: {
         display: true,
         position: 'top',
+        onClick: (_event, item, legend) => {
+          const chart = legend.chart
+          const index = item.datasetIndex
+          if (index === undefined) return
+          const category = chart.data.datasets[index]?.label
+          if (category === undefined) return
+          const visible = chart.isDatasetVisible(index)
+          chart.data.datasets.forEach((dataset, datasetIndex) => {
+            if (dataset.label === category || dataset.label?.startsWith(`${category} (`)) {
+              chart.setDatasetVisibility(datasetIndex, !visible)
+            }
+          })
+          chart.update()
+        },
         labels: {
           color: theme.textColor,
           filter: (item) => {
@@ -109,26 +77,19 @@ export const EffectCharts = memo(function EffectCharts({
           usePointStyle: true,
           boxWidth: 8,
           generateLabels: (chart) => {
-            const datasets = chart.data.datasets
-            const seen = new Set<string>()
-            return datasets
-              .filter((ds) => {
-                const label = ds.label || ''
-                // Only show main lines (not CI or Base)
-                if (label.includes('CI') || label.includes('Base')) return false
-                if (seen.has(label)) return false
-                seen.add(label)
-                return true
-              })
-              .map((ds, i) => ({
-                text: getCategoryLabel(comparisonColumn, ds.label || ''),
-                fillStyle: ds.borderColor as string,
-                strokeStyle: ds.borderColor as string,
+            return chart.data.datasets.flatMap((dataset, datasetIndex) => {
+              const label = dataset.label || ''
+              if (label.includes('CI') || label.includes('Base')) return []
+              return [{
+                text: getFactorCategoryLabel(comparisonColumn, label),
+                fillStyle: dataset.borderColor as string,
+                strokeStyle: dataset.borderColor as string,
                 fontColor: theme.textColor,
                 lineWidth: 2,
-                hidden: false,
-                index: i,
-              }))
+                hidden: !chart.isDatasetVisible(datasetIndex),
+                datasetIndex,
+              }]
+            })
           },
         },
       },
@@ -153,9 +114,10 @@ export const EffectCharts = memo(function EffectCharts({
             const label = context.dataset.label || ''
             // Skip CI datasets in tooltip
             if (label.includes('CI')) return ''
-            const displayLabel = getCategoryLabel(comparisonColumn, label.replace(' (Base)', ''))
+            const displayLabel = getFactorCategoryLabel(comparisonColumn, label.replace(' (Base)', ''))
             const isBase = label.includes('Base')
-            const value = context.parsed.y?.toFixed(2) ?? 'N/A'
+            const value = typeof context.parsed.y === 'number' && Number.isFinite(context.parsed.y)
+              ? context.parsed.y.toFixed(2) : 'N/A'
             const unit = showDelta ? '' : ` ${metadata.yLabel.match(/\(([^)]+)\)/)?.[1] || ''}`
             return `${displayLabel}${isBase ? ' (Base)' : ''}: ${value}${unit}`
           },
@@ -191,14 +153,19 @@ export const EffectCharts = memo(function EffectCharts({
   const handleExport = useCallback(() => {
     if (chartRef.current) {
       const suffix = showDelta ? 'delta' : 'trajectory'
-      const filename = `${metadata.vitalParam}_${comparisonColumn}_${suffix}.svg`
-      exportChartAsSVG(chartRef.current, filename)
+      const filename = `${metadata.vitalParam}_${comparisonColumn}_${suffix}.png`
+      exportChartAsPNG(chartRef.current, filename)
     }
   }, [metadata.vitalParam, comparisonColumn, showDelta])
 
   return (
     <div className={styles.chartsContainer}>
       <div className={styles.chartCard}>
+        {showDelta && (
+          <p role="note" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+            Confidence intervals for change are unavailable; only point estimates are shown.
+          </p>
+        )}
         <div className={styles.chartWrapper}>
           <BaseChart
             type="line"
@@ -210,7 +177,7 @@ export const EffectCharts = memo(function EffectCharts({
           />
         </div>
         <button className={styles.exportBtn} onClick={handleExport}>
-          Export
+          Export PNG
         </button>
       </div>
     </div>

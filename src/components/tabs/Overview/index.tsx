@@ -66,15 +66,13 @@ export function OverviewTab() {
     <div className={styles.container}>
       <section className={styles.hero}>
         <h1 className={styles.title}>
-          Understanding RBC Transfusion Effects in ICU Patients
+          Vital Signs Around RBC Transfusion in Intensive Care
         </h1>
         <p className={styles.subtitle}>
-          The <span className={styles.highlight}>SCANDAT</span> ICU Transfusion Data Dashboard serves to
-          interactively present the findings of the <span className={styles.highlight}>SCANDAT</span> research
-          group's analysis of 14,655 RBC transfusions administered to 6,736 unique ICU patients in four
-          Stockholm-region hospitals between January 2014 – November 2018. Our study investigates how
-          continuously monitored vital parameters change following RBC transfusions and whether variations
-          in RBC component factors alter these trajectories.
+          This dashboard presents an observational study of vital signs and respiratory parameters
+          around red blood cell transfusion in Stockholm intensive care units. It displays modelled
+          trajectories and comparisons by donor and component characteristics. The manuscript and
+          statistical interpretation are undergoing review before publication.
         </p>
       </section>
 
@@ -87,11 +85,11 @@ export function OverviewTab() {
           </div>
           <div className={styles.statCard}>
             <span className={styles.statNumber}>14,655</span>
-            <span className={styles.statLabel}>RBC Transfusions</span>
+            <span className={styles.statLabel}>Included RBC Units</span>
           </div>
           <div className={styles.statCard}>
-            <span className={styles.statNumber}>4</span>
-            <span className={styles.statLabel}>Stockholm Hospitals</span>
+            <span className={styles.statNumber}>3</span>
+            <span className={styles.statLabel}>Hospital Sites</span>
           </div>
           <div className={styles.statCard}>
             <span className={styles.statNumber}>2014–2018</span>
@@ -100,8 +98,8 @@ export function OverviewTab() {
         </div>
         <p className={styles.studyDescription}>
           This dashboard presents findings from the <span className={styles.highlight}>SCANDAT</span> research
-          group's analysis of continuously monitored vital parameters in ICU patients before and after
-          receiving red blood cell (RBC) transfusions. We examined whether patient outcomes varied based
+          group's analysis of recorded vital parameters in ICU patients before and after
+          receiving red blood cell (RBC) transfusions. We examined whether these trajectories varied based
           on characteristics of the donated blood, including donor hemoglobin levels, storage time,
           donor sex, and donor parity.
         </p>
@@ -110,7 +108,7 @@ export function OverviewTab() {
       <section className={styles.keyFindings}>
         <h2 className={styles.sectionTitle}>Key Findings</h2>
         <p className={styles.findingsIntro}>
-          Our analysis reveals several important patterns in how vital signs respond to transfusion:
+          The fitted trajectories describe patterns before and after transfusion start:
         </p>
 
         <div className={styles.findingsGrid}>
@@ -118,14 +116,12 @@ export function OverviewTab() {
             <div className={styles.findingIcon} style={{ color: 'var(--color-accent-highlight)' }}>
               <HeartIcon />
             </div>
-            <h3 className={styles.findingTitle}>Heart Rate Decreases</h3>
+            <h3 className={styles.findingTitle}>Heart Rate</h3>
             <p className={styles.findingText}>
-              Following transfusion, heart rate shows a consistent <strong>decrease of approximately
-              2-3 beats per minute</strong>, suggesting reduced cardiovascular stress as oxygen
-              delivery improves.
+              The fitted heart-rate trajectory falls around transfusion start. The decline begins before transfusion; its timing alone does not establish a transfusion effect.
             </p>
             <div className={styles.findingMeta}>
-              <span className={styles.significance}>Statistically significant</span>
+              <span className={styles.significance}>Modelled trajectory</span>
             </div>
           </div>
 
@@ -133,13 +129,12 @@ export function OverviewTab() {
             <div className={styles.findingIcon} style={{ color: 'var(--color-accent-primary)' }}>
               <TrendUpIcon />
             </div>
-            <h3 className={styles.findingTitle}>Blood Pressure Increases</h3>
+            <h3 className={styles.findingTitle}>Blood Pressure</h3>
             <p className={styles.findingText}>
-              Mean arterial pressure shows a <strong>modest increase of 1-2 mmHg</strong> following
-              transfusion, reflecting improved circulatory volume and vascular tone.
+              The fitted blood-pressure trajectories rise around transfusion start. Pre-transfusion trends and subsequent treatments are relevant to their interpretation.
             </p>
             <div className={styles.findingMeta}>
-              <span className={styles.significance}>Statistically significant</span>
+              <span className={styles.significance}>Modelled trajectory</span>
             </div>
           </div>
 
@@ -147,13 +142,12 @@ export function OverviewTab() {
             <div className={styles.findingIcon} style={{ color: 'var(--color-chart-3)' }}>
               <ActivityIcon />
             </div>
-            <h3 className={styles.findingTitle}>Oxygen Saturation Stable</h3>
+            <h3 className={styles.findingTitle}>Oxygen Saturation</h3>
             <p className={styles.findingText}>
-              SpO2 levels remain <strong>relatively unchanged</strong> after transfusion, which is
-              expected as most ICU patients already receive supplemental oxygen to maintain saturation.
+              The fitted oxygen-saturation trajectory shows a small change on its native percentage scale. Interpret its size separately from statistical uncertainty.
             </p>
             <div className={styles.findingMeta}>
-              <span className={styles.neutral}>No significant change</span>
+              <span className={styles.neutral}>Modelled trajectory</span>
             </div>
           </div>
 
@@ -161,14 +155,12 @@ export function OverviewTab() {
             <div className={styles.findingIcon} style={{ color: 'var(--color-accent-secondary)' }}>
               <DropletIcon />
             </div>
-            <h3 className={styles.findingTitle}>Component Factors: Minimal Impact</h3>
+            <h3 className={styles.findingTitle}>Donor and Component Comparisons</h3>
             <p className={styles.findingText}>
-              <strong>Donor characteristics</strong> (hemoglobin, sex, parity) and <strong>storage
-              time</strong> showed <strong>no clinically significant effects</strong> on vital
-              parameter trajectories in our adjusted models.
+              The dashboard compares trajectories across donor and component categories. Between-category contrasts and their uncertainty require reconciliation before drawing conclusions about effect modification.
             </p>
             <div className={styles.findingMeta}>
-              <span className={styles.neutral}>Reassuring for transfusion practice</span>
+              <span className={styles.neutral}>Exploratory comparison</span>
             </div>
           </div>
         </div>
@@ -180,25 +172,19 @@ export function OverviewTab() {
           <div className={styles.interpretationCard}>
             <h3>For Clinicians</h3>
             <p>
-              These findings support current transfusion practices. While vital signs show measurable
-              changes following RBC transfusion, the lack of significant effects from component factors
-              suggests that standard blood bank protocols for donor selection and storage are appropriate.
+              These observational trajectories describe physiology around transfusion. They do not establish a causal treatment benefit or determine which donor or component characteristics should guide clinical selection.
             </p>
           </div>
           <div className={styles.interpretationCard}>
             <h3>For Researchers</h3>
             <p>
-              The observed physiological responses provide benchmarks for future studies. The absence
-              of component factor effects in this large cohort may help refine hypotheses about which
-              patient subgroups, if any, might benefit from specific blood product selection.
+              Interpret the trajectories alongside their time window, adjustment variables and reference covariate profile. A difference between whole trajectories and a difference in change between two time points answer different questions.
             </p>
           </div>
           <div className={styles.interpretationCard}>
             <h3>For Patients & Families</h3>
             <p>
-              This research confirms that blood transfusions generally have the expected beneficial
-              effects on circulation, and that the specific characteristics of donated blood do not
-              appear to make a meaningful difference in how patients respond.
+              The curves summarise a research analysis across many transfusions. An individual patient can follow a different course, depending on illness and other treatments.
             </p>
           </div>
         </div>
@@ -285,11 +271,11 @@ export function OverviewTab() {
         <p>
           Results are based on linear mixed-effects models with random intercepts for patient ID,
           adjusted for time relative to transfusion (cubic spline), patient demographics, ICU ward,
-          and concurrent treatments. The "Fully Adjusted Model" additionally controls for crystalloid
-          fluids, vasopressors, and sedatives administered before transfusion.
+          and other recorded covariates. The fully adjusted model adds crystalloid and noradrenaline
+          volumes and medication indicators for periods preceding each vital-sign measurement.
         </p>
         <p className={styles.methodologyFooter}>
-          For complete methodology, see the peer-reviewed publication.
+          The manuscript and analysis documentation are being reconciled before publication.
         </p>
       </section>
     </div>

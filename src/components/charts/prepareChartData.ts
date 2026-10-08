@@ -8,13 +8,7 @@ import type {
 } from '@/types'
 import { CHART_COLORS, getChartColor } from '@/types/charts'
 
-/**
- * Filter data rows by time range
- *
- * @param rows - Array of data rows with TimeFromTransfusion property
- * @param timeRange - Tuple of [minTime, maxTime] in minutes
- * @returns Filtered array of rows within the time range
- */
+/** Keep the exported time grid, including both selected endpoints. */
 export function filterByTimeRange<T extends { TimeFromTransfusion: number }>(
   rows: T[],
   timeRange: TimeRange
@@ -25,9 +19,6 @@ export function filterByTimeRange<T extends { TimeFromTransfusion: number }>(
   )
 }
 
-/**
- * Helper to add transparency to hex color
- */
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
@@ -35,24 +26,103 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+function finiteOrNull(value: number | null | undefined): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
 /**
- * Prepare Chart.js datasets for visualization charts
+ * Map exported values without resampling or adding spline interpolation.
+ * Missing values remain explicit gaps, including partially missing intervals.
  *
- * Creates line chart data with confidence interval bands for multiple comparison groups.
- * Each comparison group gets:
- * - A main line (full model prediction or delta values)
- * - Optional confidence interval band (fill area)
- * - Optional base model line (if showBaseModel is enabled)
- *
- * When showDeltaPlot is true, uses Delta_Full/Delta_Lower/Delta_Upper columns
- * for showing change from baseline instead of absolute values.
- *
- * @param rows - Visualization data rows
- * @param comparisonColumn - The comparison factor being analyzed
- * @param selectedComparisons - Array of selected comparison values to display
- * @param timeRange - Time range to filter data
- * @param displayOptions - Chart display configuration
- * @returns Chart.js compatible ChartData object
+ * Delta_Lower/Delta_Upper in the current exports are shifted absolute limits,
+ * not confidence limits for a change. Only absolute levels may show bands.
+ */
+function prepareModelDatasets(
+  rows: TransfusionDataRow[],
+  options: ChartDisplayOptions,
+  color: string,
+  labels: { full: string; base: string; upper: string; lower: string }
+) {
+  const sortedRows = [...rows].sort((a, b) => a.TimeFromTransfusion - b.TimeFromTransfusion)
+  // Chart.js accepts y: null to retain the time coordinate of a missing value.
+  // Its default line-chart point type only declares a numeric y.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const datasets: any[] = []
+  const lineOptions = { tension: 0, spanGaps: false, parsing: false, pointRadius: 0 }
+  const getBase = (row: TransfusionDataRow) =>
+    finiteOrNull(options.showDeltaPlot ? row.Delta_Base : row.PredVal_Base)
+
+  if (options.showConfidenceInterval && !options.showDeltaPlot) {
+    const hasInterval = (row: TransfusionDataRow) =>
+      finiteOrNull(row.PredVal_Full) !== null &&
+      finiteOrNull(row.Lower_Full) !== null &&
+      finiteOrNull(row.Upper_Full) !== null
+
+    const bandOptions = {
+      ...lineOptions,
+      borderColor: 'transparent',
+      borderWidth: 0,
+      pointHoverRadius: 0,
+      hidden: false,
+      showLine: true,
+    }
+    datasets.push({
+      ...bandOptions,
+      label: labels.upper,
+      data: sortedRows.map((row) => ({
+        x: row.TimeFromTransfusion,
+        y: hasInterval(row) ? row.Upper_Full : null,
+      })),
+      backgroundColor: 'transparent',
+      fill: false,
+    })
+    datasets.push({
+      ...bandOptions,
+      label: labels.lower,
+      data: sortedRows.map((row) => ({
+        x: row.TimeFromTransfusion,
+        y: hasInterval(row) ? row.Lower_Full : null,
+      })),
+      backgroundColor: hexToRgba(color, 0.15),
+      fill: '-1',
+    })
+  }
+
+  datasets.push({
+    ...lineOptions,
+    label: labels.full,
+    data: sortedRows.map((row) => ({
+      x: row.TimeFromTransfusion,
+      y: finiteOrNull(options.showDeltaPlot ? row.Delta_Full : row.PredVal_Full),
+    })),
+    borderColor: color,
+    backgroundColor: color,
+    fill: false,
+    pointHoverRadius: 4,
+    borderWidth: 2,
+  })
+
+  // Never substitute full-model predictions for missing base-model predictions.
+  if (options.showBaseModel && sortedRows.some((row) => getBase(row) !== null)) {
+    datasets.push({
+      ...lineOptions,
+      label: labels.base,
+      data: sortedRows.map((row) => ({ x: row.TimeFromTransfusion, y: getBase(row) })),
+      borderColor: color,
+      backgroundColor: color,
+      fill: false,
+      pointHoverRadius: 4,
+      borderWidth: 1,
+      borderDash: [5, 5],
+    })
+  }
+  return datasets
+}
+
+/**
+ * Prepare factor trajectories with colors determined by the entire category
+ * universe, before time filtering or category selection. Selection order cannot
+ * change a category's color.
  */
 export function prepareVisualizationChartData(
   rows: VisualizationDataRow[],
@@ -61,244 +131,49 @@ export function prepareVisualizationChartData(
   timeRange: TimeRange,
   displayOptions: ChartDisplayOptions
 ): ChartData<'line'> {
-  // Filter by time range
-  const filteredRows = filterByTimeRange(rows, timeRange)
-
-  // Group data by comparison value
+  const categories = [...new Set(rows.map((row) => row.CompValue))].sort((a, b) =>
+    String(a).localeCompare(String(b), 'en', { numeric: true }) ||
+    String(a).localeCompare(String(b), 'en') ||
+    (typeof a).localeCompare(typeof b)
+  )
+  const colorIndices = new Map(categories.map((category, index) => [category, index]))
+  const selected = new Set(selectedComparisons)
   const groupedData = new Map<string | number, VisualizationDataRow[]>()
-  for (const row of filteredRows) {
-    if (selectedComparisons.includes(row.CompValue)) {
-      if (!groupedData.has(row.CompValue)) {
-        groupedData.set(row.CompValue, [])
-      }
-      groupedData.get(row.CompValue)!.push(row)
-    }
+  for (const row of filterByTimeRange(rows, timeRange)) {
+    if (!selected.has(row.CompValue)) continue
+    const group = groupedData.get(row.CompValue) ?? []
+    group.push(row)
+    groupedData.set(row.CompValue, group)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const datasets: any[] = []
-
-  // Determine which values to use based on display mode
-  const useDelta = displayOptions.showDeltaPlot
-
-  // Create datasets for each selected comparison
-  selectedComparisons.forEach((compValue, index) => {
-    const data = groupedData.get(compValue)
-    if (!data || data.length === 0) return
-
-    // Sort by time for proper line rendering
-    const sortedData = [...data].sort((a, b) => a.TimeFromTransfusion - b.TimeFromTransfusion)
-
-    const color = getChartColor(index)
-    const transparentColor = hexToRgba(color, 0.15)
-
-    // Get the appropriate y-values based on mode
-    const getYValue = (row: VisualizationDataRow) =>
-      useDelta ? row.Delta_Full : row.PredVal_Full
-    const getUpperValue = (row: VisualizationDataRow) =>
-      useDelta ? (row.Delta_Upper ?? row.Delta_Full) : row.Upper_Full
-    const getLowerValue = (row: VisualizationDataRow) =>
-      useDelta ? (row.Delta_Lower ?? row.Delta_Full) : row.Lower_Full
-    const getBaseValue = (row: VisualizationDataRow) =>
-      useDelta ? row.Delta_Base : row.PredVal_Base
-
-    // Confidence interval bands - upper line first (no fill), then lower line fills to upper
-    if (displayOptions.showConfidenceInterval) {
-      datasets.push({
-        label: `${compValue} (Upper CI)`,
-        data: sortedData.map((row) => ({
-          x: row.TimeFromTransfusion,
-          y: getUpperValue(row),
-        })),
-        borderColor: 'transparent',
-        backgroundColor: 'transparent',
-        fill: false,
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        borderWidth: 0,
-        tension: 0.4,
-        parsing: false,
-        hidden: false,
-        showLine: true,
-      })
-
-      // Lower CI fills UP to the previous dataset (upper CI)
-      datasets.push({
-        label: `${compValue} (Lower CI)`,
-        data: sortedData.map((row) => ({
-          x: row.TimeFromTransfusion,
-          y: getLowerValue(row),
-        })),
-        borderColor: 'transparent',
-        backgroundColor: transparentColor,
-        fill: '-1', // Fill to previous dataset (upper CI)
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        borderWidth: 0,
-        tension: 0.4,
-        parsing: false,
-        hidden: false,
-        showLine: true,
-      })
-    }
-
-    // Main prediction line (full model)
-    datasets.push({
-      label: String(compValue),
-      data: sortedData.map((row) => ({
-        x: row.TimeFromTransfusion,
-        y: getYValue(row),
-      })),
-      borderColor: color,
-      backgroundColor: color,
-      fill: false,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      borderWidth: 2,
-      tension: 0.4,
-      parsing: false,
-    })
-
-    // Base model line (if enabled)
-    const hasBaseData = sortedData[0] && getBaseValue(sortedData[0]) !== undefined
-    if (displayOptions.showBaseModel && hasBaseData) {
-      datasets.push({
-        label: `${compValue} (Base)`,
-        data: sortedData.map((row) => ({
-          x: row.TimeFromTransfusion,
-          y: getBaseValue(row),
-        })),
-        borderColor: color,
-        backgroundColor: color,
-        fill: false,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        borderWidth: 1,
-        borderDash: [5, 5],
-        tension: 0.4,
-        parsing: false,
-      })
-    }
-  })
-
   return {
-    datasets,
+    datasets: [...selected].flatMap((category) => {
+      const group = groupedData.get(category)
+      if (!group?.length) return []
+      return prepareModelDatasets(group, displayOptions, getChartColor(colorIndices.get(category)!), {
+        full: String(category),
+        base: `${category} (Base)`,
+        upper: `${category} (Upper CI)`,
+        lower: `${category} (Lower CI)`,
+      })
+    }),
   }
 }
 
-/**
- * Prepare Chart.js datasets for transfusion effect charts
- *
- * Creates line chart data showing the overall effect of RBC transfusions on vital parameters.
- * Unlike visualization charts, this shows a single vital parameter's response to transfusion
- * without comparison groups.
- *
- * @param rows - Transfusion data rows for a specific vital parameter
- * @param timeRange - Time range to filter data
- * @param displayOptions - Chart display configuration
- * @returns Chart.js compatible ChartData object
- */
+/** Prepare the main trajectory or exported change from baseline. */
 export function prepareTransfusionChartData(
   rows: TransfusionDataRow[],
   timeRange: TimeRange,
   displayOptions: ChartDisplayOptions
 ): ChartData<'line'> {
-  // Filter by time range
   const filteredRows = filterByTimeRange(rows, timeRange)
-
-  // Sort by time
-  const sortedData = [...filteredRows].sort(
-    (a, b) => a.TimeFromTransfusion - b.TimeFromTransfusion
-  )
-
-  if (sortedData.length === 0) {
-    return { datasets: [] }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const datasets: any[] = []
-  const color = CHART_COLORS[0] // Use primary color
-  const transparentColor = hexToRgba(color, 0.15)
-
-  // Confidence interval bands - upper line first (no fill), then lower line fills to upper
-  if (displayOptions.showConfidenceInterval) {
-    datasets.push({
-      label: 'Upper CI',
-      data: sortedData.map((row) => ({
-        x: row.TimeFromTransfusion,
-        y: row.Upper_Full,
-      })),
-      borderColor: 'transparent',
-      backgroundColor: 'transparent',
-      fill: false,
-      pointRadius: 0,
-      pointHoverRadius: 0,
-      borderWidth: 0,
-      tension: 0.4,
-      parsing: false,
-      hidden: false,
-      showLine: true,
-    })
-
-    // Lower CI fills UP to the previous dataset (upper CI)
-    datasets.push({
-      label: 'Lower CI',
-      data: sortedData.map((row) => ({
-        x: row.TimeFromTransfusion,
-        y: row.Lower_Full,
-      })),
-      borderColor: 'transparent',
-      backgroundColor: transparentColor,
-      fill: '-1', // Fill to previous dataset (upper CI)
-      pointRadius: 0,
-      pointHoverRadius: 0,
-      borderWidth: 0,
-      tension: 0.4,
-      parsing: false,
-      hidden: false,
-      showLine: true,
-    })
-  }
-
-  // Main prediction line (full model)
-  datasets.push({
-    label: 'Full Model',
-    data: sortedData.map((row) => ({
-      x: row.TimeFromTransfusion,
-      y: row.PredVal_Full,
-    })),
-    borderColor: color,
-    backgroundColor: color,
-    fill: false,
-    pointRadius: 0,
-    pointHoverRadius: 4,
-    borderWidth: 2,
-    tension: 0.4,
-    parsing: false,
-  })
-
-  // Base model line (if enabled and available)
-  if (displayOptions.showBaseModel && sortedData[0]?.PredVal_Base !== undefined) {
-    datasets.push({
-      label: 'Base Model',
-      data: sortedData.map((row) => ({
-        x: row.TimeFromTransfusion,
-        y: row.PredVal_Base,
-      })),
-      borderColor: color,
-      backgroundColor: color,
-      fill: false,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      borderWidth: 1,
-      borderDash: [5, 5],
-      tension: 0.4,
-      parsing: false,
-    })
-  }
-
   return {
-    datasets,
+    datasets: filteredRows.length ? prepareModelDatasets(
+      filteredRows,
+      displayOptions,
+      CHART_COLORS[0],
+      { full: 'Full Model', base: 'Base Model', upper: 'Upper CI', lower: 'Lower CI' }
+    ) : [],
   }
 }
 

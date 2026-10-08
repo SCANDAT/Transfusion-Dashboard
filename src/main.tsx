@@ -1,17 +1,31 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { retireLegacyServiceWorker } from './services/serviceWorker'
 
-// Register service worker in production
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    const swPath = `${import.meta.env.BASE_URL}sw.js`
-    navigator.serviceWorker.register(swPath, { scope: import.meta.env.BASE_URL })
-  })
+async function startDashboard() {
+  const root = document.getElementById('root')!
+  if (import.meta.env.PROD) {
+    try {
+      await retireLegacyServiceWorker(import.meta.env.BASE_URL)
+    } catch {
+      // Do not request scientific results while a legacy cache may control them.
+      const message = document.createElement('p')
+      message.textContent = 'Unable to refresh the dashboard. Check your connection and reload.'
+      message.setAttribute('role', 'alert')
+      const reload = document.createElement('button')
+      reload.textContent = 'Reload dashboard'
+      reload.addEventListener('click', () => window.location.reload())
+      root.replaceChildren(message, reload)
+      return
+    }
+  }
+
+  ReactDOM.createRoot(root).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  )
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-)
+void startDashboard()

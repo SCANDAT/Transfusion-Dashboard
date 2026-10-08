@@ -1,5 +1,6 @@
+import { getFactorCategoryLabel } from '@/utils/factorLabels'
 import { dataCache } from './cache'
-import { fetchCSV } from './csvParser'
+import { CSVFetchError, CSVParseError, fetchCSV, fetchCSVWithFallback as fetchPaths } from './csvParser'
 import type {
   VitalParamCode,
   CompFactorCode,
@@ -76,11 +77,7 @@ async function fetchCSVWithFallback<T>(fileName: string): Promise<T[]> {
   const upperPath = `${DATA_BASE_PATH}/${baseName.toUpperCase()}.csv`
   const lowerPath = `${DATA_BASE_PATH}/${baseName.toLowerCase()}.csv`
 
-  try {
-    return await fetchCSV<T>(upperPath)
-  } catch {
-    return await fetchCSV<T>(lowerPath)
-  }
+  return fetchPaths<T>([upperPath, lowerPath])
 }
 
 export async function loadVizIndex(): Promise<VizIndexEntry[]> {
@@ -111,6 +108,37 @@ export async function getAvailableCompFactors(
   return COMP_FACTOR_CODES.filter(code => factorsSet.has(code))
 }
 
+function validateTrajectoryRows(
+  rows: (TransfusionDataRow | VisualizationDataRow)[],
+  vitalParam: VitalParamCode,
+  compFactor?: CompFactorCode
+): void {
+  const requiredFields = ['PredVal_Full', 'Lower_Full', 'Upper_Full', 'Delta_Full']
+  const optionalFields = ['PredVal_Base', 'Lower_Base', 'Upper_Base', 'Delta_Base', 'Delta_Lower', 'Delta_Upper']
+  for (const row of rows) {
+    requiredNumber(row.TimeFromTransfusion, 'TimeFromTransfusion')
+    if (normalizeVitalAbbreviation(row.VitalParam) !== vitalParam) throw new CSVParseError('Trajectory vital-parameter code does not match the requested file.')
+    const record = row as unknown as Record<string, unknown>
+    for (const field of [...requiredFields, ...optionalFields]) {
+      if (!(field in record)) {
+        if (requiredFields.includes(field)) throw new CSVParseError(`Missing trajectory column: ${field}.`)
+        continue
+      }
+      const value = record[field]
+      // Blank/SAS-missing estimates remain gaps; they must never become zero.
+      if (value !== null && value !== '.') requiredNumber(value, field)
+    }
+    if (compFactor) {
+      if (record.CompFactor !== compFactor) throw new CSVParseError('Trajectory factor code does not match the requested file.')
+      const category = record.CompValue
+      if (!((typeof category === 'string' && category.length > 0) ||
+            (typeof category === 'number' && Number.isFinite(category)))) {
+        throw new CSVParseError('Missing or invalid trajectory category.')
+      }
+    }
+  }
+}
+
 export async function loadVisualizationData(
   vitalParam: VitalParamCode,
   compFactor: CompFactorCode
@@ -128,7 +156,8 @@ export async function loadVisualizationData(
     CompValue: row[compFactor] ?? row.CompValue,
   }))
 
-  const comparisonValues = [...new Set(rows.map(row => row.CompValue))].filter(v => v !== undefined)
+  validateTrajectoryRows(rows, vitalParam, compFactor)
+  const comparisonValues = [...new Set(rows.map(row => row.CompValue))]
 
   const vitalInfo = VITAL_PARAMS[vitalParam]
   const compInfo = COMP_FACTORS[compFactor]
@@ -165,6 +194,7 @@ export async function loadTransfusionData(
 
   const fileName = `VIZ_${vitalParam}_TRANSFUSION.csv`
   const data = await fetchCSVWithFallback<TransfusionDataRow>(fileName)
+  validateTrajectoryRows(data, vitalParam)
   dataCache.set(cacheKey, data, 15)
   return data
 }
@@ -175,12 +205,12 @@ export async function loadLoessData(): Promise<LoessDataRow[]> {
   if (cached) return cached
 
   try {
-    const data = await fetchCSV<LoessDataRow>(`${DATA_BASE_PATH}/VIZ_LOESS.csv`)
+    const data = await fetchCSV<LoessDataRow>(`${DATA_BASE_PATH}/VIZ_LOESS.csv`, { encoding: 'windows-1252' })
     dataCache.set(cacheKey, data, 30)
     return data
-  } catch {
-    // Silent failure - LOESS data is optional
-    return []
+  } catch (error) {
+    if (error instanceof CSVFetchError && error.status === 404) return []
+    throw error
   }
 }
 
@@ -205,12 +235,12 @@ export async function loadLoessMultiSpanData(): Promise<LoessMultiSpanRow[]> {
   if (cached) return cached
 
   try {
-    const data = await fetchCSV<LoessMultiSpanRow>(`${DATA_BASE_PATH}/VIZ_LOESS_final_with_range.csv`)
+    const data = await fetchCSV<LoessMultiSpanRow>(`${DATA_BASE_PATH}/VIZ_LOESS_final_with_range.csv`, { encoding: 'windows-1252' })
     dataCache.set(cacheKey, data, 30)
     return data
-  } catch {
-    // Silent failure - multi-span LOESS data is optional
-    return []
+  } catch (error) {
+    if (error instanceof CSVFetchError && error.status === 404) return []
+    throw error
   }
 }
 
@@ -230,9 +260,9 @@ export function extractLoessForSpan(
     TimeFromTransfusion: row.TimeFromTransfusion,
     VitalParam: row.VitalParam,
     Abbreviation: row.Abbreviation,
-    Pred: row[predKey] ?? row.Pred,
-    LCL: row[lclKey] ?? row.LCL,
-    UCL: row[uclKey] ?? row.UCL,
+    Pred: row[predKey],
+    LCL: row[lclKey],
+    UCL: row[uclKey],
   }))
 }
 
@@ -254,6 +284,29 @@ export async function loadModelBasedSummary(): Promise<ModelSummaryRow[]> {
   const data = await fetchCSV<ModelSummaryRow>(`${DATA_BASE_PATH}/model_based_summary.csv`)
   dataCache.set(cacheKey, data, 30)
   return data
+}
+
+function requiredNumber(value: unknown, field: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new CSVParseError(`Missing or invalid numeric column: ${field}.`)
+  }
+  return value
+}
+
+function requiredCount(value: unknown, field: string): number {
+  const count = requiredNumber(value, field)
+  if (!Number.isInteger(count) || count < 0) {
+    throw new CSVParseError(`Invalid count column: ${field}.`)
+  }
+  return count
+}
+
+function distributionTotal(rows: { No_of_Transfused_Units?: number }[], field: string): number {
+  const total = rows.reduce((sum, row) => sum + requiredCount(row.No_of_Transfused_Units, field), 0)
+  if (!Number.isFinite(total) || total <= 0) {
+    throw new CSVParseError(`Invalid distribution total: ${field}.`)
+  }
+  return total
 }
 
 export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics> {
@@ -287,7 +340,18 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     fetchCSV<RawStorageRow>(`${DATA_BASE_PATH}/storage_distribution.csv`),
   ])
 
-  const totalPatients = patientSexData.reduce((sum, row) => sum + row.No_of_Patients, 0)
+  if (uniquePatientsData.length !== 1 || totalUnitsData.length !== 1 || patientAgeData.length !== 1) {
+    throw new CSVParseError('Expected one row in each cohort-count and age-summary file.')
+  }
+  const totalPatients = patientSexData.reduce((sum, row) => sum + requiredCount(row.No_of_Patients, 'No_of_Patients'), 0)
+  if (!Number.isFinite(totalPatients) || totalPatients <= 0) {
+    throw new CSVParseError('Invalid patient-sex distribution total.')
+  }
+  const donorHbTotal = distributionTotal(donorHbData, 'donorhb_distribution.No_of_Transfused_Units')
+  const donorSexTotal = distributionTotal(donorSexData, 'donor_sex_distribution.No_of_Transfused_Units')
+  const donorParityTotal = distributionTotal(donorParityData, 'donor_parity_distribution.No_of_Transfused_Units')
+  const donationWeekdayTotal = distributionTotal(donationWeekdayData, 'donation_weekday_distribution.No_of_Transfused_Units')
+  const storageTotal = distributionTotal(storageData, 'storage_distribution.No_of_Transfused_Units')
   const patientSex: PatientSexDistribution[] = patientSexData.map(row => ({
     sex: row.Patient_Sex === 'U' ? 'Unknown' : row.Patient_Sex,
     count: row.No_of_Patients,
@@ -296,18 +360,17 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
 
   const ageRow = patientAgeData[0]
   const patientAge: PatientAgeStats = {
-    mean: ageRow?.Mean_Age ?? 0,
-    sd: 0,
-    median: ageRow?.Median_Age ?? 0,
-    q1: ageRow?.Q1_Age ?? 0,
-    q3: ageRow?.Q3_Age ?? 0,
-    min: ageRow?.Min_Age ?? 0,
-    max: ageRow?.Max_Age ?? 0,
+    mean: requiredNumber(ageRow?.Mean_Age, 'Mean_Age'),
+    median: requiredNumber(ageRow?.Median_Age, 'Median_Age'),
+    q1: requiredNumber(ageRow?.Q1_Age, 'Q1_Age'),
+    q3: requiredNumber(ageRow?.Q3_Age, 'Q3_Age'),
+    min: requiredNumber(ageRow?.Min_Age, 'Min_Age'),
+    max: requiredNumber(ageRow?.Max_Age, 'Max_Age'),
   }
 
   const stats: DescriptiveStatistics = {
-    uniquePatients: uniquePatientsData[0]?.No_of_Unique_Patients ?? 0,
-    totalUnits: totalUnitsData[0]?.No_of_Transfused_Units ?? 0,
+    uniquePatients: requiredCount(uniquePatientsData[0]?.No_of_Unique_Patients, 'No_of_Unique_Patients'),
+    totalUnits: requiredCount(totalUnitsData[0]?.No_of_Transfused_Units, 'No_of_Transfused_Units'),
     patientSex,
     patientAge,
     ageGroups: (ageGroupsData as RawAgeGroupRow[]).map((row) => {
@@ -324,8 +387,8 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       }
       return {
         ageGroup: ageGroupMap[rawGroup] || rawGroup,
-        count: row.COUNT || row.count || 0,
-        percentage: row.PERCENT || row.percentage || 0,
+        count: requiredCount(row.COUNT ?? row.count, 'COUNT'),
+        percentage: requiredNumber(row.PERCENT ?? row.percentage, 'PERCENT'),
       }
     }).sort((a, b) => {
       const order = ['<20', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '≥80']
@@ -333,12 +396,12 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
     }),
     rbcUnitsPerPatient: rbcUnitsData.map((row) => ({
       unitsReceived: row.Unit_Category || row.unitsReceived || 'Unknown',
-      count: row.COUNT || row.count || 0,
-      percentage: row.Relative_Frequency || row.percentage || 0,
+      count: requiredCount(row.COUNT ?? row.count, 'COUNT'),
+      percentage: requiredNumber(row.Relative_Frequency ?? row.percentage, 'Relative_Frequency'),
     })),
     donorHb: donorHbData.map((row) => {
-      const count = row.No_of_Transfused_Units || 0
-      const total = donorHbData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const count = requiredCount(row.No_of_Transfused_Units, 'No_of_Transfused_Units')
+      const total = donorHbTotal
       const rawCategory = row.donorhb_category || row.category || 'Unknown'
       const hbMap: Record<string, string> = {
         '<125': '<125',
@@ -350,53 +413,51 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       return {
         category: hbMap[rawCategory] || rawCategory,
         count,
-        percentage: total > 0 ? (count / total) * 100 : 0,
+        percentage: (count / total) * 100,
       }
     }).sort((a, b) => {
       const order = ['<125', '125-139', '140-154', '155-169', '≥170']
       return order.indexOf(a.category) - order.indexOf(b.category)
     }),
     donorSex: donorSexData.map((row) => {
-      const count = row.No_of_Transfused_Units || 0
-      const total = donorSexData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const count = requiredCount(row.No_of_Transfused_Units, 'No_of_Transfused_Units')
+      const total = donorSexTotal
       const rawSex = row.donor_sex_label || row.sex || 'Unknown'
       return {
         sex: rawSex === 'U' ? 'Unknown' : rawSex,
         count,
-        percentage: total > 0 ? (count / total) * 100 : 0,
+        percentage: (count / total) * 100,
       }
     }),
     donorParity: donorParityData.map((row) => {
-      const count = row.No_of_Transfused_Units || 0
-      const total = donorParityData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
-      const parityMap: Record<string, string> = {
-        '0': 'Nulliparous', '1': 'Parous'
-      }
-      const rawParity = row.donor_parity_label !== undefined ? String(row.donor_parity_label) : (row.parity || 'Unknown')
+      const count = requiredCount(row.No_of_Transfused_Units, 'No_of_Transfused_Units')
+      const total = donorParityTotal
+      const rawParity = row.donor_parity_label ?? row.parity
       return {
-        parity: parityMap[rawParity] || rawParity,
+        parity: getFactorCategoryLabel('DonorParity', rawParity),
         count,
-        percentage: total > 0 ? (count / total) * 100 : 0,
+        percentage: (count / total) * 100,
       }
     }),
     donationWeekday: donationWeekdayData.map((row) => {
-      const count = row.No_of_Transfused_Units || 0
-      const total = donationWeekdayData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const count = requiredCount(row.No_of_Transfused_Units, 'No_of_Transfused_Units')
+      const total = donationWeekdayTotal
       const dayMap: Record<string, string> = {
         '1': 'Sunday', '2': 'Monday', '3': 'Tuesday', '4': 'Wednesday',
         '5': 'Thursday', '6': 'Friday', '7': 'Saturday'
       }
-      const dayNum = String(row.wdy_donation || row.dayNumber || '')
+      const dayNum = String(row.wdy_donation ?? row.dayNumber ?? '')
+      if (!/^[1-7]$/.test(dayNum)) throw new CSVParseError('Invalid donation weekday code.')
       return {
-        dayNumber: parseInt(dayNum) || 0,
+        dayNumber: Number(dayNum),
         weekday: dayMap[dayNum] || dayNum,
         count,
-        percentage: total > 0 ? (count / total) * 100 : 0,
+        percentage: (count / total) * 100,
       }
     }),
     storage: storageData.map((row) => {
-      const count = row.No_of_Transfused_Units || 0
-      const total = storageData.reduce((sum, r) => sum + (r.No_of_Transfused_Units || 0), 0)
+      const count = requiredCount(row.No_of_Transfused_Units, 'No_of_Transfused_Units')
+      const total = storageTotal
       const rawCategory = row.storagecat || row.Storage_Category || 'Unknown'
       const storageMap: Record<string, string> = {
         '<10': '<10',
@@ -408,7 +469,7 @@ export async function loadDescriptiveStatistics(): Promise<DescriptiveStatistics
       return {
         category: storageMap[rawCategory] || rawCategory,
         count,
-        percentage: total > 0 ? (count / total) * 100 : 0,
+        percentage: (count / total) * 100,
       }
     }).sort((a, b) => {
       const order = ['<10', '10-19', '20-29', '30-39', '≥40']
@@ -508,9 +569,8 @@ export async function loadModelVitalSummary(): Promise<ModelVitalSummaryRow[]> {
 export async function preloadData(): Promise<void> {
   await Promise.all([
     loadVizIndex(),
-    loadObservedDataSummary(),
-    loadModelBasedSummary(),
-    loadLoessData(),
+    loadVitalSummary(),
+    loadModelVitalSummary(),
     loadFactorObservedSummary(),
     loadFactorModelSummary(),
   ])

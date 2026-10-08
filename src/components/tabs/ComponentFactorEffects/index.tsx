@@ -1,3 +1,4 @@
+import { getFactorCategoryLabel } from '@/utils/factorLabels'
 import { useEffect, useCallback, useState, useRef } from 'react'
 import { useDashboardStore, useComponentFactorEffectsState, useComponentFactorEffectsActions } from '@/stores/dashboardStore'
 import {
@@ -177,18 +178,6 @@ export function ComponentFactorEffectsTab() {
     setTimeRange([min, max])
   }, [localTimeMin, localTimeMax, setTimeRange])
 
-  // Get category label for comparison values
-  const getCategoryLabel = (factor: CompFactorCode, value: string | number): string => {
-    const labels: Record<string, Record<string, string>> = {
-      DonorHb_Cat: { '1': '<125', '2': '125-139', '3': '140-154', '4': '155-169', '5': '≥170' },
-      Storage_Cat: { '1': '<10d', '2': '10-19d', '3': '20-29d', '4': '30-39d', '5': '≥40d' },
-      DonorSex: { '1': 'Male', '2': 'Female' },
-      DonorParity: { '0': 'Nulliparous', '1': 'Parous' },
-      wdy_donation: { '1': 'Sun', '2': 'Mon', '3': 'Tue', '4': 'Wed', '5': 'Thu', '6': 'Fri', '7': 'Sat' },
-    }
-    return labels[factor]?.[String(value)] || String(value)
-  }
-
   return (
     <div className={styles.container}>
       {/* Compact Toolbar */}
@@ -249,7 +238,7 @@ export function ComponentFactorEffectsTab() {
                     className={`${styles.pill} ${styles.categoryPill} ${isSelected ? styles.active : ''}`}
                     onClick={() => toggleComparison(value)}
                   >
-                    {getCategoryLabel(selectedCompFactor, value)}
+                    {getFactorCategoryLabel(selectedCompFactor, value)}
                   </button>
                 )
               })}

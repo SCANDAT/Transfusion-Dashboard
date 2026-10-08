@@ -22,7 +22,7 @@ Read during periodic review or when tracing a principle to its soul impression.
 | CI_MUST_MATCH_MODEL | [Weight, Rigor] | Base model CIs and fully adjusted CIs are different estimates; never mix them |
 | CHANGE_MODEL_FOR_INFERENCE | [Rigor] | Pre-post differences use change-model approach, not independent predictions |
 | NORMALIZE_BEFORE_COMPARE | [Uniformity] | All vital abbreviations pass through `normalizeVitalAbbreviation` before display or comparison |
-| SOURCE_DATA_NEVER_COMMITTED | [Guardianship, Vigilance] | `D:\` paths, `.sas7bdat` files, and patient-level data never enter git |
+| SOURCE_DATA_NEVER_COMMITTED | [Guardianship, Vigilance] | `<SOURCE_DATA_PATH>` paths, `.sas7bdat` files, and patient-level data never enter git |
 | NULL_FINDINGS_ARE_FINDINGS | [Honesty] | Component factor null results reported with same rigor and precision as positive findings |
 | DESCRIPTIVE_BEFORE_INFERENTIAL | [Understanding, Patience] | Run Script 1 and review distributions before running Scripts 2-3 |
 | SPLINE_KNOTS_JUSTIFIED | [Rigor] | Knots at -660, -360, -60, 0, +60, +360, +660 min; document rationale for any change |
@@ -80,7 +80,7 @@ Read during periodic review or when tracing a principle to its soul impression.
 ### Ethics & Security
 → [scandat.md](research/scandat.md)
 
-- **SOURCE_DATA_NEVER_COMMITTED** [Guardianship, Vigilance]: `D:\Clinisoft project\Clean data` path and `.sas7bdat` files never enter the git repository. → [scandat.md §Data Access and Ethics](research/scandat.md)
+- **SOURCE_DATA_NEVER_COMMITTED** [Guardianship, Vigilance]: `<SOURCE_DATA_PATH>` path and `.sas7bdat` files never enter the git repository. → [scandat.md §Data Access and Ethics](research/scandat.md)
 - **PSEUDONYMIZED_NOT_ANONYMOUS** [Guardianship, Vigilance]: GDPR Article 4(5) applies. The research team cannot re-identify patients, but the data controller can. → [scandat.md §Data Access and Ethics](research/scandat.md)
 - **ETHICS_APPROVAL_CITED** [Guardianship]: Swedish Ethical Review Authority 2021-04890 cited in manuscript Methods and in SOUL.md. → [scandat.md §Data Access and Ethics](research/scandat.md)
 - **ANALYSIS_DIR_GITIGNORED** [Vigilance]: `analysis/` directory excluded from git — contains SAS intermediate datasets derived from patient data. → [sas-pipeline.md §Known Hazards](dev/sas-pipeline.md)

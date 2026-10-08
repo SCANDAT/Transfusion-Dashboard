@@ -1,3 +1,4 @@
+import { getFactorCategoryLabel, PARITY_DESCRIPTION } from '@/utils/factorLabels'
 import { BaseChart } from '@/components/charts'
 import { CHART_COLORS } from '@/hooks/useChartTheme'
 import type { ChartData, ChartOptions } from 'chart.js'
@@ -68,7 +69,7 @@ export function DonorStats({
 
   // Donor parity pie chart
   const parityChartData: ChartData<'doughnut'> = {
-    labels: donorParity.map(d => d.parity),
+    labels: donorParity.map(d => getFactorCategoryLabel('DonorParity', d.parity)),
     datasets: [{
       data: donorParity.map(d => d.count),
       backgroundColor: [CHART_COLORS[2], CHART_COLORS[5]],
@@ -143,7 +144,8 @@ export function DonorStats({
 
       {/* Donor Parity */}
       <div className={styles.statCard}>
-        <h3 className={styles.cardTitle}>Female Donor Parity</h3>
+        <h3 className={styles.cardTitle}>Donor Parity</h3>
+        <p>{PARITY_DESCRIPTION}</p>
         <div className={styles.chartSmall}>
           <BaseChart
             type="doughnut"
@@ -157,7 +159,7 @@ export function DonorStats({
           <tbody>
             {donorParity.map(d => (
               <tr key={d.parity}>
-                <td>{d.parity}</td>
+                <td>{getFactorCategoryLabel('DonorParity', d.parity)}</td>
                 <td>{d.count.toLocaleString()} ({d.percentage.toFixed(1)}%)</td>
               </tr>
             ))}

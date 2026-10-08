@@ -8,12 +8,9 @@ import {
   loadFactorModelSummary,
 } from '@/services/dataService'
 import { useAsyncData } from '@/hooks/useCSVData'
-import { BaseChart } from '@/components/charts'
-import { VITAL_PARAMS } from '@/types'
-import type { ModelVitalSummaryRow, VitalSummaryRow } from '@/types'
-import type { ChartData, ChartOptions } from 'chart.js'
-import { CHART_COLORS } from '@/hooks/useChartTheme'
 import { SummaryTableA } from './SummaryTableA'
+import { ModelSummaryChart } from './ModelSummaryChart'
+import { FactorSummaryNotes } from './FactorSummaryNotes'
 import { SummaryTableB, SingleFactorTable, useGroupedFactorData } from './SummaryTableB'
 import { VirtualizedGrid } from './VirtualizedGrid'
 import { AllFactorForestPlots, FactorForestPlot } from './FactorForestPlot'
@@ -33,28 +30,34 @@ function HelpIcon() {
   )
 }
 
+async function loadMainFindings() {
+  const [vizIndex, vitalSummary, modelVitalSummary, factorObserved, factorModel] = await Promise.all([
+    loadVizIndex(),
+    loadVitalSummary(),
+    loadModelVitalSummary(),
+    loadFactorObservedSummary(),
+    loadFactorModelSummary(),
+  ])
+  return { vizIndex, vitalSummary, modelVitalSummary, factorObserved, factorModel }
+}
+
 export function MainFindingsTab() {
   const setLoading = useDashboardStore(state => state.setLoading)
   const setError = useDashboardStore(state => state.setError)
 
-  // Load all required data
-  const { data: vizIndex, loading: loadingIndex, error: indexError } = useAsyncData(loadVizIndex, [])
-  const { data: vitalSummary, loading: loadingVital } = useAsyncData(loadVitalSummary, [])
-  const { data: modelVitalSummary, loading: loadingModelVital } = useAsyncData(loadModelVitalSummary, [])
-  const { data: factorObserved, loading: loadingFactorObs } = useAsyncData(loadFactorObservedSummary, [])
-  const { data: factorModel, loading: loadingFactorModel } = useAsyncData(loadFactorModelSummary, [])
-
-  const isLoading = loadingIndex || loadingVital || loadingModelVital || loadingFactorObs || loadingFactorModel
+  // A failed required summary must not silently disappear from the findings page.
+  const { data, loading: isLoading, error, refetch } = useAsyncData(loadMainFindings, [])
+  const { vizIndex, vitalSummary, modelVitalSummary, factorObserved, factorModel } = data ?? {}
 
   useEffect(() => {
     setLoading(isLoading)
   }, [isLoading, setLoading])
 
   useEffect(() => {
-    if (indexError) {
-      setError(indexError.message)
+    if (error) {
+      setError(error.message)
     }
-  }, [indexError, setError])
+  }, [error, setError])
 
   // Create summary statistics
   const summaryStats = useMemo(() => {
@@ -74,16 +77,17 @@ export function MainFindingsTab() {
 
   if (isLoading) {
     return (
-      <div className={styles.loading}>
+      <div className={styles.loading} role="status">
         Loading main findings...
       </div>
     )
   }
 
-  if (!vizIndex) {
+  if (error || !data || !vizIndex) {
     return (
-      <div className={styles.error}>
-        Failed to load data. Please refresh the page.
+      <div className={styles.error} role="alert">
+        <p>The results could not be loaded completely. Please try again.</p>
+        <button type="button" onClick={refetch}>Retry loading results</button>
       </div>
     )
   }
@@ -93,9 +97,9 @@ export function MainFindingsTab() {
       <section className={styles.hero}>
         <h2 className={styles.title}>Key Results</h2>
         <p className={styles.description}>
-          This section presents the main statistical findings from our analysis. We examined how seven
-          vital parameters change in the 12 hours following RBC transfusion, and whether blood component
-          characteristics influence these trajectories.
+          This section presents seven vital-parameter trajectories during the 12 hours before and
+          after RBC transfusion start, together with pre/post summaries and comparisons by donor
+          and component characteristics.
         </p>
       </section>
 
@@ -106,18 +110,18 @@ export function MainFindingsTab() {
         </div>
         <div className={styles.guideContent}>
           <div className={styles.guideItem}>
-            <strong>Positive values</strong> indicate the vital parameter <em>increased</em> after transfusion
+            <strong>Positive change</strong> means the value at +1 hour is higher than at −1 hour
           </div>
           <div className={styles.guideItem}>
-            <strong>Negative values</strong> indicate the vital parameter <em>decreased</em> after transfusion
+            <strong>Negative change</strong> means the value at +1 hour is lower than at −1 hour
           </div>
           <div className={styles.guideItem}>
-            <strong>95% Confidence Intervals</strong> show the range of plausible values — if this range
-            doesn't cross zero, the effect is statistically significant
+            <strong>Uncertainty</strong>: the model-based change intervals are under review and
+            should not be used to draw conclusions about statistical significance
           </div>
           <div className={styles.guideItem}>
-            <strong>Adjusted Model</strong> accounts for patient factors and concurrent treatments,
-            giving a cleaner estimate of transfusion effects
+            <strong>Adjusted models</strong> include recorded patient characteristics and treatments;
+            adjustment does not establish a causal transfusion effect
           </div>
         </div>
       </section>
@@ -153,16 +157,16 @@ export function MainFindingsTab() {
         <section className={styles.tableSection}>
           <div className={styles.sectionHeader}>
             <div>
-              <h2 className={styles.sectionTitle}>Table 2a: Overall Transfusion Effects</h2>
+              <h2 className={styles.sectionTitle}>Table 2a: Changes Around Transfusion Start</h2>
               <p className={styles.sectionDescription}>
-                How each vital parameter changes on average following transfusion. Compare observed
-                (raw) values with model-adjusted estimates that account for confounding factors.
+                Observed summaries and model estimates compare values centred on one hour before
+                and one hour after transfusion start.
               </p>
             </div>
           </div>
           <div className={styles.interpretationHint}>
-            <strong>Key insight:</strong> Heart rate tends to decrease slightly after transfusion
-            (improved oxygen delivery reduces cardiac workload), while blood pressure shows a modest increase.
+            <strong>Time comparison:</strong> Changes are reported as the post-transfusion value
+            minus the pre-transfusion value. The trajectories also show trends before transfusion start.
           </div>
           <SummaryTableA observedData={vitalSummary} modelData={modelVitalSummary} />
         </section>
@@ -170,10 +174,10 @@ export function MainFindingsTab() {
 
       {modelVitalSummary && vitalSummary && (
         <section className={styles.chartSection}>
-          <h2 className={styles.sectionTitle}>Effect Size Comparison</h2>
+          <h2 className={styles.sectionTitle}>Pre/Post Changes</h2>
           <p className={styles.sectionDescription}>
-            Visual comparison of effect estimates across vital parameters. Bars extending
-            from the zero line show the direction and magnitude of change.
+            Changes from −1 to +1 hour are shown separately for each vital parameter.
+            Each panel has its own scale and measurement unit.
           </p>
           <ModelSummaryChart modelData={modelVitalSummary} observedData={vitalSummary} />
         </section>
@@ -182,8 +186,8 @@ export function MainFindingsTab() {
       <section className={styles.gridSection}>
         <h2 className={styles.sectionTitle}>Trajectory Overview Grid</h2>
         <p className={styles.sectionDescription}>
-          Each cell shows a LOESS-smoothed trajectory of a vital parameter over time, stratified
-          by a component factor. The curves represent average trends; hover for details.
+          Each cell shows changes in fully adjusted model predictions relative to one hour before
+          transfusion, grouped by component category. These are fitted-model trajectories.
           Click any cell to explore the full interactive visualization.
         </p>
         <div className={styles.gridLegend}>
@@ -218,199 +222,6 @@ function SummaryCard({
       <span className={styles.summaryValue}>{value}</span>
       <span className={styles.summaryLabel}>{label}</span>
       <span className={styles.summaryDesc}>{description}</span>
-    </div>
-  )
-}
-
-function ModelSummaryChart({ modelData, observedData }: { modelData: ModelVitalSummaryRow[], observedData: VitalSummaryRow[] }) {
-  const mergedData = modelData.map(model => {
-    const observed = observedData.find(obs =>
-      obs.Abbreviation.toUpperCase() === model.Abbreviation.toUpperCase()
-    )
-    return { model, observed }
-  })
-
-  const errorBars = {
-    observed: mergedData.map(({ observed }) =>
-      observed ? { lower: observed.Diff_LCL, upper: observed.Diff_UCL } : { lower: 0, upper: 0 }
-    ),
-    base: mergedData.map(({ model }) => ({ lower: model.Base_Diff_LCL, upper: model.Base_Diff_UCL })),
-    full: mergedData.map(({ model }) => ({ lower: model.Full_Diff_LCL, upper: model.Full_Diff_UCL })),
-  }
-
-  const allLower = [
-    ...errorBars.observed.map(e => e.lower),
-    ...errorBars.base.map(e => e.lower),
-    ...errorBars.full.map(e => e.lower)
-  ]
-  const allUpper = [
-    ...errorBars.observed.map(e => e.upper),
-    ...errorBars.base.map(e => e.upper),
-    ...errorBars.full.map(e => e.upper)
-  ]
-  const minY = Math.min(...allLower)
-  const maxY = Math.max(...allUpper)
-  const padding = (maxY - minY) * 0.1
-
-  const chartData: ChartData<'bar'> = {
-    labels: mergedData.map(({ model }) => VITAL_PARAMS[model.Abbreviation]?.shortName || model.Abbreviation),
-    datasets: [
-      {
-        label: 'Observed',
-        data: mergedData.map(({ observed }) => observed?.Diff_Mean ?? 0),
-        backgroundColor: CHART_COLORS[2] + '70',
-        borderColor: CHART_COLORS[2],
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-      {
-        label: 'Base Model',
-        data: mergedData.map(({ model }) => model.Base_Diff),
-        backgroundColor: CHART_COLORS[0] + '70',
-        borderColor: CHART_COLORS[0],
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-      {
-        label: 'Fully Adjusted Model',
-        data: mergedData.map(({ model }) => model.Full_Diff),
-        backgroundColor: CHART_COLORS[1] + '70',
-        borderColor: CHART_COLORS[1],
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-    ],
-  }
-
-  const errorBarPlugin = {
-    id: 'errorBars',
-    afterDatasetsDraw(chart: import('chart.js').Chart) {
-      const { ctx, scales } = chart
-      const yScale = scales.y
-      if (!yScale) return
-
-      chart.data.datasets.forEach((dataset, datasetIndex) => {
-        const meta = chart.getDatasetMeta(datasetIndex)
-        if (meta.hidden) return
-
-        const errors = datasetIndex === 0 ? errorBars.observed : datasetIndex === 1 ? errorBars.base : errorBars.full
-        const color = dataset.borderColor as string
-
-        meta.data.forEach((bar, index) => {
-          const error = errors[index]
-          if (!error || (error.lower === 0 && error.upper === 0)) return
-
-          const x = bar.x
-          const yLower = yScale.getPixelForValue(error.lower)
-          const yUpper = yScale.getPixelForValue(error.upper)
-          const capWidth = 4
-
-          ctx.save()
-          ctx.strokeStyle = color
-          ctx.lineWidth = 1.5
-
-          // Vertical line
-          ctx.beginPath()
-          ctx.moveTo(x, yLower)
-          ctx.lineTo(x, yUpper)
-          ctx.stroke()
-
-          // Top cap
-          ctx.beginPath()
-          ctx.moveTo(x - capWidth, yUpper)
-          ctx.lineTo(x + capWidth, yUpper)
-          ctx.stroke()
-
-          // Bottom cap
-          ctx.beginPath()
-          ctx.moveTo(x - capWidth, yLower)
-          ctx.lineTo(x + capWidth, yLower)
-          ctx.stroke()
-
-          ctx.restore()
-        })
-      })
-    },
-  }
-
-  const chartOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top',
-      },
-      title: {
-        display: false,
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        callbacks: {
-          label: (context) => {
-            const item = mergedData[context.dataIndex]
-            if (!item) return context.dataset.label ?? ''
-
-            let value: number, lower: number, upper: number
-
-            if (context.datasetIndex === 0) {
-              // Observed
-              if (!item.observed) return context.dataset.label ?? ''
-              value = item.observed.Diff_Mean
-              lower = item.observed.Diff_LCL
-              upper = item.observed.Diff_UCL
-            } else if (context.datasetIndex === 1) {
-              // Base Model
-              value = item.model.Base_Diff
-              lower = item.model.Base_Diff_LCL
-              upper = item.model.Base_Diff_UCL
-            } else {
-              // Fully Adjusted
-              value = item.model.Full_Diff
-              lower = item.model.Full_Diff_LCL
-              upper = item.model.Full_Diff_UCL
-            }
-
-            return `${context.dataset.label}: ${value.toFixed(2)} [${lower.toFixed(2)}, ${upper.toFixed(2)}]`
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        min: minY - padding,
-        max: maxY + padding,
-        title: {
-          display: true,
-          text: 'Effect Estimate (Change from Baseline)',
-        },
-        grid: {
-          color: 'rgba(128, 128, 128, 0.2)',
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
-  }
-
-  return (
-    <div className={styles.chartContainer}>
-      <BaseChart
-        type="bar"
-        data={chartData}
-        options={chartOptions}
-        height={350}
-        showVerticalLine={false}
-        plugins={[errorBarPlugin]}
-      />
     </div>
   )
 }
@@ -457,18 +268,17 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
     <section className={styles.tableSection}>
       <div className={styles.sectionHeader}>
         <div>
-          <h2 className={styles.sectionTitle}>Table 2b: Do Blood Characteristics Matter?</h2>
+          <h2 className={styles.sectionTitle}>Table 2b: Changes by Donor and Component Category</h2>
           <p className={styles.sectionDescription}>
-            Comparison of transfusion effects across different blood component characteristics.
-            Each row shows whether a particular characteristic (e.g., donor sex, storage time)
-            is associated with different outcomes.
+            Each row summarises the pre/post change within a donor or component category.
+            These within-category summaries are not estimates of differences between categories.
           </p>
         </div>
       </div>
 
       <div className={styles.interpretationHint}>
-        <strong>Key insight:</strong> We found no clinically significant differences in vital parameter
-        changes based on donor characteristics or storage time — reassuring for current transfusion practices.
+        <strong>Interpretation:</strong> Between-category contrasts and their uncertainty require
+        reconciliation before conclusions about effect modification can be drawn.
       </div>
 
       {/* View Toggle */}
@@ -508,7 +318,7 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
                 checked={showBaseModel}
                 onChange={(e) => setShowBaseModel(e.target.checked)}
               />
-              Base Model
+              No-interaction model (base)
             </label>
             <label className={styles.dataToggleLabel}>
               <input
@@ -516,7 +326,7 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
                 checked={showFullModel}
                 onChange={(e) => setShowFullModel(e.target.checked)}
               />
-              Fully Adjusted
+              No-interaction model (fully adjusted)
             </label>
           </div>
         )}
@@ -533,13 +343,13 @@ function FactorEffectsSection({ factorObserved, factorModel }: FactorEffectsSect
           {showBaseModel && (
             <div className={styles.legendItem}>
               <span className={`${styles.legendDot} ${styles.legendDotBase}`} />
-              <span>Base Model</span>
+              <span>No-interaction model (base)</span>
             </div>
           )}
           {showFullModel && (
             <div className={styles.legendItem}>
               <span className={`${styles.legendDot} ${styles.legendDotModel}`} />
-              <span>Fully Adjusted Model</span>
+              <span>No-interaction model (fully adjusted)</span>
             </div>
           )}
         </div>
@@ -614,11 +424,7 @@ function InterleavedTableAndCharts({ factorObserved, factorModel, showObserved, 
           />
         </div>
       ))}
-      <div className={styles.tableFootnotes}>
-        <p>
-          <sup>1</sup><strong>Model Estimates:</strong> Based on the Fully Adjusted Model described in Table 2a, which includes all covariates from the Base Model plus cumulative crystalloid fluid and vasopressor volumes (1h and 24h prior), and sedative administration indicators.
-        </p>
-      </div>
+      <FactorSummaryNotes />
     </div>
   )
 }

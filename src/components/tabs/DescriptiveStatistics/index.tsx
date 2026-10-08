@@ -1,3 +1,4 @@
+import { getFactorCategoryLabel, PARITY_DESCRIPTION } from '@/utils/factorLabels'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import { loadDescriptiveStatistics } from '@/services/dataService'
@@ -185,7 +186,7 @@ export function DescriptiveStatisticsTab() {
       },
       donorParity: {
         data: {
-          labels: stats.donorParity.map(d => d.parity === 'Nulliparous' || d.parity === '0' ? 'Nulliparous' : 'Parous'),
+          labels: stats.donorParity.map(d => getFactorCategoryLabel('DonorParity', d.parity)),
           datasets: [{
             data: stats.donorParity.map(d => d.count),
             backgroundColor: [darkBlue, bloodRed],
@@ -605,7 +606,7 @@ export function DescriptiveStatisticsTab() {
               <tbody>
                 {stats.donorParity.map(row => (
                   <tr key={row.parity}>
-                    <td>{row.parity === 'Nulliparous' || row.parity === '0' ? 'Nulliparous' : 'Parous'}</td>
+                    <td>{getFactorCategoryLabel('DonorParity', row.parity)}</td>
                     <td className={styles.numCell}>{formatNumber(row.count)}</td>
                     <td className={styles.numCell}>{formatPercent(row.count, stats.totalUnits)}</td>
                   </tr>
@@ -617,6 +618,7 @@ export function DescriptiveStatisticsTab() {
                 </tr>
               </tbody>
             </table>
+            <p>{PARITY_DESCRIPTION}</p>
             {expandedCharts.has('donor-parity') && chartConfigs && (
               <div className={styles.chartContainer}>
                 <BaseChart type="pie" data={chartConfigs.donorParity.data} options={chartConfigs.donorParity.options} height={200} showVerticalLine={false} />

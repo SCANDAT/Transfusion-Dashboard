@@ -77,3 +77,27 @@ Component-level styles use CSS modules (*.module.css files colocated with their 
 Global styles live in src/styles/global.css, which defines CSS custom properties (--color-bg, --color-text, --color-primary, --color-border, etc.) under two selectors: [data-theme="light"] and [data-theme="dark"]. Theme switching toggles the data-theme attribute on the root HTML element, and all custom properties cascade automatically. The Zustand store's theme field drives this attribute.
 
 Design tokens for spacing, border radii, and font stacks are also in global.css as custom properties, providing a single place to adjust the visual language. Components reference these tokens rather than hardcoding values.
+
+### Publication preparation corrections (2026-10-01)
+
+CSV parsing now rejects malformed, HTML, duplicate-header and header-only inputs using `CSVParseError`; a malformed primary file cannot silently select an alternate filename. This protects against incomplete analysis exports but does not yet provide full runtime schemas. The shared trajectory builder preserves zeros/null gaps and exported geometry, and suppresses the invalid shifted-level delta bands. Absolute level bands remain. LOESS axes now identify standardized values. Factor colours and grouped legend behaviour are stable. Chart downloads use genuine PNG bytes with white background; synchronous capture and `finally` restore the original raw Chart.js options, avoiding an export race. Vector publication figures come from the Python renderer.
+
+These are consumer-side corrections; original CSVs were unchanged and scientific summary-inference issues remain open. Deployment now runs `npm run ci` before uploading its built artifact. Full browser and release-data validation remain pending.
+
+### Ingestion and optional loading corrections on 8 October 2026
+
+Required CSVs now use fatal UTF-8 decoding; only the two verified legacy LOESS loaders explicitly decode Windows-1252. Filename fallback/optional-empty handling applies only to HTTP 404; corruption and network/server failures propagate. Required descriptive numbers cannot become fabricated zeros, and absent age SD is unreported. Trajectory contracts check requested identity, fields and finite coordinates while retaining zeros/missing gaps. A missing selected-span smoother never substitutes another span. Startup preload no longer fetches the unused basic LOESS or duplicate summary cache keys.
+
+The trajectory tab defaults to model results and fetches multi-span LOESS only when selected. Model charts remain visible during optional loading/failure, with explicit empty/error/retry controls. `useAsyncData` supports disabling a request, clears prior-selection values and ignores late results. Responsive toolbar specificity/wrapping was fixed after browser inspection. Source CSV bytes and SAS analysis were unchanged. Legacy summary inference, parity wording and release-aware cache isolation remain unresolved.
+
+
+### Cache retirement and required results - 8 October 2026
+
+Decision: retire the legacy offline fallback because it could silently serve results from another version, cache failed responses, and delete unrelated origin-wide caches. Existing exact-scope installations must acknowledge the retirement worker before React result loading starts; fresh installations register nothing. Cleanup touches only this dashboard scope inside the verified legacy cache. CSV transport uses no-store; in-memory caching remains. Browser upgrade testing caught register/update and fast-unregistration races; the helper explicitly updates and still requires worker acknowledgement. Atomic data-release consistency remains a separate manifest/immutable-path requirement.
+
+Main Findings now loads its required summaries as a group, surfaces a failed download and offers retry. It no longer hides failed sections while presenting an apparently complete findings page. Neutral copy changes do not validate the legacy model-change intervals or factor-summary mismatch. SAS code and CSV values are unchanged.
+
+
+### Summary display reconciliation - 8 October 2026
+
+Main changes use separate SVG panels with native units and numerical labels; percentage differences are percentage points. Summary tables and factor point charts omit unsupported change intervals. Factor summaries explicitly identify their no-interaction model. Historical parity zero is labelled as including male donors; missing categories are not recoded as parous. These display changes preserve result values and do not complete statistical reconciliation. A Chromium-discovered summary-card overflow at 320px was fixed with zero-minimum grid tracks and wrapping.

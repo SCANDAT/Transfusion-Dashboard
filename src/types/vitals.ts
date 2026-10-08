@@ -1,3 +1,4 @@
+import { getFactorCategoryLabel, PARITY_DESCRIPTION, STORAGE_DESCRIPTION } from '@/utils/factorLabels'
 export const VITAL_PARAM_CODES = [
   'ARTm',
   'ARTs',
@@ -110,14 +111,14 @@ export const COMP_FACTORS: Record<CompFactorCode, CompFactorInfo> = {
     name: 'Donor Hemoglobin',
     shortName: 'Donor Hemoglobin',
     description: 'Donor hemoglobin level category at time of donation',
-    categories: ['Low', 'Medium', 'High'],
+    categories: [1, 2, 3, 4, 5].map(value => getFactorCategoryLabel('DonorHb_Cat', value)),
   },
   Storage_Cat: {
     code: 'Storage_Cat',
     name: 'Storage Time',
     shortName: 'Storage Time',
-    description: 'Duration of RBC storage before transfusion',
-    categories: ['Fresh (0-7d)', 'Medium (8-21d)', 'Old (22-42d)'],
+    description: STORAGE_DESCRIPTION,
+    categories: [1, 2, 3, 4, 5].map(value => getFactorCategoryLabel('Storage_Cat', value)),
   },
   wdy_donation: {
     code: 'wdy_donation',
@@ -137,8 +138,8 @@ export const COMP_FACTORS: Record<CompFactorCode, CompFactorInfo> = {
     code: 'DonorParity',
     name: 'Donor Parity',
     shortName: 'Donor Parity',
-    description: 'Parity status of female donors',
-    categories: ['Nulliparous', 'Parous'],
+    description: PARITY_DESCRIPTION,
+    categories: [0, 1].map(value => getFactorCategoryLabel('DonorParity', value)),
   },
 }
 

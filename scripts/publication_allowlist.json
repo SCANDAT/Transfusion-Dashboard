@@ -1,0 +1,603 @@
+{
+  "schema_version": 1,
+  "repository_name": "Transfusion-Dashboard-publication",
+  "source_files": [
+    ".eslintrc.cjs",
+    ".gitattributes",
+    "LICENSE",
+    "index.html",
+    "package-lock.json",
+    "package.json",
+    "public/favicon.svg",
+    "public/sw.js",
+    "sas_code_public/1 - Descriptive Stats (prod).sas",
+    "sas_code_public/2 - RBC Transfusion Effect on VPs.sas",
+    "sas_code_public/3 - RBC Component Effects on VPs.sas",
+    "src/App.tsx",
+    "src/components/charts/BaseChart.module.css",
+    "src/components/charts/BaseChart.tsx",
+    "src/components/charts/__tests__/exportChart.test.ts",
+    "src/components/charts/__tests__/formatChartEstimate.test.ts",
+    "src/components/charts/__tests__/prepareChartData.test.ts",
+    "src/components/charts/__tests__/trajectoryCharts.test.tsx",
+    "src/components/charts/chartConfig.ts",
+    "src/components/charts/exportChart.ts",
+    "src/components/charts/formatChartEstimate.ts",
+    "src/components/charts/index.ts",
+    "src/components/charts/plugins/verticalLinePlugin.ts",
+    "src/components/charts/prepareChartData.ts",
+    "src/components/controls/CompFactorSelector.tsx",
+    "src/components/controls/ComparisonTags.tsx",
+    "src/components/controls/Controls.module.css",
+    "src/components/controls/DisplayOptions.tsx",
+    "src/components/controls/TimeRangeSlider.tsx",
+    "src/components/controls/VitalParamButtons.tsx",
+    "src/components/controls/VitalParamSelector.tsx",
+    "src/components/controls/index.ts",
+    "src/components/layout/ErrorBoundary.module.css",
+    "src/components/layout/ErrorBoundary.tsx",
+    "src/components/layout/ErrorToast.module.css",
+    "src/components/layout/ErrorToast.tsx",
+    "src/components/layout/Header.module.css",
+    "src/components/layout/Header.tsx",
+    "src/components/layout/Layout.module.css",
+    "src/components/layout/Layout.tsx",
+    "src/components/layout/LiveRegion.tsx",
+    "src/components/layout/LoadingOverlay.module.css",
+    "src/components/layout/LoadingOverlay.tsx",
+    "src/components/layout/MobileNav.module.css",
+    "src/components/layout/MobileNav.tsx",
+    "src/components/layout/SkipLink.tsx",
+    "src/components/layout/TabNavigation.module.css",
+    "src/components/layout/TabNavigation.tsx",
+    "src/components/layout/TabPanel.module.css",
+    "src/components/layout/TabPanel.tsx",
+    "src/components/layout/index.ts",
+    "src/components/tabs/ComponentFactorEffects/ComponentFactorEffects.module.css",
+    "src/components/tabs/ComponentFactorEffects/EffectCharts.tsx",
+    "src/components/tabs/ComponentFactorEffects/index.tsx",
+    "src/components/tabs/DescriptiveStatistics/DescriptiveStatistics.module.css",
+    "src/components/tabs/DescriptiveStatistics/DonorStats.tsx",
+    "src/components/tabs/DescriptiveStatistics/PatientStats.tsx",
+    "src/components/tabs/DescriptiveStatistics/StorageStats.tsx",
+    "src/components/tabs/DescriptiveStatistics/__tests__/parityLabels.test.tsx",
+    "src/components/tabs/DescriptiveStatistics/index.tsx",
+    "src/components/tabs/MainFindings/FactorForestPlot.tsx",
+    "src/components/tabs/MainFindings/FactorSummaryNotes.tsx",
+    "src/components/tabs/MainFindings/ForestPlot.tsx",
+    "src/components/tabs/MainFindings/MainFindings.module.css",
+    "src/components/tabs/MainFindings/ModelNotes.tsx",
+    "src/components/tabs/MainFindings/ModelSummaryChart.tsx",
+    "src/components/tabs/MainFindings/SmallMultipleChart.tsx",
+    "src/components/tabs/MainFindings/SummaryTableA.tsx",
+    "src/components/tabs/MainFindings/SummaryTableB.tsx",
+    "src/components/tabs/MainFindings/VirtualizedGrid.tsx",
+    "src/components/tabs/MainFindings/__tests__/SummaryTableA.test.tsx",
+    "src/components/tabs/MainFindings/__tests__/factorPointEstimates.test.tsx",
+    "src/components/tabs/MainFindings/__tests__/loading.test.tsx",
+    "src/components/tabs/MainFindings/__tests__/summaryChangePanels.test.tsx",
+    "src/components/tabs/MainFindings/index.tsx",
+    "src/components/tabs/MainFindings/summaryChangePanels.ts",
+    "src/components/tabs/Overview/Overview.module.css",
+    "src/components/tabs/Overview/index.tsx",
+    "src/components/tabs/RBCTransfusions/PlotPair.tsx",
+    "src/components/tabs/RBCTransfusions/RBCTransfusions.module.css",
+    "src/components/tabs/RBCTransfusions/__tests__/loading.test.tsx",
+    "src/components/tabs/RBCTransfusions/index.tsx",
+    "src/components/ui/Glossary.module.css",
+    "src/components/ui/Glossary.tsx",
+    "src/components/ui/index.ts",
+    "src/hooks/__tests__/useCSVData.test.ts",
+    "src/hooks/index.ts",
+    "src/hooks/useCSVData.ts",
+    "src/hooks/useChartTheme.ts",
+    "src/hooks/useDebouncedValue.ts",
+    "src/hooks/useKeyboardNavigation.ts",
+    "src/hooks/useMemoizedChartData.ts",
+    "src/hooks/usePerformanceMonitor.ts",
+    "src/main.tsx",
+    "src/services/__tests__/cache.test.ts",
+    "src/services/__tests__/csvParser.test.ts",
+    "src/services/__tests__/dataService.test.ts",
+    "src/services/__tests__/serviceWorker.test.ts",
+    "src/services/cache.ts",
+    "src/services/csvParser.ts",
+    "src/services/dataService.ts",
+    "src/services/index.ts",
+    "src/services/serviceWorker.ts",
+    "src/stores/__tests__/dashboardStore.test.ts",
+    "src/stores/dashboardStore.ts",
+    "src/stores/index.ts",
+    "src/styles/breakpoints.css",
+    "src/styles/global.css",
+    "src/styles/reset.css",
+    "src/styles/tokens.css",
+    "src/test/setup.ts",
+    "src/types/__tests__/guards.test.ts",
+    "src/types/charts.ts",
+    "src/types/data.ts",
+    "src/types/index.ts",
+    "src/types/statistics.ts",
+    "src/types/store.ts",
+    "src/types/vitals.ts",
+    "src/utils/__tests__/factorLabels.test.ts",
+    "src/utils/factorLabels.ts",
+    "src/vite-env.d.ts",
+    "tsconfig.json",
+    "tsconfig.node.json",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ],
+  "staged_npm_scripts": [
+    "dev",
+    "build",
+    "lint",
+    "preview",
+    "typecheck",
+    "test",
+    "test:run",
+    "test:coverage",
+    "ci"
+  ],
+  "replacements": [],
+  "release_gates": {
+    "producing_code_alignment": {
+      "status": "pending",
+      "review_reference": null
+    },
+    "full_cohort_provenance": {
+      "status": "pending",
+      "review_reference": null
+    },
+    "model_and_uncertainty_consistency": {
+      "status": "pending",
+      "review_reference": null
+    },
+    "export_disclosure_review": {
+      "status": "pending",
+      "review_reference": null
+    },
+    "scientific_text_review": {
+      "status": "pending",
+      "review_reference": null
+    },
+    "browser_and_performance_validation": {
+      "status": "pending",
+      "review_reference": null
+    },
+    "data_license_and_release_review": {
+      "status": "pending",
+      "review_reference": null
+    }
+  },
+  "data_candidates": [
+    {
+      "source": "public/data/donation_weekday_distribution.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/donor_parity_distribution.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/donor_sex_distribution.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/donorhb_distribution.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/factor_model_based_summary.csv",
+      "role": "factor_summary_model_alignment_review_required",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/factor_observed_data_summary.csv",
+      "role": "observed_factor_summary_small_cells_review_required",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/model_based_summary.csv",
+      "role": "main_summary_change_inference_review_required",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/observed_data_summary.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/patient_age_groups.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/patient_age_stats.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/patient_sex_distribution.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/rbc_units_per_patient.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/storage_distribution.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/total_transfused_units.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/transfusion_viz_index.csv",
+      "role": "visualization_index",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/unique_patients_count.csv",
+      "role": "aggregate_summary",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTD_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTD_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTD_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTD_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTD_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTD_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTM_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTM_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTM_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTM_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTM_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTM_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTS_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTS_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTS_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTS_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTS_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_ARTS_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_FIO2_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_FIO2_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_FIO2_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_FIO2_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_FIO2_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_FIO2_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_HR_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_HR_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_HR_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_HR_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_HR_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_HR_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/viz_index.csv",
+      "role": "visualization_index",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_LOESS.csv",
+      "role": "loess_output_with_observed_columns_review_required",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_LOESS_final_with_range.csv",
+      "role": "loess_output_with_observed_columns_review_required",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_SPO2_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_SPO2_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_SPO2_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_SPO2_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_SPO2_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_SPO2_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_VE_DONORHB_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_VE_DONORPARITY.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_VE_DONORSEX.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_VE_STORAGE_CAT.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_VE_TRANSFUSION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    },
+    {
+      "source": "public/data/VIZ_VE_WDY_DONATION.csv",
+      "role": "model_prediction_grid",
+      "action": "pending",
+      "sha256": null,
+      "review_reference": null
+    }
+  ],
+  "reviewed_inputs_sha256": null
+}
