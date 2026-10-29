@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "prepared": "2026-10-29",
+  "status": "HANDOFF_CONTRACT_NOT_VALIDATED_IMPLEMENTATION",
+  "handoff": "SAS_FINAL_RUN_HANDOFF.txt",
+  "starting_commit": "be8083bac053cb55759b29df7d9a53697eabb127",
+  "authority": {
+    "sample_work": "Author authorises assigned on-workstation agent to develop and experiment locally with designated sample; keep patient-level processing local and raw records out of Git/chat exports; obey applicable platform constraints.",
+    "production": "Validate exact pipeline and freeze unresolved scientific decisions before author-reviewed full-run launch.",
+    "private_drafts": "May not exist in this checkout; no SAS runtime validation claimed."
+  },
+  "outcomes": [
+    {
+      "code": "ARTm",
+      "source_label": "ARTm",
+      "level_unit": "mmHg",
+      "change_unit": "mmHg"
+    },
+    {
+      "code": "ARTs",
+      "source_label": "ARTs",
+      "level_unit": "mmHg",
+      "change_unit": "mmHg"
+    },
+    {
+      "code": "ARTd",
+      "source_label": "ARTd",
+      "level_unit": "mmHg",
+      "change_unit": "mmHg"
+    },
+    {
+      "code": "HR",
+      "source_label": "Hj\u00e4rtfrekv",
+      "level_unit": "beats/min",
+      "change_unit": "beats/min"
+    },
+    {
+      "code": "FIO2",
+      "source_label": "FIO2(u)",
+      "level_unit": "%",
+      "change_unit": "percentage_points"
+    },
+    {
+      "code": "SpO2",
+      "source_label": "SpO2",
+      "level_unit": "%",
+      "change_unit": "percentage_points"
+    },
+    {
+      "code": "VE",
+      "source_label": "VE(u)",
+      "level_unit": "L/min",
+      "change_unit": "L/min"
+    }
+  ],
+  "factors": [
+    "DonorHb_Cat",
+    "Storage_Cat",
+    "DonorSex",
+    "DonorParity",
+    "wdy_donation"
+  ],
+  "populations": [
+    "PRIMARY",
+    "FIRST_EVENT",
+    "NO_FOLLOWING_UNIT_12H"
+  ],
+  "adjustments": [
+    "BASE",
+    "FULL"
+  ],
+  "fit_scope": {
+    "analyses_per_outcome": 6,
+    "primary": 84,
+    "per_sensitivity": 84,
+    "total": 252,
+    "extra_artifact_or_covariance_scenarios_included": false
+  },
+  "primary": {
+    "population": "PRIMARY",
+    "adjustment": "FULL",
+    "from_minutes": -60,
+    "to_minutes": 60,
+    "estimand": "Same-fit fixed-effect trajectory prediction difference at a documented reference profile.",
+    "observed_change": "secondary",
+    "uncertainty": "Same-fit contrast covariance, DF, CI and estimability required."
+  },
+  "approved_decisions": {
+    "prior_units": "Strictly earlier physical RBC unit starts in same ICU admission; exclude index-time ties; require complete unit ledger.",
+    "parity": "Female donors only for new parity fits; missing/unknown is not zero.",
+    "table1": "Each verified person once at first eligible event; resolve ties/conflicts.",
+    "first_event_sensitivity": "First eligible event per verified person.",
+    "no_later_sensitivity": "No additional unit starts in (index,index+720min]; complete patient-level follow-up, potentially beyond ICU admission.",
+    "factor_inference": "Endpoint-change heterogeneity plus all pairwise change differences; Holm within factor/outcome family for primary FULL inference.",
+    "all_fits": "Both adjustment sets, all seven outcomes, main plus five factors, all three populations."
+  },
+  "three_time_scopes": {
+    "index_eligibility": "Previous patient-level transfusion history; explicitly resolve exact minus12h boundary.",
+    "count_covariate": "Strictly earlier units in same ICU admission.",
+    "no_later_sensitivity": "Patient-level future history in (0,+12h], with complete ascertainment; no observed later unit is not proof of full follow-up."
+  },
+  "unresolved_decisions": [
+    "Clinical artifact policy",
+    "Person/admission semantics and grouping corrections",
+    "Physical-unit identity, duplicates and simultaneous exposure",
+    "Admission boundaries/overlaps and ledger coverage",
+    "Medication missing-versus-zero and exact units",
+    "Observed windows, weighting and person-aware inference",
+    "Sparse-category eligibility and institutional disclosure policy",
+    "New clinical extraction or extra model structure"
+  ],
+  "source_snapshot": {
+    "verified_on": "2026-10-08",
+    "sas_version": "9.04.01M6P11072018",
+    "platform": "X64_10PRO",
+    "sample_full_schemas_match": true,
+    "analysis_fields": {
+      "Abbreviation": "char",
+      "StudyID": "num",
+      "TransDt": "num",
+      "storage": "num",
+      "DonorSex": "num",
+      "DonorParity": "num",
+      "DonorHb": "num",
+      "wdy_donation": "num",
+      "nexttransdt": "num",
+      "PatientID": "num",
+      "Sex": "char",
+      "Age": "num",
+      "WardName": "char",
+      "admissiontime": "num",
+      "dischargetime": "num",
+      "SAPS_3": "char",
+      "DiagnosisCodeName_1": "char",
+      "Datetime": "num",
+      "value": "num",
+      "timeaxis": "num",
+      "Crystalloid_1": "num",
+      "Crystalloid_24": "num",
+      "Pressors_1": "num",
+      "Pressors_24": "num",
+      "Sedatives_1": "num",
+      "Sedatives_24": "num"
+    },
+    "ledger_fields": {
+      "StudyID": "num",
+      "TransDate": "num",
+      "TransDt": "num",
+      "XProdType": "char",
+      "Poolnum": "num",
+      "storage": "num",
+      "DonorSex": "num",
+      "DonDate": "num",
+      "DonorAge": "num",
+      "DonorParity": "num",
+      "DonorHb": "num"
+    },
+    "admissions_variable_count": 74,
+    "required_field_type_issues": 0,
+    "admissions_known_types": {
+      "StudyID": "num",
+      "PatientID": "num",
+      "AdmissionTime": "char23",
+      "DischargeTime": "char23",
+      "SAPS_3": "char4",
+      "DiagnosisCodeName_1": "char"
+    },
+    "missing_analysis_fields": [
+      "Poolnum",
+      "UnitNumber",
+      "ComponentType"
+    ],
+    "missing_ledger_fields": [
+      "UnitNumber",
+      "ComponentType"
+    ],
+    "meaning": "Schema only; no source values, identity semantics, uniqueness, coverage or cohort provenance certified."
+  },
+  "input_members": {
+    "sample": "transvital3_sample",
+    "full": "transvital3",
+    "ledger_candidate": "cc.transfusion",
+    "admissions_candidate": "cc.basetable",
+    "rbc_filter": "XProdType='E'",
+    "paths": "Private workstation configuration only; public placeholders."
+  },
+  "model_notes": {
+    "procedure": "HPMIXED",
+    "historical_random_subject": "PatientID; semantics unresolved",
+    "recipient_profile": "male, outcome-specific modal ward, long-row means; verify exact source",
+    "base": "time/age/ICU-time splines, sex, ward, prior-RBC covariate correction",
+    "full_additions": [
+      "Crystalloid_1 spline",
+      "Crystalloid_24 spline",
+      "Pressors_1 spline",
+      "Pressors_24 spline",
+      "Sedatives_1_bin",
+      "Sedatives_24_bin"
+    ],
+    "factors": "time main effect plus factor main effect plus interaction",
+    "settings": "Freeze actual estimation and denominator-DF settings; do not assume remembered defaults."
+  },
+  "trajectory_grid": {
+    "start_minute": -720,
+    "end_minute": 720,
+    "step_minutes": 1,
+    "rows_per_outcome": 1441,
+    "primary_main_rows": 10087,
+    "time_knots": [
+      -660,
+      -360,
+      -60,
+      0,
+      60,
+      360,
+      660
+    ]
+  },
+  "artifact_groups": [
+    "run_manifest_and_hashes",
+    "decision_and_analysis_dictionary",
+    "job_registry_and_restart_state",
+    "source_linkage_and_conversion_diagnostics",
+    "cohort_flow_counts",
+    "first_event_patient_descriptors",
+    "component_donor_descriptors",
+    "outcome_availability_and_missingness",
+    "recording_interval_and_coverage",
+    "measurement_quality_diagnostics",
+    "observed_paired_summaries",
+    "observed_secondary_category_contrasts_if_valid",
+    "main_absolute_trajectories",
+    "factor_interaction_trajectories",
+    "same_fit_endpoint_changes",
+    "pairwise_changes_and_holm_families",
+    "endpoint_change_heterogeneity_tests",
+    "full_trajectory_type3_tests",
+    "both_sensitivity_result_sets",
+    "convergence_estimability_rank_df_counts",
+    "fixed_effect_design_and_covariance_or_limited_profile_archive",
+    "postestimation_reconstruction_validation",
+    "resource_and_failure_reports",
+    "public_export_allowlist_and_promotion_report"
+  ],
+  "required_fit_identity": [
+    "RunId",
+    "AnalysisSpecId",
+    "CohortMode",
+    "PopulationId",
+    "FitId",
+    "InputSnapshotId",
+    "CodeHash",
+    "ConfigHash",
+    "DesignId",
+    "ProfileId",
+    "DFMethod"
+  ],
+  "public_forbidden": [
+    "Source datasets",
+    "Patient/admission/donor/unit IDs and actual-record dates",
+    "Patient-level measurements/residuals/BLUPs/covariates",
+    "Raw logs and unscreened listings",
+    "Private configuration and true machine paths",
+    "Session identifiers",
+    "Manuscript drafts and comment extracts",
+    "Development sample artifacts presented as production"
+  ],
+  "acceptance": [
+    "Synthetic boundary,missing,key,tie,episode and covariance tests pass in installed SAS",
+    "Exact sample pipeline completes and covers all code paths",
+    "Source mapping,coverage and scientific decisions documented",
+    "Required jobs and artifacts carry explicit validated status",
+    "Predictions and same-fit changes/pairwise contrasts reconcile",
+    "Covariance and DF match fit/design/profile identity",
+    "Actual person/admission/event/unit/estimation-row counts reconcile",
+    "No independent-SE or shifted-level intervals used for changes",
+    "Production provenance and precision verified",
+    "Public columns,content and disclosure screening complete",
+    "Dashboard,figure,tables use one approved full-cohort release",
+    "Joint cross-category covariance reproduces direct SAS differences-in-change SEs, including intended later time contrasts."
+  ],
+  "job_dimensions": {
+    "population": [
+      "PRIMARY",
+      "FIRST_EVENT",
+      "NO_FOLLOWING_UNIT_12H"
+    ],
+    "outcome": [
+      "ARTm",
+      "ARTs",
+      "ARTd",
+      "HR",
+      "FIO2",
+      "SpO2",
+      "VE"
+    ],
+    "analysis": [
+      "MAIN",
+      "DonorHb_Cat",
+      "Storage_Cat",
+      "DonorSex",
+      "DonorParity",
+      "wdy_donation"
+    ],
+    "adjustment": [
+      "BASE",
+      "FULL"
+    ]
+  },
+  "manuscript": {
+    "timing": "Last, after validated results",
+    "edit_copy_only": true,
+    "track_all_changes_and_replies": true,
+    "author": "Lucas D. Ekstr\u00f6m",
+    "preserve_original_comments": true,
+    "fallback": "Manual change instructions if tracked editing cannot be verified."
+  },
+  "validation_status": "Contract describes approved scope/requirements; does not validate implementation, unresolved science or SAS runtime.",
+  "unit_validation": "Verify actual source scales, especially FiO2/SpO2 fraction versus percent. Intended display units are not proof of source scale; document conversions and transform uncertainty consistently.",
+  "archive_requirement": "Retain JOINT fixed-effect/profile covariance across factor categories. Anchor reconstruction must include cross-category anchor-pair contrasts or equivalent verified joint covariance; disconnected within-category blocks are insufficient."
+}

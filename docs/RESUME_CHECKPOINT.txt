@@ -1,3 +1,11 @@
+WORKSTATION HANDOFF UPDATE - 29 OCTOBER 2026
+Read docs/SAS_FINAL_RUN_HANDOFF.txt and docs/sas_final_run_contract.json first.
+They are self-contained for the agent on the authorised SAS machine. The author
+now authorises local sample development there. Keep patient-level processing
+local; no raw records, private paths or session IDs in Git or shared outputs.
+Older paused-session instructions below are historical. Private drafts may be
+absent from a Git clone; this must not block implementation from the handoff.
+
 DEVELOPMENT CHECKPOINT - 8 OCTOBER 2026
 
 Branch: work/publication-preparation-20261008
@@ -43,8 +51,9 @@ REPOSITORY AND PRIVACY BOUNDARIES
   verified; populate it later only from a reviewed minimal allowlist.
 - Never force-add manuscript/private inputs/analysis files, source datasets,
   raw logs, session identifiers or private research notes.
-- No source data access is authorised for the assistant. Original programs may
-  embed identifiers; use the documented screened-code workflow when needed.
+- Workstation sample-processing authority is defined in the 29 October handoff.
+  Original programs can embed identifiers; screen code before display.
+  Raw records and internal paths must not enter Git or shared model-visible output.
 - Git history treatment and final output screening remain separate release work.
 - Verify the research GitHub account before remote writes: another local project
   uses a different account. Never copy credentials into code or logs.

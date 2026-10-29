@@ -1,0 +1,655 @@
+SAS FINAL-RUN HANDOFF TO THE WORKSTATION AGENT
+29 October 2026 | Development handoff, not a validated analysis release
+Repository: SCANDAT/Transfusion-Dashboard
+Branch: work/publication-preparation-20261008
+Starting checkpoint: be8083bac053cb55759b29df7d9a53697eabb127
+Companion: docs/sas_final_run_contract.json
+
+1. PURPOSE, AUTHORITY AND LIMITS
+
+Take ownership of completing the corrected SAS pipeline on the machine that
+has SAS and the authorised research inputs. Develop and debug on
+transvital3_sample, then prepare one planned final full-cohort batch using
+transvital3. The author reports that a full run may take up to seven days.
+Avoid expensive refits caused by forgotten exports, contrasts or reporting
+requirements. An error-free final run cannot be guaranteed: make jobs
+restartable and save enough fitted-model information for later legitimate
+postestimation without refitting.
+
+On 29 October the author explicitly changed the working arrangement: the
+workstation agent may work directly on the designated sample in the authorised
+SAS environment. Do not repeat the previous remote-login/metadata-return cycle
+or ask the author to identify source keys from memory. Trace the code and use
+local sample diagnostics. This updates older notes prohibiting all agent-side
+source processing. Keep patient-level processing inside the approved
+workstation environment; expose only screened metadata, aggregate diagnostics
+and appropriate model summaries to chat/repository outputs. Do not print source
+rows, actual identifiers, individual residuals/random effects, credentials or
+internal paths. Follow applicable platform access restrictions. If a control
+forbids an operation, stop that operation and explain the restriction. Use
+local SAS only where permitted, never to bypass an access denial.
+
+Engineering fixes and sample experimentation are authorised. Unresolved
+scientific choices still need the author's judgement. Prepare a concrete
+recommendation from code and diagnostic evidence when a choice matters. Do
+not invent filtering thresholds, silently change the statistical subject, or
+launch the expensive full run before sample validation and the remaining
+scientific decisions are settled. Do not reopen decisions approved below
+without new evidence.
+
+This handoff is self-contained and uses the previous investigation, returned
+metadata and pushed source checkpoint. The originating network workspace was
+unavailable during preparation. Private draft modules listed below were NOT
+freshly reopened and are NOT included by this Git pull. Their status is
+reported honestly; none should be treated as tested SAS code. The originating
+agent did not inspect source observations.
+
+2. STARTING ON THE WORKSTATION
+
+A. Preserve local uncommitted work. Fetch and inspect this branch; do not
+   reset/clean the checkout or overwrite existing sample/full outputs.
+B. Read this file and its JSON contract before historical memory notes. Older
+   notes contradict one another about model type, CIs and completed analyses.
+C. Check the installed SAS/SAS-STAT version and required procedures. Returned
+   metadata reported SAS 9.4 M6: 9.04.01M6P11072018, Windows X64_10PRO.
+D. Locate existing private production programs/configuration. The author
+   recently ran original Scripts 1 and 2 successfully after changing the input
+   from transvital3 to transvital3_sample. Preserve these as comparisons;
+   successful execution does not validate definitions or inference.
+E. Recover input paths from the private production configuration locally.
+   Public code must use placeholders, never true machine paths.
+F. Check current schema against the snapshot below. Do not require another
+   metadata-only run unless the input/schema has changed.
+G. Implement guarded linkage checks, complete synthetic tests, and run an
+   end-to-end sample pilot before expanding to all sample jobs.
+
+Published source in this branch:
+S1 = sas_code_public/1 - Descriptive Stats (prod).sas
+S2 = sas_code_public/2 - RBC Transfusion Effect on VPs.sas
+S3 = sas_code_public/3 - RBC Component Effects on VPs.sas
+
+These are NOT established as the exact programs producing every public output.
+Do not overwrite public/data with development sample results. Do not execute
+whole old preparation programs blindly: inspected original builder code had
+patient-specific computational exclusions, destructive cleanup and broad
+diagnostic statements. Screen code before displaying it, and replace any
+subject-specific workaround with a general reviewed rule.
+
+3. VERIFIED PROVENANCE AND SCHEMA
+
+- Forty-two historical main/factor trajectory exports matched archived
+  full-cohort files. Recovered interaction-summary values matched 588 factor
+  endpoints. Numerical provenance is stronger than exact reconstruction of
+  every original submitted program or observed averaging window.
+- Main/factor curves originated in March/April 2025 full-cohort work. A later
+  factor summary uses a NO-INTERACTION model. Do not combine that summary with
+  interaction-model trajectories and present them as one fitted analysis.
+- Later local outputs were incomplete sample analyses. Do not infer provenance
+  merely from a filename or count; bind every output to its actual run/input.
+- No suitable saved full-cohort same-trajectory covariance/contrast archive was
+  recovered to resolve legacy change uncertainty. Marginal prediction SEs and
+  random-effect CovParms alone do not supply it.
+- Correcting the count covariate and restricting parity to female donors
+  changes the fitted analysis. Old curves cannot become corrected estimates
+  without refitting affected models. Historical values are comparison evidence,
+  not targets that the revised analysis must reproduce.
+
+Completed metadata intake, both SAMPLE and FULL:
+- Four reports per mode: schema_columns.csv, schema_requirements.csv,
+  schema_counts.csv and schema_environment.csv. All eight were validated.
+- The three structural reports match byte-for-byte between sample/full.
+- 26 analysis variables, 11 ledger variables, 74 admissions variables;
+  37 requirement rows and zero REQUIRED field/type failures.
+- These are VARIABLE counts, not observation/patient counts. Schema does not
+  establish uniqueness, ledger completeness, temporal coverage or provenance.
+- SAPS_3 was expected numeric by a draft interface but is character length 4:
+  a conversion requirement, not a failed input file.
+
+Recorded aliases; verify local library assignments:
+- Intended inputs: MYDATA.transvital3_sample and MYDATA.transvital3.
+- Candidate full transfusion ledger: cc.transfusion, RBC filter XProdType='E'.
+- Candidate clinical/admission bridge: cc.basetable.
+- Some original builders use different library aliases. All three public
+  scripts default to the sample when SYSPARM is absent. New full launchers
+  must explicitly select full input and reject accidental sample provenance.
+
+The JSON contract lists all 26 analysis and 11 ledger fields and types.
+StudyID and PatientID are numeric in analysis/admissions; StudyID and Poolnum
+are numeric in the ledger. UnitNumber and ComponentType are absent from ledger
+and analysis; Poolnum is also absent from analysis. SAPS_3 and
+DiagnosisCodeName_1 exist. Admissions source times are character length 23;
+analysis admission/discharge times are numeric. Numeric type does not prove
+datetime units, and character length does not prove a parsing format.
+
+4. DECISIONS ALREADY APPROVED
+
+Primary result: fully adjusted SAME-TRAJECTORY prediction at +60 minutes minus
+prediction at -60 minutes. Observed paired change is secondary. A separately
+fitted regression of observed changes is not a substitute for this estimand.
+
+Prior-RBC covariate: physical RBC units beginning strictly earlier in the SAME
+verified ICU admission; exclude units starting at the index timestamp. Use
+complete unit history, not selected index events or repeated measurement rows.
+
+Parity: new analyses among FEMALE donors only. Historical zero includes male
+donors; never relabel those estimates as female-only. Missing/unknown donor
+sex or parity must not become a known category. Existing code labels donor
+sex 1=male, 2=female; validate source coding, do not confuse recipient sex.
+
+Category inference: one overall test of heterogeneity of the -60/+60-minute
+change for each factor/outcome, plus all pairwise differences in those changes.
+Holm correction within each factor/outcome family for primary fully adjusted
+inference. This is not multiplicity control across every outcome, factor,
+sensitivity and model. Define and label secondary families explicitly.
+
+Table 1: each verified PERSON once, anchored at their first eligible event,
+using age and admission characteristics at that event. Check ties/conflicts;
+do not count a person twice because age differs between admissions.
+
+Sensitivity populations:
+1. First eligible event per person.
+2. No additional RBC unit starting in (index time, index time +12 hours].
+   A simultaneous unit at index time is outside this later-unit window, but
+   concurrent index-unit exposure requires its own definition/check.
+
+Approved scope: 7 outcomes x (MAIN + 5 factors) x 2 adjustment sets x
+3 populations = 252 planned model fits: 84 per population. Both BASE and FULL
+are included in both sensitivities. Sparse categories may make a fit/contrast
+non-estimable; record explicit status and reasons, never fabricate a result.
+Additional artifact/covariance scenarios are not included in 252 and require a
+specific decision. This is a fit count, not a runtime estimate.
+
+5. IDENTIFIERS, EXPOSURES AND THE THREE DISTINCT WINDOWS
+
+The author does not know the source identifier definitions and asked for
+deduction from code. Do not repeat the question without new evidence.
+
+Operational roles established from screened preparation code:
+- StudyID connects transfusions to basetable and searches earlier/later
+  transfusions for the recipient.
+- PatientID is introduced from basetable and links monitoring/medication
+  records. Basetable supplies admission/discharge times.
+- These programs consume IDs; they do not create them or establish whether
+  PatientID is person-, admission- or site-specific throughout the inputs.
+- The historical join lacks an explicit transfusion-within-admission condition.
+  This is a risk, not evidence that wrong links actually occurred.
+- Initial grouping uses StudyID, time and donor attributes; Poolnum is dropped.
+  Its units variable counts ROWS within that group. Different donor attributes
+  can split simultaneous records, so units=1 is not proof of one physical unit
+  at a clinical-event timestamp.
+- S1's TransfusionID uses PatientID, a timestamp formatted to seconds, and
+  Poolnum/UnitNumber/ComponentType, all three absent from the long schema.
+  SAS may create uninitialized numeric-missing variables; successful execution
+  does not establish a physical-unit key (S1:34-37).
+- S1 independently takes the first nonmissing donor attributes within that
+  derived key (49-75), potentially mixing conflicting records. Diagnose actual
+  occurrence; do not infer frequency from code alone.
+
+Local checks needed before adopting canonical keys:
+- Missing keys and StudyID-to-PatientID cardinality in both directions;
+  repeated admissions, ward changes, and conflicting episode/age fields.
+- Duplicate/conflicting baseline rows; overlapping/adjacent admissions;
+  missing/invalid bounds; zero/multiple event-admission matches.
+- Missing Poolnum, candidate duplicate units, Poolnum across recipients,
+  times/products, exact duplicates versus genuine repeat entries, concurrent
+  units and their donor-category conflicts.
+- Unique analysis-event/profile groups matched to ledger records; unmatched or
+  multiple matches; timestamp precision and consistency with the existing
+  numeric long-input fields. Verify units, epoch, parsing and time-zone/precision
+  conventions. Do not use reduced time precision or BEST12 formatting as
+  proof of identity (S2:97-99; S3:87-90).
+- Counts at person, clinical-record, admission, event and physical-unit levels.
+  These denominators must remain distinct in tables, flow and fit manifests.
+- Historical versus revised eligibility and all changes caused by linkage
+  corrections; never silently alter the cohort by picking the first match.
+- Actual sample selection and complete histories for selected people. A
+  preparation script uses mod(StudyID,20)=0: do not call this a random sample
+  unless sampling provenance establishes that.
+
+Keep these three windows SEPARATE:
+1. Index eligibility: no earlier RBC in the specified preceding 12-hour window,
+   according to patient-level transfusion history and an explicit boundary rule.
+   Inspect the original strict inequality at exactly -12 hours.
+2. Covariate: strictly earlier units within the SAME ICU admission.
+3. Isolated-event sensitivity: no later unit in (0,+12 hours], using complete
+   patient-level future ascertainment, potentially BEYOND that ICU admission.
+   Missing follow-up is not evidence of no subsequent transfusion.
+
+An admission-limited ledger slice cannot automatically satisfy all three.
+Use code/diagnostics to propose a mapping and fail on ambiguity. Uniqueness
+alone does not establish a source-system identifier's real-world meaning.
+Seek source-owner documentation only for remaining semantic uncertainty.
+Do not silently replace PatientID by StudyID in random effects: if the legacy
+subject was an episode rather than a person, correction needs explicit
+scientific documentation, not just renaming a variable.
+
+6. REQUIRED CODE CORRECTIONS
+
+6.1 Prior-unit count
+S2:114-120 and S3:105-111 increment RBC_Count per measurement row. Replace with
+an event-invariant count from verified unit history, including non-index units.
+At equal times evaluate the event BEFORE counting units at that timestamp.
+Test measurement-density/row-order invariance, repeated admissions, ties,
+duplicate/missing keys and coverage. Avoid a measurement-by-all-units join:
+prepare a narrow sorted unit/event timeline, then attach counts to long rows.
+Keep source libraries read-only.
+
+6.2 Categories, parity and missingness
+Use one exhaustive, nonoverlapping category routine in descriptors, models,
+exports and labels, with explicit missing/invalid status.
+- S3:129-136 leaves fractional storage gaps (19,20), (29,30), (39,40).
+  Integer days 19/20/29/30/39/40 themselves are included.
+- S3:119-126 also leaves fractional Hb gaps (139,140), (154,155), (169,170).
+  Determine whether actual precision/encoding makes those relevant. Prefer
+  contiguous intervals consistent with intended categories; do not round or
+  introduce a new ceiling silently.
+- S1:93-107 assigns missing Hb to <125 and missing storage to <10 because SAS
+  missing compares below ordinary numbers. Check missing BEFORE inequalities.
+- S3 validates parity codes but does not restrict its model to female donors.
+  Implement the approved restriction explicitly; retain unknowns as unknown.
+- S1:164-173 selects distinct PatientID,Age, allowing multiple age rows per
+  person; replace with the approved first-eligible-event patient anchor.
+- S2:129-130 and S3:157-158 clamp negative admission-to-transfusion time to zero.
+  Diagnose timestamp/linkage failure instead of masking it.
+- Sedatives>0 maps numeric missing to false (S2:184-185 and S3 counterpart).
+  Resolve missing-versus-no-administration semantics before keeping this rule.
+
+6.3 Same-fit change inference
+For c=x(+60)-x(-60), Var(change)=c' Cov(beta-hat) c.
+Equivalently Vpost+Vpre-2*Cov(pre,post), NOT SEpre^2+SEpost^2.
+Subtracting a baseline point prediction from absolute CI limits does not create
+a CI for change (S2:443-449; S3:519-526). Shared level terms alone do not prove
+the covariance sign or how far the old CI is too wide/narrow.
+
+Current S2 combines trajectory pre/post predictions with change/SE/CI from a
+SEPARATE observed-change regression (802-835); S3 also substitutes change-model
+results (775-784). This does not implement the approved trajectory estimand.
+
+S3:381-399 uses unsupported nonpositional spline bracket syntax in HPMIXED.
+HPMIXED DOES support positional ESTIMATE and CONTRAST. Build actual ordered
+design-row differences, request coefficient output (/ E), and verify syntax,
+class levels, DF, rank, estimability and endpoint identity on installed SAS.
+Do not make a statistically different shortcut simply to make the program run.
+
+6.4 Category comparisons
+Interaction trajectories, within-category changes, between-category change
+differences and overall endpoint heterogeneity must come from the SAME fit.
+The full time-by-factor Type 3 test is a different hypothesis; export both
+with distinct names. Use a linearly independent full-rank contrast basis for the
+omnibus test, not an unchecked redundant matrix of all pairwise differences.
+For k available categories expect k changes and k*(k-1)/2 pairwise comparisons,
+or explicit non-estimable status. Record multiplicity families and exclusions;
+do not change the family after seeing p values. Ordinary unadjusted CIs must
+not be labelled Holm-adjusted intervals.
+
+6.5 Observed summaries and weighting
+Freeze the event definition, pre/post averaging windows, boundaries and unit
+of weighting. Current code configures +/-5-minute windows around -60/+60
+(S2:35-37; S3:38-44), but exact historical submitted-run windows were not fully
+reconstructed. Do not turn a likely historical choice into a verified fact.
+S2 marginal pre/post means can use different subsets from its paired change
+(621-652); S3 uses paired events for all three means (822-827). Publish aligned
+paired summaries or explicitly separate marginal/paired denominators.
+
+The change-model preparation groups by the row counter AND time-varying
+medication/fluid fields (S2:676-712; S3:582-604). Fixing the counter alone does
+not guarantee one row per event. Validate pre/post pairing and event grain.
+Repeated people/events and category membership invalidate a casual assumption
+of independent observations or independent category mean changes. Ordinary
+PROC MEANS STDERR is not automatically person-aware uncertainty. Published
+N, means and SEs cannot supply missing between-category covariance by themselves.
+
+6.6 Medication and measurement quality
+The historical Sedatives flag covers a broad medication class beyond sedatives;
+Pressors refers to noradrenaline in inspected code. Windows precede EACH
+MEASUREMENT, not necessarily transfusion start. Trace exact mapping, units,
+missingness and windows; save a non-identifying reporting dictionary.
+
+NO artifact-exclusion thresholds have been approved. Audit upstream processing,
+aggregate missingness/duplication/cadence/quality first. Do not trim tails
+because estimates look undesirable. Present a clinically grounded rule for
+author review, freeze it before final comparisons, and document the amendment.
+Any additional filtered-model scenario expands the fit budget explicitly.
+
+7. MODEL SPECIFICATION AND VALIDATION
+
+Preserve the intended longitudinal specification unless a documented correction
+changes it. Existing primary models use PROC HPMIXED, not PROC MIXED:
+- Natural cubic time spline, knots -660,-360,-60,0,60,360,660 minutes.
+- Percentile-based age and time-in-ICU splines, RBC_Count, recipient sex, ward.
+- FULL adds splines for Crystalloid_1,Crystalloid_24,Pressors_1,Pressors_24 and
+  Sedatives_1_bin/Sedatives_24_bin (S2:256-313).
+- Factor models use spl_time | factor: main effects plus interaction
+  (S3:315-365).
+- Random intercept, subject=PatientID. No residual serial-correlation structure
+  appears in these fits. They are NOT an iid analysis of all measurement rows;
+  correct subject identity and remaining dependence still require assessment.
+- Primary code does not explicitly set all estimation/denominator-DF options.
+  Verify installed defaults, then freeze/export explicit settings. Do not
+  confuse proposed REML/DDFM=RESIDUAL prototype choices with verified old settings.
+
+Record method, DF convention, covariance structure, CLASS coding, references,
+knots/scaling, tolerances, complete-case rules and actual estimation counts.
+Source outcome labels are ARTm,ARTs,ARTd,Hjartfrekv (a-diaeresis),FIO2(u),SpO2,
+VE(u). Export codes are ARTm,ARTs,ARTd,HR,FIO2,SpO2,VE. Exact Unicode labels and
+intended display units are in the JSON contract. Verify actual FiO2/SpO2 source
+scales (fraction versus percent), document any conversion once, and scale all
+estimates/uncertainty consistently. Names alone do not establish value scale.
+For percent-valued outcomes, absolute changes are percentage points, not
+relative percentage changes.
+
+Scoring uses male recipient sex, an outcome-specific modal ward and means over
+long measurement rows (S2:188-239; S3:210-238). These are fixed-effect
+REFERENCE-PROFILE predictions, not cohort-standardised predictions, equally
+patient-weighted means or individual prediction intervals. Profile values,
+weighting and comparability across categories/models/populations must be
+explicit. Do not let appended synthetic scoring rows change percentile knots,
+CLASS levels, modes, complete-case counts or estimation samples.
+
+Validate any explicit numerical-design implementation against native EFFECT/
+CLASS fits on invented data before accepting it. Then check representative
+sample fits: coefficient/design order, predictions, SEs, same-fit changes,
+pairwise SE/DF, omnibus rank, estimability and convergence. Test reference and
+category ordering changes, empty cells, singular covariance, boundary variance
+and rank-deficient interactions. Passing one main fit does not cover all five
+factor families. Assess serial/repeated-event dependence and justify the final
+specification; extra model-structure sensitivity fits need an explicit decision.
+
+8. FIT ARCHIVES THAT PREVENT AVOIDABLE REFITTING
+
+Retain code/configuration/input identity, ordered design dictionary, fixed
+effects, fit/variance parameters, diagnostics, estimation counts and all
+requested predictions/contrasts for EACH fit. Save a supported full fixed-effect
+covariance representation or usable model store if available. Do not assume
+HPMIXED has a CovB ODS table or STORE facility. CovParms is NOT Cov(beta-hat).
+Model stores and mixed-model-equation objects may contain source/subject
+material; keep them private and do not blindly export or commit them.
+
+A private candidate approach existed, but was NOT validated in SAS:
+1. Use GLIMMIX NOFIT/OUTDESIGN to materialise the exact documented fixed-effect
+   design, then fit those numerical columns in HPMIXED with NOINT and matching
+   random structure. Establish native-design equivalence first.
+2. Produce direct positional same-fit contrasts in SAS as authoritative results.
+3. For the frozen profiles, save predicted levels/variances at time anchors and
+   SEs of every same-fit anchor-pair difference, INCLUDING pairs spanning
+   DIFFERENT factor categories. The archive must retain the JOINT covariance
+   across categories, not disconnected within-category blocks. Recover
+   Cov(i,j)=(Vi+Vj-Var(pi-pj))/2. Nine anchors per category were proposed, but
+   sufficiency depends on actual time-design rank and must be demonstrated.
+4. Validate symmetry, correlation-scaled positive semidefiniteness, rank and
+   zero-variance cases; reconstruct ALL 1,441 grid means/SEs and compare with
+   direct SAS changes and cross-category differences-in-change SEs. Reject mixed
+   run/fit/profile/DF identities,
+   incompatible designs and rounded inputs.
+5. State the limits: this compact archive covers its fixed profiles and design
+   span, not arbitrary new covariates, populations, models or clinical questions.
+
+The Python covariance prototype passed 16 invented-data tests, but its
+production loader/run/profile/DF binding and complete comparison-coverage gate
+were unfinished. That does not establish SAS correctness or archive sufficiency.
+Prefer a verified full fixed-effect covariance solution if installed procedures
+support it feasibly. Prove archive restore/recalculation on sample results
+BEFORE production, not after discovering that needed objects were deleted.
+
+9. REQUIRED OUTPUTS BEFORE THE FULL BATCH IS FROZEN
+
+Artifacts need RunId, AnalysisSpecId, CohortMode, PopulationId and FitId where
+applicable. Bind them to input snapshot/aliases, code/config hashes, design,
+profile and actual method/DF. Separate development_sample and full_cohort
+physically and logically. Each manifest lists relative filenames, row counts,
+hashes, producer fit, validation and disclosure-review status. A folder name
+or patient count does not establish full-cohort provenance.
+
+Use stable ASCII codes and UTF-8 text. Retain calculation precision, for example
+BEST32 where suitable; round only in presentation. Numeric missing stays
+missing, true zero stays zero, and p values are numeric rather than '<.0001'.
+
+Required artifact groups:
+A. Run manifest, frozen decisions, analysis dictionary, code/configuration/input
+   provenance and complete registry of the 252 planned model jobs.
+B. Key/linkage/duplicate/timestamp/conversion/coverage diagnostics and cohort
+   flow at person, admission, physical-unit, index-event and outcome levels.
+C. Table 1 patient descriptors at first eligible event; severity/diagnosis if
+   usable; donor/component/event descriptors with correct denominators.
+D. Outcome-specific availability, actual estimation rows/people/admissions/
+   events, covariate missingness, cadence and monitoring-coverage summaries.
+E. Measurement-quality diagnostics and, if approved, artifact-rule before/
+   after counts. No individual extreme-value or source-record listings.
+F. Observed paired pre/post/change summaries with frozen windows, weighting,
+   paired counts and valid person-aware uncertainty; clearly separate marginal
+   summaries. Secondary observed category contrasts need a justified method.
+G. Seven primary minute-grid absolute trajectories, each 1,441 times from -720
+   through +720 inclusive: 10,087 primary rows. Base/full means, SEs, valid
+   level CIs, fit and profile IDs; no raw score-table observation columns.
+H. Five factors x seven outcomes of category-specific interaction trajectories,
+   with base/full IDs, category populations and eligibility/status.
+I. Same-fit -60/+60 predictions and changes: estimate, SE, DF, 95% CI, p value,
+   estimability and status; changes must equal the displayed endpoint difference.
+J. Within-category changes; all pairwise differences with raw/Holm p values,
+   family IDs/sizes and unadjusted-CI labels; overall endpoint-change heterogeneity;
+   full-trajectory Type 3 tests reported as a SEPARATE hypothesis.
+K. Equivalent model outputs for BOTH approved sensitivity populations across
+   all outcomes, factors and adjustment sets, with exclusions/counts recorded.
+L. Convergence, boundary variance, rank, estimability, DF, observations read/used,
+   fixed effects, fit criteria and structured warning codes. Model-assumption
+   diagnostics must be aggregate and interpreted for the actual design.
+M. Verified fixed-effect covariance/design archive or documented limited-profile
+   archive, sufficient to recreate intended later time/category contrasts;
+   include a tested restore/recalculation procedure and verification report.
+N. Timings, resource/disk diagnostics, completion/failure ledger and restart data.
+O. Public column/file allowlist, aggregation/suppression decisions, dictionary,
+   checksums and validation/promotion report bound to the exact reviewed bytes.
+
+Save declared useful alternative time contrasts or the archive to calculate
+them later; label them secondary. Extra windows and models must not silently
+multiply the primary hypothesis family.
+
+10. REPORTING QUESTIONS THE OUTPUTS MUST ANSWER
+
+- Hospitals/wards and eligibility: the inspected ward set reflects three
+  hospitals rather than a previously stated four. Derive final counts from
+  inputs and a reviewed ward map; do not hard-code historical manuscript counts.
+- Recording frequency: measurements are stored intermittently. Derive cadence
+  distributions from source timestamps, not the one-minute prediction grid.
+- Available-case/missing-data handling and artifacts: describe what was actually
+  done, with model-specific denominators and exclusion/availability counts.
+- Ventilation was not an established inclusion condition. VE/FiO2 availability
+  does not establish ventilation mode or exclusive mechanical ventilation.
+- Recipient pretransfusion Hb and ventilation mode were not established in
+  current inputs. DonorHb is not recipient Hb. Consider extra extraction only
+  if a suitable authorised source exists and scope is agreed; otherwise state
+  the limitation. Do not invent values or put unknown clinical fields in a model.
+- SAPS_3 and diagnosis exist. Parse severity deliberately and report invalid/
+  missing conversion status. Presence does not approve adding a new covariate.
+- A participant/transfusion flow diagram fits this observational study. Use
+  actual extraction/eligibility counts; never infer upstream exclusions from
+  a filtered final file or describe the study as a randomised trial.
+- Component effects require between-category differences in change, not
+  comparisons of significance within categories or overlapping intervals.
+- Avoid causal, mechanistic or plateau-timing claims unsupported by analysis.
+  Curves already move before transfusion. Indication, regression to the mean
+  and concurrent treatment matter. If extrema/timing summaries are useful,
+  calculate from final curves and label exploratory results appropriately.
+
+11. PRIVACY, GENUINE AGGREGATION AND PUBLICATION
+
+A CSV extension is not proof of safe aggregation. Historical observed/LOESS
+exports have cells with very few contributing records, including singleton
+cells. A record count is not a distinct-person count. Do not promote those
+files merely because SAS exported them. Build any observed display from genuine
+reviewed aggregates, with clear within-event/person weighting, distinct
+contributor counts and the agreed institutional disclosure rule. Consider
+overlapping/complementary releases; do not invent a universal suppression limit.
+Historical LOESS values are standardised, so native physiological-unit labels
+are wrong. An observed overlay is optional: omit it until valid rather than
+delay the model outputs to reproduce old exploratory files.
+
+Whitelist columns BEFORE export. Never export entire WORK/scoring objects with
+actual observations, identifiers, dates, residuals or BLUPs. Keep needed analysis
+tables and fitted objects privately on the workstation. Screen source programs
+for embedded patient filters as well as LIBNAME paths. Never commit SAS data,
+catalog/store/transport files, raw logs, private configuration, session-ID text,
+manuscript drafts or original coauthor-comment extracts.
+
+The earlier reachable-history audit found no source SAS datasets, but that is
+bounded evidence, not a guarantee about every ref, fork, cache or derived CSV.
+Historical internal paths remain a separate cleanup issue. The planned minimal
+SCANDAT/Transfusion-Dashboard-publication repository was empty/private when
+last checked; recheck before any release. Do not push the old work history into
+it. Build a reviewed allowlisted tree; treat history, hosting and output review
+separately. Do not delete/rewrite repositories as a side effect of this SAS task.
+
+12. PERFORMANCE, CHECKPOINTS AND ACCEPTANCE
+
+- One shared codebase, explicit sample/full entry points. Check actual members,
+  source access mode and run identity; never inherit a silent sample fallback.
+- Unique run directories and owned scratch names. Old S2/S3 use blanket PROC
+  DATASETS KILL at startup AND completion (S2:28,71,1313-1321;
+  S3:31,66,1109-1117). Replace with scoped cleanup that preserves successful
+  fitted-model archives and checkpoints and never touches source libraries.
+- Prepare categories, canonical events and counts once. Avoid repeated joins
+  of long measurements to every transfusion. Project only needed variables;
+  benchmark sample RAM, sorting, I/O and temporary disk. Do not promise a full
+  duration by naive scaling from five percent.
+- Do not refit for another plotting resolution, time grid or table layout.
+  Score/contrast the same fit. The old 81-span LOESS exploration is not a
+  prerequisite for primary publication curves.
+- Check SYSERR/SYSCC, SQLRC, macro compilation, expected output keys/files and
+  ODS convergence/estimability after critical steps. A final CSV or zero exit
+  status does not prove that all requested fits succeeded.
+- Make jobs atomic: pending outputs become completed only after validation.
+  A failed fit cannot reuse a previous job's output. Distinguish successful
+  execution of a diagnostic from a diagnostic finding no problems.
+- Resume only when input snapshot, code, configuration, analysis specification,
+  design and profile match. Changed dependencies invalidate affected jobs.
+- Limit parallelism by measured RAM/I/O/licensing. Never launch 252 fits
+  simultaneously. Give the author a progress/failure ledger.
+- Invented fixtures must cover boundaries, missingness, ties, duplicate keys,
+  concurrent donor conflicts, zero/multiple admissions, conversion failures,
+  missing follow-up, non-estimable factors and covariance reconstruction.
+- Run an end-to-end sample pilot INCLUDING exports and downstream validators;
+  then exercise all intended code paths/factor cases. Check actual estimation
+  counts exclude appended synthetic scoring rows.
+- Before full launch, produce a compact validation report and concrete frozen
+  code/configuration/output checklist. Expose outstanding scientific decisions;
+  do not hide them behind passing software checks.
+- Promote only complete, validated, screened FULL-COHORT artifacts. Partial,
+  stale or sample artifacts must fail promotion even if their schema is valid.
+
+13. PRIVATE PROTOTYPES THAT MAY EXIST LOCALLY (NOT IN THIS GIT HANDOFF)
+
+These existed under the originating workspace's ignored
+manuscript/review_audit/sas_revision/ tree. If present on the workstation,
+inspect and reuse carefully. If absent, implement from this handoff and the
+published source; do not block on transferring the entire private directory.
+NONE of these SAS candidates had been executed by the originating agent.
+
+- rbc_category_rules.sas and synthetic category cases: common category and
+  female-only-parity handling; boundary/missingness/expected-abort fixtures.
+  SAS compilation/runtime validation outstanding.
+- prior_rbc_count.sas: sorted unit/event timeline and lookup, strict earlier
+  within-admission definition, explicit identity/coverage gates. Python oracle
+  passed 16 tests; SAS synthetic harness unexecuted.
+- workstation/00_core.sas: errors, contracts and whitelisted precision exports.
+- workstation/01_schema_preflight.sas: version 2 sample/full metadata extraction
+  succeeded after correcting DATALINES inside a macro and adding completion
+  gates. Private launchers contain original paths; never publish those files.
+- workstation/02_linkage_diagnostics.sas: NOT READY TO RUN saved draft.
+  Its synthetic-test file is a TEST-DESIGN PLACEHOLDER, not a working harness.
+  Independent syntax/failure-path review and actual fixtures remain unfinished.
+- workstation/10_quality_diagnostics.sas: aggregate diagnostic candidate;
+  no approved artifact filter or patient-record exports.
+- workstation/20_fit_models.sas and test_fit_equivalence.sas: explicit-design
+  engine/equivalence candidates, unexecuted in SAS. Review NObs semantics,
+  contrast request coverage, grid/category identity, convergence, rank/DF,
+  precision and archive completeness rather than trusting the header.
+- workstation/recover_trajectory_covariance.py: 16 synthetic tests passed;
+  production loader/run/profile/DF binding and complete coverage unfinished.
+- Private required_outputs, planned_model_jobs, decisions, source_adapter_contract
+  and verified_schema_findings files record details. This tracked handoff makes
+  essential decisions, schema and output requirements available without them.
+
+Still incomplete: source adapter, patient/component descriptors, observed
+summary integration, controller/export integration and validated archive loader.
+A collection of drafts is not a runnable or validated analysis package.
+
+14. DASHBOARD, FIGURE AND MANUSCRIPT
+
+Checkpoint be8083b includes strict CSV/schema/error handling, lazy optional data,
+cache retirement, faithful chart preparation, separate native-unit panels and
+corrected model/category labels. Unsupported historical change intervals are
+withheld. Public result CSVs are unchanged. Do not restore unsupported fields
+to satisfy an old consumer type; evolve producer/consumer contracts together.
+
+scripts/make_publication_figure.py is the consolidated renderer: validates
+1,441 points per outcome and endpoint identity; pressure panels share a 6 mmHg
+span; one/two-page vector PDF, SVG and 600 dpi PNG. It remains a scientific draft
+until new results are validated. Absolute reference-profile levels and
+pointwise LEVEL intervals are not uncertainty in change. Optional -60/+60
+markers/delta labels do not change that distinction. Regenerate from one
+approved release; do not hand-edit numbers or generate scientific plots with
+an image-generation model.
+
+scripts/build_publication_package.py and publication_allowlist.json create a
+minimal allowlisted release and block unapproved data promotion. Existing
+fingerprints/approvals may be stale after edits: rerun actual gates. Last
+checkpoint software checks: 199 dashboard tests in 18 files, lint, types,
+production build; 18 package-builder tests. These do not validate scientific
+inference. A local Vitest shutdown warning and stalled read-only network-drive
+enumeration were recorded; only that owned helper was stopped. If reproduced,
+diagnose ownership rather than killing other SAS/Node sessions indiscriminately.
+
+Manuscript work comes LAST, in a COPY of the latest coauthor-reviewed original.
+Every change/reply must be tracked under the exact author name in the JSON
+contract, with original comments preserved. If tracked editing cannot be
+verified, provide manual instructions. Target journal remains general ICU/
+critical-care. Do not publish manuscript/review material in the code repository.
+Generate tables/inline numbers from the approved result release and maintain
+a claim-to-output trace. Reporting requirements in section 10 summarise the
+analytical needs; they are not a copy of private review correspondence.
+
+15. EARLIER OVERCLAIMS TO AVOID
+
+- Archive/CSV identity establishes provenance, not valid model assumptions.
+- The sample name does not establish random sampling; inspected code uses
+  modulo selection.
+- A PatientID random intercept already models dependence. Do not repeat the
+  earlier claim that all measurement rows were treated as wholly independent.
+- Legacy change CIs are unsupported. Without the covariance, 'necessarily too
+  wide' or 'non-significance is an artifact' exceeds the recovered evidence.
+- Global time-by-factor significance is not endpoint-change heterogeneity or
+  practical importance. Do not copy either all-null or all-small-p conclusions.
+- Old observed category N/mean/SE summaries alone do not justify heterogeneity
+  tests when people recur across events/categories. Do not reuse the earlier
+  claimed Bonferroni conclusion without a valid dependence-aware analysis.
+- A single contributing row is not necessarily a single person; absence of
+  direct IDs still does not make singleton observed summaries publishable.
+- Corrected source does not retroactively correct old CSVs. Clearly label
+  legacy, reconstructed, development and validated production artifacts.
+
+16. DEFINITION OF DONE
+
+One frozen specification and codebase passes invented-data and sample checks.
+All required full-cohort jobs/artifacts complete, or have reviewed explicit
+not-estimable status; counts/categories/identities are defensible; every reported
+number/interval traces to that release; same-fit contrasts agree with curves;
+archives support the intended later contrasts; code/exports pass privacy review;
+dashboard, figures and tables reproduce the release; the tracked manuscript
+describes what was actually done. A successful submit, passing website build
+or attractive figure alone is not completion. Report limitations plainly;
+do not promise every conceivable future analysis from one batch.
+
+IMPLEMENTATION REFERENCES (VERIFY AGAINST INSTALLED SAS)
+
+https://support.sas.com/documentation/cdl/en/lrcon/62955/HTML/default/a000695113.htm
+  Variable creation: undefined right-hand-side variables can become missing.
+https://support.sas.com/documentation/cdl/en/statug/66859/HTML/default/statug_hpmixed_syntax.htm
+https://support.sas.com/documentation/cdl/en/statug/63347/HTML/default/statug_hpmixed_sect012.htm
+  HPMIXED positional ESTIMATE/CONTRAST syntax and coefficient order.
+https://support.sas.com/documentation/cdl/en/statug/67523/HTML/default/statug_hpmixed_details16.htm
+  HPMIXED ODS outputs; do not invent CovB/STORE support.
+https://support.sas.com/kb/43/902.html
+  Do not put DATALINES inside a macro definition.
+
+Line references in this document refer to the published programs at be8083b.
+They are navigation aids, not proof that those exact programs produced old CSVs.
