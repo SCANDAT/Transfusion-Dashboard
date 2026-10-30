@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-30",
+  "status": "PAUSED_PARALLEL_SAMPLE_CHECKPOINT_COMPLETE_ANALYSIS_PENDING",
+  "source_contract": "SAS_FINAL_RUN_HANDOFF.txt",
+  "FullRunReady": false,
+  "NoFullCohortRunLaunched": true,
+  "items": [
+    {
+      "id": "IDENTITY_AND_ADMISSION_LINKAGE",
+      "original_weakness": "Ambiguous person/admission linkage and missing containing-admission condition",
+      "status": "IMPLEMENTED_SAMPLE_PREPARATION_VALIDATED",
+      "current_resolution": "Verified person mapping; exactly one containing admission; explicit exclusions; no arbitrary tie resolution."
+    },
+    {
+      "id": "PHYSICAL_UNITS_AND_SIMULTANEOUS_EVENTS",
+      "original_weakness": "Profile grouping loses unit identity and can arbitrarily select donor attributes",
+      "status": "IMPLEMENTED_SAMPLE_PREPARATION_VALIDATED",
+      "current_resolution": "Physical-unit ledger retained; simultaneous MAIN event; every factor requires all units known and agreeing; parity additionally all female."
+    },
+    {
+      "id": "PRIOR_RBC_COUNT",
+      "original_weakness": "Count restricted/anchored incorrectly or includes index ties",
+      "status": "IMPLEMENTED_SAMPLE_PREPARATION_VALIDATED",
+      "current_resolution": "Strictly earlier physical units in same verified admission; all index ties excluded; distinct index and follow-up scopes."
+    },
+    {
+      "id": "CATEGORY_BOUNDARIES_AND_MISSINGNESS",
+      "original_weakness": "Fractional storage/Hb gaps and SAS missing values assigned to lowest category",
+      "status": "IMPLEMENTED_INVENTED_AND_SAMPLE_VALIDATED",
+      "current_resolution": "Shared exhaustive category rules; unknown stays unknown; female-only parity."
+    },
+    {
+      "id": "PERSON_DESCRIPTORS",
+      "original_weakness": "Distinct person-age rows may count a person repeatedly",
+      "status": "IMPLEMENTED_SAMPLE_REPORT_VALIDATED",
+      "current_resolution": "One verified person at first eligible event; denominators distinguish persons/admissions/events/physical units/measurement rows."
+    },
+    {
+      "id": "NEGATIVE_ICU_TIME",
+      "original_weakness": "Negative admission-to-index time clamped tozero",
+      "status": "IMPLEMENTED_SAMPLE_PREPARATION_VALIDATED",
+      "current_resolution": "Containing-admission eligibility prevents this silent coercion; negative/time-conflict states are not reset tozero."
+    },
+    {
+      "id": "SEDATIVE_MISSINGNESS",
+      "original_weakness": "Missing sedative numeric value becomes false under >0",
+      "status": "ADAPTER_CORRECTED_UPSTREAM_LIMITATION_REMAINS",
+      "current_resolution": "Adapter preserves missing values; upstream missing-as-zero cannot be reversed without verified source definitions."
+    },
+    {
+      "id": "SAME_FIT_CHANGE_INFERENCE",
+      "original_weakness": "Shifted level intervals or independent-endpoint SEs used for changes",
+      "status": "IMPLEMENTED_NATIVE_AND_REPRESENTATIVE_SAMPLE_VALIDATED",
+      "current_resolution": "Direct same-fit endpoint contrasts; stable design-difference trajectory arithmetic; covariance-aware uncertainty and independent reconstruction."
+    },
+    {
+      "id": "CATEGORY_COMPARISONS",
+      "original_weakness": "Whole-curve significance or within-category significance substituted for differences in change",
+      "status": "IMPLEMENTED_NATIVE_AND_REPRESENTATIVE_SAMPLE_VALIDATED",
+      "current_resolution": "Separate endpoint heterogeneity and whole-trajectory tests, all pairwise change contrasts, frozen Holm families and explicit unavailable hypotheses."
+    },
+    {
+      "id": "PERSON_CLUSTER_UNCERTAINTY",
+      "original_weakness": "Repeated measurements/events require appropriate uncertainty and finite-sample handling",
+      "status": "IMPLEMENTED_AUDITED_REPRESENTATIVE_SAMPLE_VALIDATED",
+      "current_resolution": "Uniform GLS-whitened CR2, person clustering, Satterthwaite/HTZ, exact structural certificates, fixed target span; all252 final sample jobs still pending."
+    },
+    {
+      "id": "OBSERVED_PAIRING_AND_WEIGHTING",
+      "original_weakness": "Different before/after events and unaccounted repeated persons",
+      "status": "IMPLEMENTED_ALL_FOUR_FRESH_SAMPLE_REPORTS_AND_SERIAL_PARALLEL_EQUIVALENCE_VALIDATED",
+      "current_resolution": "Same paired events/approved windows/equal event weight/person clustering; direct three-metric covariance, arithmetic identity certificate, preserved estimated-zero covariance, strict scale-sensitive validation."
+    },
+    {
+      "id": "MEDICATION_INPUT_VALIDITY",
+      "original_weakness": "Unverified dose semantics, unit compatibility, overlap arithmetic, broad product classes and timing",
+      "status": "SCIENTIFIC_FREEZE_BLOCKER",
+      "current_resolution": "Measurement-relative treatment windows can include post-index treatment. Code execution and robust inference do not certify inherited clinical covariates. Source resolution or explicit prospective methodological amendment required."
+    },
+    {
+      "id": "OUTCOME_UNITS_AND_ARTIFACTS",
+      "original_weakness": "Planned units mistaken for native units; undocumented artifact/missing codes",
+      "status": "SCIENTIFIC_FREEZE_BLOCKER",
+      "current_resolution": "No unsupported conversion or clinical trimming adopted. Native FIO2(u)/VE(u) definitions and coding policy remain unresolved."
+    },
+    {
+      "id": "DIAGNOSIS_HOSPITAL_CADENCE",
+      "original_weakness": "Required summaries lack verified source mapping or pre-window recording interface",
+      "status": "EXPLICITLY_UNAVAILABLE_PENDING_SOURCE_INTERFACE",
+      "current_resolution": "No invented diagnosis conversion, ward-hospital mapping or cadence claims; unavailable reasons carried into aggregate contract."
+    },
+    {
+      "id": "COVARIANCE_PRESERVATION",
+      "original_weakness": "Insufficient saved covariance/DF forces later refitting",
+      "status": "IMPLEMENTED_NATIVE_AND_REPRESENTATIVE_SAMPLE_VALIDATED",
+      "current_resolution": "Working anchor covariance and robust cross-category covariance/normalized moment archive retained with fit/design/profile/method binding; future contrasts restricted to certified span."
+    },
+    {
+      "id": "RESTART_AND_OUTPUT_IDENTITY",
+      "original_weakness": "Partial/stale outputs or interrupted SAS mistaken for completion",
+      "status": "IMPLEMENTED_NATIVE_AND_REPRESENTATIVE_PARALLEL_SAMPLE_VALIDATED",
+      "current_resolution": "Owned processes, durable failure halts, supervisor capacity, separate attempts, receipt-bound selection, exact typed output collection and incomplete-release rejection; complete252 remains pending."
+    },
+    {
+      "id": "FULL_SAMPLE_AND_FROZEN_PACKAGE",
+      "original_weakness": "Only prototypes or subset of final jobs validated",
+      "status": "PENDING",
+      "current_resolution": "Complete252-job sample batch, all report bundles, resource capacity plan, frozen three-stage interface, consumer contract and source scientific resolution required before Lucas launches full."
+    },
+    {
+      "id": "MOMENT_PRECISION_CERTIFICATE",
+      "original_weakness": "Global numerical error envelope prevents certification of a sample contrast despite positive denominator and consistent arithmetic.",
+      "status": "ISOLATED_V2_INVENTED_VALIDATED_ACTUAL_AND_ARCHIVE_INTEGRATION_PENDING",
+      "current_resolution": "Conditional directional construction bounds with rigorous re-evaluation transfer preserve original central arithmetic and threshold. Original M0012 remains rejected; no silent acceptance or methodological substitution."
+    }
+  ]
+}

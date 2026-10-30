@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "status": "PAUSED_AT_AUTHOR_REQUEST_PARALLEL_SAMPLE_CHECKPOINT_NOT_FULL_RUN_READY",
+  "author_approvals": {
+    "index_event": {
+      "status": "APPROVED",
+      "admission": "ONE_UNAMBIGUOUS_CONTAINING_INDEX",
+      "simultaneous_units": "ONE_MAIN_EVENT",
+      "factor_eligibility": "ALL_INDEX_UNITS_KNOWN_AND_MATCHING",
+      "parity": "ALL_FEMALE_AND_KNOWN_MATCHING_PARITY"
+    },
+    "observed_summary": {
+      "status": "APPROVED",
+      "pre_window_minutes": [
+        -65,
+        -55
+      ],
+      "post_window_minutes": [
+        55,
+        65
+      ],
+      "boundaries": "INCLUSIVE",
+      "population": "SAME_PAIRED_EVENTS_FOR_PRE_POST_CHANGE",
+      "weighting": "EQUAL_EVENT_AFTER_WITHIN_WINDOW_MEAN",
+      "uncertainty_cluster": "PERSON",
+      "implemented_method": "SURVEYREG_TAYLOR_VADJUST_NONE",
+      "covariance_factor": "G/(G-1)",
+      "reference_distribution": "T_WITH_G_MINUS_1_DF"
+    },
+    "no_following_sensitivity": {
+      "status": "APPROVED",
+      "definition": "NO_FURTHER_RECORDED_RBC",
+      "followup_seconds": 43200,
+      "interval": "INDEX_OPEN_FOLLOWUP_END_CLOSED",
+      "coverage_start": "1973-01-01T00:00:00",
+      "coverage_end_exclusive": "2019-01-01T00:00:00",
+      "coverage_scope": "RECORDED_RBC_EXTRACTION_1973_2018",
+      "complete_clinical_capture_claim": false
+    },
+    "planned_model_count": 252,
+    "full_run_executor": "AUTHOR_AFTER_FREEZE",
+    "longitudinal_inference": {
+      "status": "APPROVED_DIRECTION_CONDITIONAL_ON_VALIDATION",
+      "author_reply": "Use the recommended inference direction",
+      "mean_models": "RETAIN_PLANNED_252_WORKING_MEAN_MODELS",
+      "uncertainty_cluster": "PERSON",
+      "covariance": "CR2_ON_GLS_WHITENED_DESIGN_WITH_CERTIFIED_TARGET_SPAN",
+      "scalar_degrees_of_freedom": "CONTRAST_SPECIFIC_SATTERTHWAITE",
+      "joint_test": "HTZ_WITH_EXPLICIT_NONPOSITIVE_EFFECTIVE_DF_UNAVAILABILITY",
+      "validation_requirement": "INSTALLED_SAS_INDEPENDENT_NUMERICAL_AND_AUTHORISED_SAMPLE_VALIDATION",
+      "validation_complete": false
+    },
+    "longitudinal_cr2_variant": {
+      "status": "AUTHOR_APPROVED_DIRECTION_CONDITIONAL_ON_SUCCESSFUL_VALIDATION",
+      "recommendation": "UNIFORM_CR2_ON_GLS_WHITENED_DESIGN",
+      "mean_models": "UNCHANGED",
+      "requirements": [
+        "SAME_FROZEN_REML_WORKING_TARGET",
+        "EXACT_STRUCTURAL_SUPPORT_CERTIFICATE",
+        "GLOBAL_AND_LEAVE_PERSON_OUT_ESTIMABILITY_OF_ALL_PREDECLARED_TARGETS",
+        "NO_TRUNCATION_OF_UNEXPLAINED_NEAR_NULL_DIRECTIONS",
+        "SAME_SATTERTHWAITE_HTZ_AND_FROZEN_HOLM_RULES",
+        "INDEPENDENT_SAS_AND_SAMPLE_VALIDATION"
+      ],
+      "reason": "Original-scale symmetric CR2 fails at sample saturation; a simple generalized-inverse extension would not calibrate all planned targets.",
+      "author_approval_date": "2026-10-30",
+      "author_instruction": "Choose scientifically and epidemiologically appropriate methods; do not choose methods to preserve old headline findings; follow the scientific method through implementation, manuscript and dashboard."
+    },
+    "scientific_method_priority": {
+      "status": "EXPLICIT_AUTHOR_DIRECTION",
+      "decision": "Choose scientifically and epidemiologically appropriate methods independently of similarity to prior results. Carry resulting changes through all analyses, dashboard and manuscript.",
+      "headline_stability": "Desired but not a method-selection criterion"
+    },
+    "parallel_pipeline": {
+      "status": "APPROVED_2026_10_30",
+      "direction": "Build and test bounded parallel job scheduling while progressing analytical repairs; pause remaining work at a verified parallel pipeline checkpoint.",
+      "statistical_partition": "Independent registered fits only; no splitting people or records within a fit.",
+      "full_dataset_executor": "AUTHOR_AFTER_FREEZE"
+    }
+  },
+  "engineering_policy": {
+    "medication_reconciliation": "FLOAT_ROUNDOFF_32EPS",
+    "relative_bound": "32*MACHINE_EPSILON*MAX_ABSOLUTE_VALUE",
+    "absolute_scale_floor": false,
+    "canonical_representative": "MINIMUM_ONLY_WITHIN_DECLARED_MACHINE_ROUNDOFF_BOUND",
+    "physiological_value_tolerance": 0,
+    "missing_zero_sign_preserved": true,
+    "optimizer_validation": {
+      "status": "ROOT_APPROVED_EXPLICIT_VALIDATION_POLICY_IMPLEMENTATION_IN_PROGRESS",
+      "policy_id": "ENGINEERING_2026_10_29",
+      "scientific_optimizer_changed": false,
+      "native_held_variance_algebra_gates": "UNCHANGED",
+      "native_independent_failures": "RETAINED_AS_DIAGNOSTICS",
+      "oracle": "INDEPENDENT_ANALYTIC_RANDOM_INTERCEPT_REML_PROFILE",
+      "variance_parameter_tolerance": "ORIGINAL_1E-5_TIMES_MAX_1_ABS_REFERENCE",
+      "uniform_relative_working_model_se_bound": 1e-05,
+      "uniform_mean_shift_in_reference_se_bound": 1e-05,
+      "limits": "NUMERICAL_DOUBLE_PRECISION_CERTIFICATE_NOT_FORMAL_INTERVAL_PROOF_NOT_CR2_PERTURBATION_BOUND"
+    },
+    "joint_cr2_unavailable": {
+      "reason": "INSUFFICIENT_EFFECTIVE_DF",
+      "condition": "HTZ_DENOMINATOR_DF_NONPOSITIVE_AFTER_OTHER_NUMERICAL_CHECKS_PASS",
+      "handling": "RETAIN_REQUEST_AND_Q_NU_DF2_SUPPRESS_F_AND_P_VALIDATE_EXPLICIT_STATUS",
+      "active_scalar_holm_family_unchanged": true,
+      "other_unresolved_numerical_failures": "BLOCK"
+    },
+    "outcome_pushdown": {
+      "status": "VALIDATED",
+      "selection": "EXACT_CASE_INSENSITIVE_REGISTERED_VITALCODE_BEFORE_JOB_MATERIALISATION",
+      "estimation_rows_changed": false,
+      "N_Input_definition": "SELECTED_OUTCOME_POPULATION_ROWS",
+      "prior_N_Input_definition": "ALL_OUTCOMES_WITHIN_POPULATION"
+    },
+    "private_cluster_support": {
+      "status": "INVENTED_AND_TWO_ACTUAL_SAMPLE_WHITE_PILOTS_VALIDATED",
+      "definition": "PER_PERSON_PER_FITTED_DESIGN_COLUMN_ANY_EXACT_NONZERO_BEFORE_QR",
+      "export_permitted": false,
+      "production_inference_uses_it": false,
+      "candidate_inference_uses_it": true
+    },
+    "inference_impact_audit": {
+      "purpose": "SEPARATE_SAME_FIT_UNCERTAINTY_CHANGES_FROM_COHORT_AND_ESTIMATED_EFFECT_CHANGES",
+      "method_selection_based_on_old_result_similarity": false,
+      "full_cohort_result_stability_claimed": false,
+      "comparison_scope": "IDENTICAL_NEW_SAMPLE_FIT_NATIVE_WORKING_VERSUS_VALIDATED_WHITENED_CR2; NOT_OLD_FULL_VERSUS_NEW_FULL",
+      "status": "TWO_ACTUAL_SAMPLE_PILOTS_PASS_NATIVE_COEFFICIENT_AND_SCORING_PROFILE_PRESERVATION",
+      "private_model_comparison_retained": true,
+      "meaning": "Checks mean-model preservation within a fit; never an acceptance rule based on old findings or uncertainty similarity."
+    },
+    "medication_interpretation": {
+      "timing": "PRECEDING_1H_AND_24H_RELATIVE_TO_EACH_MEASUREMENT_NOT_INDEX_TRANSFUSION",
+      "post_index_treatment_possible": true,
+      "baseline_confounder_description_permitted": false,
+      "dose_semantics_and_compatible_units": "UNVERIFIED",
+      "primary_FULL_scientific_input_validity": "UNRESOLVED_REQUIRES_EXPLICIT_SCIENTIFIC_RESOLUTION",
+      "primary_estimand_changed": false,
+      "planned_252_scope_changed": false
+    },
+    "observed_zero_covariance": {
+      "status": "IMPLEMENTED_AND_SAMPLE_VALIDATED",
+      "covariance_status": "ESTIMATED_ZERO_COVARIANCE",
+      "definition": "SUPPORTED_CATEGORIES_WITH_AT_LEAST_ONE_ZERO_ESTIMATED_COMPONENT_VARIANCE",
+      "saved_covariance": 0,
+      "saved_covariance_df": null,
+      "standalone_scalar_uncertainty": "UNAVAILABLE",
+      "valid_pairwise_variance": "RECONSTRUCT_USING_PRESERVED_NUMERIC_COVARIANCE",
+      "unknown_or_unsupported_covariance": "MISSING_NOT_ZERO",
+      "population_covariance_claim": "NO_KNOWN_POPULATION_ZERO_CLAIM"
+    },
+    "exact_numeric_exchange": {
+      "format": "HEX16_IEEE754",
+      "representation": "H plus sixteen uppercase IEEE754 binary64 hexadecimal digits; missing canonical dot; character columns preserved",
+      "producer": "Installed SAS Windows HEX16 host representation verified using fixed nonpatient probes",
+      "consumer": "Schema-declared numeric fields decoded exactly; protocol and all numeric-cell encodings must agree",
+      "portable_decimal": "Documented repr(binary64) conversion with immutable source/output provenance required before dashboard consumption",
+      "science_effect": "Representation only; no change to fitted model or intended estimand"
+    },
+    "observed_arithmetic_certificate": {
+      "status": "IMPLEMENTED_INVENTED_AND_ALL_FOUR_FRESH_ACTUAL_REPORTS_VALIDATED",
+      "score_policy": "Direct separately recentered PRE, POST and CHANGE person scores; preserve all three Gram covariances",
+      "ScoreIdentityNorm": "Category aggregate norm sqrt(G/(G-1)*sum_person[(sPOST-sPRE-sCHANGE)^2])/N_events",
+      "purpose": "Bound finite-precision covariance reconstruction discrepancies through Cauchy products; not an outcome, standard error or clinical uncertainty component",
+      "pairwise_estimate": "Same fitted SURVEYREG contrast as SE/CI/P; descriptive mean subtraction retained as an independent arithmetic check",
+      "variance_validation": "Strict relative/marginal-scale checks with no unit-scale absolute variance floor"
+    },
+    "parallel_execution": {
+      "workers_default": 1,
+      "workers_maximum": 4,
+      "sas_cpucount": 4,
+      "sas_memsize": "16G",
+      "sas_sortsize": "1G",
+      "native_math_threads_per_library": 4,
+      "runtime_policy_recorded": true,
+      "capacity_scope": "PER_BATCH_PERSISTENT_SUPERVISOR",
+      "mean_models_changed": false,
+      "full_cohort_resource_certificate": false
+    }
+  },
+  "validation": {
+    "actual_sample_preparation": "PASS",
+    "actual_sample_model_pilot": "WORKING_MODEL_ARCHIVE_AND_DERIVED_TRAJECTORY_PASS",
+    "all_sample_models": "11_OF_252_ACCEPTED_IN_NEW_EXACT_TRANSPORT_BATCH; M0012_INFERENCE_PRECISION_GUARD_STOP",
+    "full_run_started": false,
+    "integrated_sample_prepare": "PASS",
+    "final_cr2_inference": "FINAL_AUDITED_CORE_TWO_ACTUAL_PILOTS_PASS; NEW_EXACT_TRANSPORT_INVENTED_PASS; COMPLETE_252_SAMPLE_PENDING",
+    "actual_sample_representative_mean_fits": "FRESH_HB_STORAGE_WEEKDAY_FULL_REGRESSIONS_PASS_OTHER_WORKING_FITS_VALIDATED_IN_DEVELOPMENT_BATCH",
+    "actual_sample_remaining_checks": "NUMERICAL_CERTIFICATE_INTEGRATION_COMPLETE252_SAMPLE_SOURCE_SCIENTIFIC_RESOLUTION_AND_FULL_PACKAGE",
+    "invented_cr2_scalar_sas_numpy": "PASS_73_CHECKS",
+    "invented_cr2_joint_moment_python": "PASS_34_TESTS",
+    "invented_cluster_sscp_bridge": "SAS_PASS_NUMPY_PASS_64_CHECKS",
+    "actual_sample_precision_and_available_category_regressions": "PASS_ON_FRESH_SNAPSHOT",
+    "invented_cr2_scalar_joint_moment_stream_sas_numpy": "PASS_167_CHECKS",
+    "actual_sample_working_models": {
+      "ARCHIVE_VALIDATED": 52,
+      "FIT_RUNTIME_COMPLETED": 1,
+      "FAILED": 2,
+      "NOT_STARTED": 197
+    },
+    "actual_sample_medication_unit_metadata": {
+      "status": "COMPLETED_FIXED_PREDICATES_ONLY",
+      "noradrenaline_multiple_recorded_unit_labels": true,
+      "crystalloid_multiple_recorded_unit_labels": true,
+      "broad_sedative_class_multiple_recorded_unit_labels": true,
+      "missing_unit_labels_detected": false,
+      "multiple_labels_within_product_detected": false,
+      "mixed_type_codes_within_product_detected": false,
+      "unmapped_products_present": true,
+      "dose_rate_or_record_time_fields_used": false,
+      "dose_semantics_certified": false
+    },
+    "invented_working_optimizer_gate": "CURRENT_TWELVE_FITS_AND_ANALYTIC_ORACLE_PASS_ORIGINAL_NATIVE_DIAGNOSTICS_RETAINED",
+    "cr2_native_spline_integration": "FOUR_INVENTED_FACADES_SAS_AND_69_INDEPENDENT_CHECKS_PASS",
+    "actual_sample_working_models_scope": "WORKING_MEAN_ARCHIVES_ONLY_FINAL_CR2_BATCH_PENDING",
+    "invented_cluster_qr_bridge": "SAS_NUMPY_TINY_DIRECTION_AND_CHUNK_BOUND_TESTS_PASS",
+    "invented_cr2_qr_scalar_joint_moment_stream": "PASS_190_CHECKS",
+    "trajectory_precision_repair": "ACTUAL_SEPARATE_REPAIR_AND_FROZEN_REVERIFY_PASS_ORIGINAL_RUN_UNCHANGED",
+    "same_model_optimizer_restart": "FROZEN_AND_CURRENT_ACTUAL_SAMPLE_WORKING_ARCHIVES_AND_DERIVED_TRAJECTORIES_INDEPENDENTLY_PASS",
+    "cr2_model_only_archive": "FOUR_INVENTED_ARCHIVES_VALIDATED_47_CORRUPTION_PROBABILITY_TESTS_PASS",
+    "mutable_admission_schema": "IMPLEMENTED_INVENTED_AND_FRESH_ACTUAL_WORKING_PILOT_VALIDATED",
+    "cr2_storage": "FOUR_INVENTED_CASES_69_NUMERICAL_CHECKS_AND_FOUR_STRICT_ARCHIVES_PASS",
+    "cr2_saturation_diagnosis": "LOCAL_FIXED_PREDICATES_SUPPORT_STRUCTURAL_NUISANCE_SATURATION; ORIGINAL_SCALE_GENERALIZED_TARGET_CALIBRATION_FAILS; LEAVE_PERSON_OUT_TARGET_ESTIMABILITY_PASSES",
+    "new_inference_prototype": "WHITENED_GLS_CR2_INVENTED_PYTHON_OFFICIAL_R_AND_NATIVE_SAS_PASS",
+    "white_native_core": "FINAL_AUDITED_CORE_SAS_89_INDEPENDENT_CHECKS_18_OFFICIAL_R_COMPARISONS_PASS",
+    "white_native_facade": "FOUR_INVENTED_CASES_69_CHECKS_PASS_WITH_SUCCESS_COMMITTED_AFTER_IDENTITY_BINDING",
+    "white_archive": "FOUR_INVENTED_PRODUCTION_EXPORTS_INDEPENDENTLY_VALIDATED",
+    "white_actual_pilots": {
+      "M0001": "FINAL_AUDITED_CORE_WORKING_DERIVED_WHITE_AND_SAME_FIT_COMPARISON_PASS",
+      "M0078": "FINAL_AUDITED_CORE_FULL_SEVEN_CATEGORY_WORKING_DERIVED_WHITE_AND_SAME_FIT_COMPARISON_PASS"
+    },
+    "observed_report_refresh": "ALL_FOUR_FRESH_CORRECTED_SAMPLE_BUNDLES_VALIDATED",
+    "white_archive_adversarial": "56_CORRUPTION_PROBABILITY_PRIVACY_TESTS_PASS",
+    "exact_transport": "INSTALLED_SAS_108589_INVENTED_ROWS_AND_ALL_FOUR_MODEL_WORKING_WHITE_DERIVED_SAME_FIT_CHECKS_PASS",
+    "resource_monitor": "FOURTEEN_INVENTED_PRIVACY_COUNTER_ERRORPATH_TESTS_PASS; EARLY_ACTUAL_SAMPLE_METADATA_OBSERVATIONS_RETAINED_NOT_FULL_CAPACITY_CERTIFICATE",
+    "final_sample_checkpoint": {
+      "models_validated": 11,
+      "model_failed_guard": 1,
+      "models_not_started": 240,
+      "reports_validated_in_batch": 1,
+      "all_four_reports_separately_validated": true,
+      "failure": "M0012 scalar moment global roundoff certificate rejected; positive denominator, valid normalized DF and original/normalized agreement; construction bound repair under investigation",
+      "running_jobs": 0,
+      "user_requested_pause": true
+    },
+    "portable_decimal_conversion": "TWELVE_UNIT_TESTS_AND_INVENTED_SELECTED_MODEL_ALL_FIVE_REPORT_BUNDLES_BIT_EXACT_PASS",
+    "M0012_working_and_derived": "INDEPENDENT_PASS; FINAL_CR2_STILL_UNRESOLVED",
+    "parallel_pipeline": {
+      "scope": "REPRESENTATIVE_ACTUAL_SAMPLE_NOT_COMPLETE252",
+      "fresh_packaged_preparation": "PASS",
+      "two_worker_reports": "ALL_FOUR_PASS",
+      "two_worker_models": "MAIN_BASE_AND_SEVEN_CATEGORY_FULL_COMPONENT_PASS",
+      "serial_equivalence": "ALL_FOUR_REPORTS_AND_BOTH_MODELS_SCIENTIFIC_EXPORTED_VALUES_BITWISE_EQUAL",
+      "final_four_worker_candidate": "FOUR_ACTUAL_MODELS_PASS_FOUR_OVERLAPPING_SAS_RUNTIME_INTERVALS",
+      "final_reports": "ALL_FOUR_PASS",
+      "selected_collection": "FOUR_MODELS_PLUS_FOUR_REPORTS_BIT_EXACT_DECIMAL_DIAGNOSTIC_SUBSET",
+      "complete_release_negative_guard": "BATCH_INCOMPLETE_AS_REQUIRED",
+      "FullRunReady": false
+    },
+    "M0012_precision_candidate": "DIRECTIONAL_ERROR_BOUND_V2_INVENTED_TESTS_PASS; EXPANDED_WRAPPER_AND_ACTUAL_V2_DIAGNOSTIC_PENDING; PRODUCTION_NOT_CHANGED"
+  },
+  "unresolved": [
+    "FINAL_INFERENCE_AUDIT_HARDENING_AND_FULL_SAMPLE_REGISTRY_VALIDATION",
+    "MEDICATION_SEMANTICS_AND_UNITS",
+    "NATIVE_OUTCOME_UNITS",
+    "ARTIFACT_POLICY",
+    "COMPLETE_SAMPLE_JOB_AND_EXPORT_VALIDATION",
+    "FROZEN_FULL_RUN_PACKAGE"
+  ],
+  "updated": "2026-10-30"
+}

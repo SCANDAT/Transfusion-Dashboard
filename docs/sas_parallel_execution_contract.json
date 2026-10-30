@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-30",
+  "status": "REPRESENTATIVE_ACTUAL_SAMPLE_PARALLEL_CHECKPOINT_VALIDATED_COMPLETE252_PENDING",
+  "FullRunReady": false,
+  "author_authorization": "Implement parallel scheduling now alongside remaining analytical work; pause remaining work at demonstrated parallel pipeline checkpoint.",
+  "scope": {
+    "preparation": "One owned sample preparation; validated immutable receipt is prerequisite for downstream jobs.",
+    "descriptors": "Four independently owned report tasks; validate before dispatching models.",
+    "models": "252 unchanged registered fits:42 MAIN and210 component. Parallelism is across fits, never by splitting observations within a fitted model.",
+    "collection": "Select complete independently validated attempts only; require all252 models andfour reports for final sample release."
+  },
+  "execution": {
+    "engine": "Local Python scheduling of separate SAS processes; SAS analytical models remain native SAS.",
+    "workers_default": 1,
+    "workers_maximum": 4,
+    "initial_actual_parallel_validation": 2,
+    "CPUCOUNT_per_SAS": 4,
+    "MEMSIZE_per_SAS": "16G",
+    "SORTSIZE_per_SAS": "1G",
+    "resource_limits_status": "Conservative sample validation settings; not a full-cohort capacity certificate.",
+    "scheduler_owner": "One kernel queue-owner lease per batch.",
+    "job_owner": "One kernel lifecycle lease per logical job.",
+    "shared_commit_lock": "Held only for brief attempt publication and immutable selection publication.",
+    "capacity": "Per-batch persistent supervisor-held slots survive frontend death; global cross-batch cap not claimed.",
+    "privacy": "Separate worker processes and private streams; no concurrent thread-local redirection of process-global output.",
+    "native_math_threads_per_library": 4,
+    "native_math_policy": "Initialize before NumPy/SciPy imports; attest effective pools, library identities and threadpoolctl code; mutation rejects."
+  },
+  "failure_and_restart": {
+    "dispatch": "On observed failure stop new dispatch; allow already running jobs to finish and retain all evidence.",
+    "retry": "Fresh isolated attempt; failed attempts preserved; selected accepted attempts cannot be overwritten.",
+    "frontend_death": "Independent SAS supervisor and owned payload remain identifiable and recoverable.",
+    "supervisor_death": "Owned SAS job terminates; no acceptance until quiescence and durable receipts independently verified.",
+    "recovery": "Resume validates selected output; does not refit an already accepted job.",
+    "preparation_change": "New immutable parent and batch; no mixing of input generations.",
+    "persistent_halt": "Durable failure halt; existing attempts finish, new reservations blocked until explicit acknowledgment/retry workflow."
+  },
+  "comparison": {
+    "purpose": "Prove scheduling preserves scientific output on identical sample preparation, package and execution policy.",
+    "method": "Schema-aware bitwise comparison of validated exported model/aggregate numeric fields and exact scientific text; row order and explicitly declared run-specific identity labels may differ.",
+    "ignored_labels": [
+      "RunId",
+      "FitId",
+      "DesignId",
+      "ProfileId",
+      "ReportRunId",
+      "ExportId",
+      "CR2ArchiveID"
+    ],
+    "still_required_equal": [
+      "CodeHash",
+      "ConfigHash",
+      "InputSnapshotId",
+      "PopulationId",
+      "JobID",
+      "all scientific methods, category labels, plans and numerical values"
+    ],
+    "raw_data_used_by_comparator": false,
+    "status": "Actual identical-package serial versus2worker: allfour reports and both representative models bitwise equal. Later final candidate4worker run separately validated; native SAS kernels unchanged."
+  },
+  "validation_required": [
+    "Invented concurrency and duplicate-job tests",
+    "Native owned-process crash/recovery tests",
+    "Native preparation-to-report-to-model integration",
+    "Actual sample representative MAIN and FULL component jobs at2workers",
+    "Serial-versus-parallel scientific-output comparison",
+    "Complete registry collection and expected-unavailable/failure handling",
+    "Measured memory/disk/runtime before increasing workers or freezing full limits"
+  ],
+  "output_rules": {
+    "private_attempt_artifacts": "Separate per-attempt WORK, SASUSER, logs, model/CR2/report exports, validation and runtime receipts.",
+    "selection": "Immutable receipt-bound inventory; no newest-file globbing.",
+    "portable_decimal": "Post-validation typed exact-to-decimal conversion; numeric bits and source/output hashes retained.",
+    "publication": "Private unreviewed until privacy and full release gates; no automatic dashboard publication."
+  },
+  "references": [
+    "https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects",
+    "https://learn.microsoft.com/en-us/windows/win32/procthread/nested-jobs",
+    "https://blogs.sas.com/content/sgf/2021/01/13/running-sas-programs-in-parallel-using-sas-connect/"
+  ],
+  "validation_status": {
+    "candidate_actual_preparation": "PASS",
+    "parallel_controller": "19_CONTROLLER_SCHEDULER_PLUS2_NATIVE_SUPERVISOR_TESTS_PASS",
+    "cli": "10_GUARD_TESTS_PASS",
+    "native_math_policy": "5_INSTALLED_RUNTIME_TESTS_PASS_TWO_POOLS4THREADS_FOUR_CHILDREN_AGREE_WITH_SERIAL_INVENTED_SOLVES",
+    "collection": "12_INVENTED_BOUNDARY_TESTS_PLUS_ACTUAL4MODELS4REPORTS_DIAGNOSTIC_COLLECTION_PASS",
+    "actual_two_workers": "ALL_FOUR_REPORTS_AND_MAIN_BASE_PLUS_FULL_COMPONENT_VALIDATED",
+    "actual_four_workers": "FOUR_MODELS_VALIDATED_FOUR_OVERLAPPING_SAS_RUNTIME_INTERVALS_FINAL_PACKAGE",
+    "complete_registry": "NOT_YET_ALL252_MODEL_VALIDATED; ACTUAL_FINALCOLLECT_REJECTED_INCOMPLETE_AS_REQUIRED"
+  }
+}

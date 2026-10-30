@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "status": "STRUCTURED_SELECTED_OUTPUT_COLLECTION_IMPLEMENTED_SAMPLE_SUBSET_VALIDATED_FINAL_RELEASE_PENDING",
+  "purpose": "Self-contained laptop integration contract; no sample output may replace the live full-cohort dashboard.",
+  "cohort_modes": [
+    "development_sample",
+    "full_cohort"
+  ],
+  "full_launch_executor": "LUCAS",
+  "portable_bundle": {
+    "release_manifest.json": "Release/cohort identity, immutable code/config/input metadata digests, all252 jobs and selected validated attempts; final release state and limitations.",
+    "code/": "Frozen three SAS entry scripts, dependencies, local controller and independent validators; local input paths supplied outside portable bundle.",
+    "methods/decisions.json": "Every approved scientific and technical choice, date, evidence, superseded implementation and unresolved status.",
+    "methods/methodology.txt": "Plain language estimands, populations, model formulae, variance/DF algorithms, units, exclusions, missingness, sensitivity and multiplicity rules.",
+    "schemas/": "Versioned exact CSV names/columns/types/keys/units/status vocabulary; no consumer guesses from labels.",
+    "results/preparation/": "Validated aggregate flow, exclusions, preparation and population/follow-up status; no record-level tables.",
+    "results/populations/{PopulationId}/": "Validated aggregate descriptions, QA and paired observed summaries including joint covariance.",
+    "results/models/{JobID}/working/": "Original fitted mean-model archive with model-based uncertainty explicitly labelled diagnostic.",
+    "results/models/{JobID}/inference/": "Validated person-cluster inference, trajectories, changes, pairwise comparisons, both joint tests, availability and frozen families.",
+    "validation/": "Independent software/version/digest-bound attestations, resource summary and exact accepted bundle inventory."
+  },
+  "local_only": [
+    "Original source datasets",
+    "Prepared record-level analysis tables",
+    "Private logs and diagnostic files",
+    "Per-person QR factors, residuals and sufficient statistics",
+    "Source paths and personal metadata",
+    "Discarded/failed/unselected attempts"
+  ],
+  "consumer_rules": [
+    "Read only files explicitly selected by release_manifest.json; never glob the latest modification time.",
+    "Require matching cohort and release identities; development_sample is never a production replacement.",
+    "Use person-cluster inference for final numerical reporting; working-model residual-DF tables are not final inference.",
+    "Use explicit availability/status values. Missing uncertainty is never zero or nonsignificance.",
+    "Keep endpoint change heterogeneity distinct from whole-trajectory time-by-factor interaction.",
+    "Keep same-fit prediction changes distinct from secondary observed paired window summaries.",
+    "Pointwise confidence intervals and Holm-adjusted primaryFULL pairwise P values have different meanings.",
+    "Read unit status before labelling axes or converting values. Planned units in originalhandoff are not verified source units.",
+    "Future linear contrasts require the declared archived scoring span and its covariance/DF method; do not infer arbitrary new coefficient validity.",
+    "Preserve full planned252 job registry and all unavailable rows/reasons; never silently omit failed or unavailable requests.",
+    "ESTIMATED_ZERO_COVARIANCE preserves a numerically zero covariance estimate for supported components; its DF is missing and standalone zero-variance intervals remain unavailable. It is not an assertion of known population covariance, and may support a valid pairwise comparison.",
+    "ScoreIdentityNorm is an arithmetic reconstruction certificate for the observed joint covariance. It is not clinical variability, a standard error, or an extra uncertainty term to add to intervals."
+  ],
+  "count_definitions": {
+    "N_Input": "Selected outcome rows within the requested population before fit eligibility/complete-case filtering (new outcome-pushdown meaning).",
+    "N_Patients": "Distinct person clusters in the exact estimation population.",
+    "N_Admissions": "Distinct verified admissions in the exact estimation population; separate from persons and events.",
+    "N_Events": "Distinct canonical simultaneous-transfusion events in the exact estimation population.",
+    "N_Used": "Actual complete-case longitudinal observations used in that working mean fit."
+  },
+  "restart_policy": "Fresh isolated attempt for a retry; never mix artifacts from different attempts. Revalidate completed artifacts without rerunning SAS. Unchanged accepted attempts remain immutable.",
+  "retention_policy": "Keep previous development evidence unchanged. New per-attempt private WORK may be retired only after all required validation and durable attestation; covariance/DF sufficient information stays in approved model-only archives.",
+  "privacy": "Portable code/configuration and only reviewed model/aggregate outputs. No source records, source paths, per-person results or raw logs.",
+  "numeric_exchange": {
+    "internal_exact_format": "HEX16_IEEE754",
+    "numeric_token": "H followed by sixteen uppercase IEEE754 binary64 hexadecimal digits",
+    "missing_token": ".",
+    "character_fields": "Preserved as character text even if they resemble numeric tokens",
+    "consumer_format": "Ordinary decimal CSV must be generated by the supplied schema-aware exact-to-repr conversion, with source and destination hashes recorded. Do not ask the dashboard to infer cell types.",
+    "legacy_decimal": "E32_STDIEEE identifies older evidence only and carries no all-binary64 exactness guarantee."
+  },
+  "diagnostic_bundle_rule": "An explicit subset writes validation_bundle_manifest.json with DiagnosticOnly=true and PRIVATE_UNREVIEWED. Complete sample collection requires252model+4report selections; neither implies scientific/full-cohort approval.",
+  "collection_provenance": "Collector/codec code hashes, source validation digests and per-file source/decimal hashes are retained; completed manifests written last; failed partial collection cannot become a release."
+}

@@ -1,0 +1,56 @@
+CLINISOFT SOURCE DEFINITIONS NEEDED BEFORE ANALYSIS FREEZE
+29 October 2026 -- prepared for Lucas; not sent to anyone
+
+Purpose
+The local code and nonpatient documentation establish several mappings, but do
+not establish all medication-field semantics or the native FIO2(u)/VE(u) units.
+Please obtain an export dictionary, the export SQL/configuration, or written
+confirmation from the person responsible for this Clinisoft export. No patient
+records or example administrations are needed. The items below can be answered
+using field definitions, product dictionaries and transformation code only.
+
+1. GivenDose: Is this an increment since the preceding record, an entire
+administration amount, a cumulative value, or another quantity? What interval
+and timestamp does a record represent? Which unit field applies to it?
+
+2. Rate: What quantity and time denominator does it use? Is it product volume,
+active-ingredient mass, body-weight-normalised dose, or configuration-dependent?
+What fields identify changes of concentration, units or denominator?
+
+3. CumulDose: What starts/resets its counter? Which administration/order key
+makes successive values comparable? Can it be safely interpreted as an amount
+without differencing? Does cancellation or correction change that interpretation?
+
+4. Type and status: What do Type 0 and 1 mean in THIS export? Which fields or
+export predicates distinguish ordered, actually administered, stopped,
+cancelled, corrected or invalidated records? Are these already filtered out?
+
+5. Unit mapping: Does Abbreviation belong to GivenDose, CumulDose, Rate, product
+content, or another field? The nonpatient catalogue shows that PharmaID has a
+consistent abbreviation in that snapshot, while one CompID can have different
+abbreviations across products. What validated conversion, if any, is applied
+before quantities are combined? Product-name concentration text alone is not a
+validated conversion algorithm.
+
+6. Monitoring: What source VariableID(s) and unit(s) correspond exactly to the
+native labels FIO2(u) and VE(u)? Is FIO2(u) measured or set, fraction or percent?
+Is VE(u) minute ventilation, with which time and volume units? Identify any
+transformation between device/export values and the stored Value field. The
+requested-variable workbook lists measured/set FiO2 with a fraction-range
+convention, but does not establish the native-label mapping.
+
+7. Missingness/artifacts: Do zero or special codes represent valid observations,
+no administration, disconnected equipment, invalid measurements or missingness?
+Which flags were retained or removed during extraction and aggregation? This
+question concerns the documented coding scheme, not patient examples or
+selection of thresholds from observed analysis results.
+
+Relevant nonpatient files already located
+- Info om PharmaID och CopmID 20220607.xlsx
+- Requested Clinisoft variables workbook dated 2021-12-07
+
+Existing code additionally raises interval-overlap and unit-aggregation concerns.
+Once the above definitions are known, those can be corrected and tested locally.
+Do not borrow definitions from another hospital or an external research dataset
+merely because its field names look similar. No source records, clinical values,
+identifiers, internal paths or private manuscript content are included here.

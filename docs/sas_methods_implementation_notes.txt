@@ -1,0 +1,213 @@
+IMPLEMENTATION NOTES FOR LAPTOP ASTRA / METHODS
+30 October 2026 -- DEVELOPMENT CANDIDATE, NOT FINAL METHODS OR RESULTS
+No full cohort run has been launched. Use the final release manifest and frozen
+code, not this interim note, as authority for the completed analysis.
+
+SCIENTIFIC PRIORITY
+Lucas explicitly directed scientifically appropriate methods and following the
+scientific method through to results, manuscript and dashboard. Similarity to
+previous headline findings is not a criterion for choosing or accepting a
+method. Same-fit comparisons are accounting checks: they distinguish unchanged
+mean estimates from altered uncertainty, and do not constrain the new results.
+
+COHORT, EXPOSURE AND TIME
+Person identity is the verified person mapping, distinct from clinical admission
+identity. The random-effect subject and uncertainty cluster both use this person.
+The internal PatientID alias in model code therefore means the verified person,
+not an unexamined inherited admission identifier.
+Index events require one unambiguous containing ICU admission. Simultaneous RBC
+units form one clinical MAIN event. A component-factor event is eligible only
+when all its index units have known matching categories for that factor. Parity
+additionally requires all units from female donors with known matching parity.
+Physical-unit linkage and duplicate handling are explicit upstream; no first
+row, nearest admission or arbitrary donor is selected to resolve ambiguity.
+
+An index event has no earlier recorded RBC, or its latest earlier recorded RBC
+is strictly before index-minus12hours. Exact minus12hours is excluded. The prior
+RBC covariate counts strictly earlier physical unit starts in the same verified
+ICU admission and excludes all index-time ties. Ambiguous prior-unit admission
+linkage inside that admission excludes the event. These are different scopes:
+person history for index eligibility, admission history for the count covariate.
+Longitudinal measurement eligibility covers minus720 through plus720minutes,
+inclusive. Each factor additionally has its own complete-case estimation set.
+
+PRIMARY includes eligible events. FIRST_EVENT uses the first eligible event per
+verified person, before factor/outcome/complete-case restrictions; no later event
+replaces an ineligible anchor in a restricted fit. The NO_FOLLOWING_UNIT_12H sensitivity means no further RECORDED
+RBC in(index,index+12hours], with the whole interval inside the documented
+record-extraction period [1973-01-01,2019-01-01). Follow-up is person-wide,
+including beyond the index ICU admission. This definition does not assert that
+unrecorded transfusions are impossible. Person-level Table1 uses one first-event
+anchor per person, distinct from event and physical-unit descriptors.
+
+LONGITUDINAL MEAN MODELS
+The planned registry contains252 fits: seven outcomes, MAIN plus five component
+factors, BASE/FULL adjustment, and all three populations. No extra covariance or
+artifact scenarios are added to that scope by the inference correction.
+BASE contains a natural cubic time spline; natural cubic age and elapsed ICU
+minutes splines; strictly earlier admission RBC count; recipient sex and ward.
+FULL additionally contains natural cubic splines for inherited1h/24h crystalloid
+and pressor variables, and inherited1h/24h sedative-positive indicators. The inherited medication windows end at EACH MEASUREMENT time, not at the index
+transfusion; they can include post-index treatment and must not be described as
+baseline confounders. Missing sedative values remain missing in the adapter. Historical upstream missing-as-
+zero coding and dose semantics remain unresolved; see source limitations below.
+A factor model includes the factor main effect and its interaction with the
+complete time spline, alongside the same adjustment terms.
+
+Time knots are fixed at -660,-360,-60,0,60,360,660minutes. Adjustment knots are
+obtained from the installed SAS native PERCENTILES(3) specification on that
+fit's real complete-case rows, then explicitly frozen and archived before
+scoring. They are not recomputed using synthetic scoring rows. Natural-cubic
+boundary knots follow the SAS basis specification; no unverified replacement
+quantile algorithm is used.
+GLIMMIX NOFIT constructs the native fixed-effect design only. HPMIXED fits that
+explicit, positively scaled design by REML with a person random intercept and
+conditionally independent working residuals. NOINT avoids adding another
+intercept to the explicit design. DDFM=RESIDUAL is retained only for diagnostic
+working-model inference, not used for the final person-cluster uncertainty.
+The fixed mean is additive except for the prespecified time-by-factor interaction.
+Longitudinal GLS remains measurement-row based; person-cluster CR2 does not
+change the mean estimator to equal event weights. Complete cases, spline knots
+and reference profiles are fit-specific. The working mean specification and
+independence between persons remain assumptions.
+
+The archived reference profile is male, the selected modal ward, and long-row
+complete-case means of numeric adjustment variables within the fit. The minute
+grid runs -720 to720 inclusive, separately for each available category. Scoring
+uses fixed effects only, without person-specific random-effect predictions.
+The primary endpoint is the FULL same-fit predicted value at+60 minus that at
+-60minutes. A pairwise endpoint comparison is that change in categoryA minus
+the change in categoryB. These are adjusted temporal associations; this model
+alone does not establish a causal effect of transfusion or donor characteristics.
+
+WORKING MODEL CONVERGENCE
+Native optimizer status, convergence settings, covariance parameters and complete
+outputs are retained. A bounded same-model NEWRAP restart is allowed only for the
+specified eligible native failure, using validated primary covariance estimates.
+It neither fixes variances nor relaxes convergence checks. Both attempts remain
+in the evidence. Failed model/numerical checks cannot be cleared by resetting
+SAS status. The exact final optimizer policy will be in the frozen configuration.
+
+PERSON-CLUSTER UNCERTAINTY
+Use CR2 on the GLS-whitened regression uniformly across the registry, retaining
+the native fitted coefficients and frozen REML working covariance. This addresses
+dependence among measurements and repeated events within a person. It does not
+change the mean model or add a serial-correlation mean-model refit.
+Scalar contrasts use contrast-specific Satterthwaite degrees of freedom. Joint
+hypotheses use HTZ. Endpoint-change heterogeneity and the whole-trajectory
+interaction are separate saved hypotheses; neither substitutes for the other.
+If HTZ denominator degrees of freedom are nonpositive after other checks pass,
+the original request and diagnostic quantities remain, but F and P are explicitly
+unavailable. The test is not replaced by a smaller data-selected rank.
+
+Structural person-exclusive nuisance columns require exact raw-design support
+certification, global and leave-person-out target estimability, and exhaustion
+of all saturated directions. Unexplained near-singular directions are rejected.
+The saved full algorithm covariance is NOT certified for arbitrary coefficients.
+Validity is declared only for the fixed predeclared scoring/contrast span;
+AllCoefficientsCalibrated=0 is mandatory. Future contrasts must be verified to
+lie in that span and use its saved covariance and Gaussian moment information.
+The calibration calculations treat estimated REML covariance as fixed. Target
+calibration refers to that frozen working model and does not account for the
+estimation of its variance components. The finite-sample degrees of freedom
+are approximate; no exact conditional or unconditional coverage is claimed.
+
+All planned available pairwise contrasts remain in the frozen family. Primary
+FULL factor/outcome pairwise P values receive Holm adjustment within their
+family. Pointwise confidence intervals are labelled separately. Baseline-relative
+change at-60 is deterministiczero, with no inferential P value. Missing categories,
+unsupported hypotheses and unavailable uncertainty remain explicitly visible;
+they are never recoded aszero or nonsignificant results.
+
+SECONDARY OBSERVED SUMMARIES
+Inclusive windows[-65,-55] and[55,65]minutes. First average available measurements
+within each event/window, then use exactly the same paired events for before,
+after and change. Events receive equal weight. Person-cluster Taylor covariance
+uses G/(G-1) and t(G-1), where G is the union of contributing persons across active
+categories in that outcome/factor fit. Cross-category covariance accounts for
+persons contributing events in several categories. Before/after/change joint
+covariance is preserved. No new test of the before/after mean againstzero is
+introduced. Standalone category inference requires at least two contributing
+persons and joint-fit residual information (G>=2,paired-event count>active
+category count). SURVEYREG uses VADJUST=NONE. Covariance units are squared
+supplied outcome units; the reporting code implies no unit conversion.
+Numerical centering/scaling preserves this estimand and support policy. Separate
+recentered PRE, POST and CHANGE person scores retain each metric's direct Gram
+covariance. Binary subtraction need not obey an exact algebraic identity:
+ScoreIdentityNorm records an aggregate arithmetic certificate for reconstructing
+joint covariance identities without rewriting a score or inflating its standard
+error. It is not a scientific effect or an additional uncertainty component.
+Pairwise point estimates, SEs, intervals and P values come from the same fitted
+SURVEYREG contrast; subtraction of descriptive means remains an independent
+arithmetic check. Strict variance-scale checks use no unit-scale absolute floor.
+Supported covariance entries involving an estimated zero component variance
+remain numerical zero under ESTIMATED_ZERO_COVARIANCE with missing DF. Valid
+pairwise contrasts can therefore remain reconstructable. Standalone zero-variance
+SE/CI/P remain unavailable. Unknown/unsupported covariance remains missing; no
+population-zero claim follows from an estimated zero. These latest corrections
+pass invented installed-SAS tests and allfour fresh actual-sample report bundles.
+Serial-versus-parallel report comparisons preserve scientific values bitwise.
+
+SOURCE AND INTERPRETATION LIMITATIONS STILL TO RESOLVE
+Available code and nonpatient catalogues do not establish GivenDose/Rate/
+CumulDose/Type meanings, compatible medication units, native FIO2(u)/VE(u) unit
+mappings, or artifact codes. Historical medication interval overlap, broad product
+classes and missing-as-zero encoding cannot be certified by model syntax tests.
+No clinical conversion, artifact trimming or upstream dose reconstruction has
+been silently adopted. A planned outcome unit in the original handoff is not
+proof of the native field's unit. Diagnosis/hospital/cadence outputs lacking a
+verified source interface are explicitly unavailable, not invented from labels.
+These limitations require documented resolution or an explicitly justified
+analysis limitation before declaring the final scientific package ready.
+
+OUTPUT AND RELEASE ACCOUNTING
+Internal model/aggregate CSV transports numeric cells as exact binary64 hexadecimal
+tokens, with typed schema-aware decoding and ordinary roundtripping decimal
+conversion for consumers. This avoids precision loss in SAS decimal formatting;
+it changes representation, not the model, estimand or estimated uncertainty.
+Preparation, refreshed reports, model fitting, inference, export and validation
+have separate immutable identities/digests. A release selects exact validated
+attempts from the complete registry. The consumer must not select newest files.
+Preserve native working archives for diagnostics, robust inference archives for
+reporting, all contrast/covariance/DF information, category availability, cohort
+flow and all status vocabularies. Source/prepared records, private logs, person
+QR factors/scores/residuals and local paths remain on the workstation.
+Sample validation proves operation on the authorized sample and tests known
+failure modes; it does not guarantee unknown full-cohort design support. The full
+run must retain the same guarded validation and restart behavior. Lucas alone
+launches it after the frozen package is ready.
+
+PARALLEL EXECUTION IS AN ENGINEERING CHOICE
+Independent registered fits are scheduled concurrently; no fitted model is split
+into separately analysed record/person shards. Preparation and descriptor checks
+are dependency barriers. Parallel execution retains the same mean models,
+estimands, inference algorithms and hypothesis families. Representative actual
+sample models and allfour reports matched serial scientific outputs bitwise.
+Separate processes, resource limits, immutable selections and complete-registry
+gates protect execution and collection. They do not establish clinical input
+validity or replace complete sample validation. Current candidate limits and
+exact evidence scopes are in sas_parallel_execution_contract.json.
+
+NUMERICAL PRECISION DEVELOPMENT STATUS
+M0012 still fails the production scalar moment precision certificate. A separate
+entrywise bound prototype includes compensated summation and outward-enclosed
+re-evaluation discrepancies while preserving original central arithmetic.
+Invented native/independent tests pass; actual v2 validation and integration are
+pending. Its bounds concern construction/contraction conditional on computed H/L,
+not total CR2 error, root/calibration error or estimated-variance uncertainty.
+Do not describe this unadopted prototype as the final published inference method.
+
+PROCEDURE AND INFERENCE REFERENCES
+SAS/STAT15.1 Shared Concepts (natural-cubic EFFECT basis and SplineKnots):
+https://support.sas.com/documentation/onlinedoc/stat/151/introcom.pdf
+SAS HPMIXED MODEL statement (residual denominator degrees of freedom):
+https://support.sas.com/documentation/cdl/en/statug/68162/HTML/default/statug_hpmixed_syntax09.htm
+SAS HPMIXED OUTPUT statement (NOBLUP fixed-effect predictions):
+https://support.sas.com/documentation/cdl/en/statug/68162/HTML/default/statug_hpmixed_syntax11.htm
+Independent CR2 reference implementation and Wald-test documentation:
+https://github.com/jepusto/clubSandwich/blob/main/R/CR-adjustments.R
+https://jepusto.github.io/clubSandwich/reference/Wald_test.html
+Generalized-inverse correction caveat and revised theorem discussion:
+https://jepusto.com/posts/Pusto-Tipton-2018-Theorem-2-redux/
+Documentation informs the implementation; installed-SAS tests independently
+verify actual ODS tables, syntax, estimates and algebraic output reconstruction.

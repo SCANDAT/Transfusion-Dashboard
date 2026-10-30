@@ -1,0 +1,123 @@
+WORKSTATION HANDOFF -- 30 October 2026 -- PAUSED AT PARALLEL CHECKPOINT
+Status: development sample only. FullRunReady=false. No full cohort run launched.
+This supplements SAS_FINAL_RUN_HANDOFF.txt and sas_final_run_contract.json.
+Scientific decisions are in sas_workstation_decisions_20261029.json and
+sas_methods_implementation_notes.txt. Parallel/output contracts are separate.
+
+AUTHOR DIRECTION AND STOPPING POINT
+Lucas approved parallel scheduling alongside analytical work, then a pause at a
+working parallel pipeline checkpoint. That engineering checkpoint is achieved
+on representative actual sample jobs. It is NOT completion of all252 models.
+Scientific validity takes priority over agreement with previously circulated
+findings. Carry every adopted decision into the final methods and dashboard.
+Lucas alone launches the full cohort after the complete package is frozen.
+
+WHAT IS NOW DEMONSTRATED
+The three native SAS stages are connected through an owned, resumable local
+controller: preparation/descriptors,42 MAIN fits,210 component fits. The complete
+registry stays252 longitudinal models plusfour report tasks. Preparation is a
+serial dependency barrier; independent reports and models run concurrently.
+A fresh authorised sample preparation completed in the packaged interface.
+Allfour report bundles passed with two workers. Representative BASE MAIN and
+FULL seven-category weekday models ran concurrently and independently passed
+working-model, derived-trajectory, whitened-CR2 and same-fit validation.
+A second batch using identical code/input/resources ran serially. BOTH models
+and ALL FOUR report bundles had bitwise-identical scientific exported values,
+including scientific text/definitions. Only seven explicit run-specific identity
+labels and row ordering were ignored; code/config/input digests stayed equal.
+The final candidate additionally caps native Python numerical threads, strengthens
+preparation reuse checks and fixes collection routing. Four actual sample models
+(BASE/FULL, MAIN/component) then passed with four overlapping SAS processes.
+Allfour current reports passed too. Their eight selected bundles were collected
+into structured directories with exact-to-decimal numeric-bit checks.
+A deliberately incomplete final collection correctly returned BATCH_INCOMPLETE.
+Only explicitly labelled PRIVATE_UNREVIEWED diagnostic subsets were collected.
+
+PARALLEL EXECUTION AND OUTPUT ACCOUNTING
+Defaultone/maxfour workers; separate Python frontend/SAS processes and private
+WORK/SASUSER/log/output directories. SAS CPUCOUNT4, MEMSIZE16G, SORTSIZE1G are
+conservative SAMPLE settings. NumPy and SciPy each previously opened24-thread
+OpenBLAS pools; current effective pools are explicitly pinned tofour, initialized
+before imports and recorded with library/policy identities. These settings do
+not yet certify full-cohort memory/disk capacity or a particular speed-up.
+Per-job ownership prevents duplicate fits. Short shared publication locks permit
+independent jobs. Persistent supervisors retain capacity and execution ownership
+through frontend death. Kernel leases are never removed or force-unlocked.
+Observed failures stop new dispatch and leave already running jobs to finish.
+Durable halt/acknowledgment events preserve this across scheduler restarts.
+Retries use new attempts; accepted outputs are immutable and resume without
+refitting. Complete collection requires all252 models andfour report selections.
+Source/prepared data and failed/private artifacts are never copied into bundles.
+Results are organised by preparation, population and registered model, with
+separate working/inference archives, decimal manifests and source/output hashes.
+Consumer rules are in sas_release_layout_contract.json. Sample results cannot
+replace the live full-cohort dashboard; no automatic publication has occurred.
+
+ANALYTICAL PROGRESS AND REMAINING FAILURE
+Corrected sample preparation handles verified person/admission identity,
+unambiguous containing admission, physical units, simultaneous events, factor
+eligibility, prior-unit timing, category boundaries and first-event descriptors.
+Observed summaries preserve paired events/equal event weights/person clustering,
+direct PRE/POST/CHANGE covariance and an arithmetic identity certificate.
+Allfour current actual-sample report bundles pass independent validation.
+The planned mean models, same-fit changes, separate endpoint/trajectory tests,
+frozen Holm families and covariance/DF archives are implemented.
+Uniform GLS-whitened person-CR2 has independent native SAS, Python and official
+R evidence. The original complete-batch attempt accepted11 of252 models before
+M0012 failed a numerical precision guard. Later representative parallel checks
+are separate evidence and do not constitute a completed252-model batch.
+For M0012, the mean model and derived means independently pass. Fixed-predicate
+local diagnostics show positive moment denominators, reasonable degrees of
+freedom and consistent normalization; the global error certificate alone rejects.
+A directional entrywise error-bound candidate preserves the original mathematics
+and accuracy threshold. It has independent arithmetic/native/Claude review tests.
+Its first actual saved-statistics diagnostic rejected a discrepancy between two
+floating-point evaluations of an intermediate quantity. No failed result was
+accepted and no threshold was relaxed. An isolated v2 rigorously includes that
+re-evaluation discrepancy while retaining the original central arithmetic.
+V2 passes invented native/Decimal and integration tests. Its expanded diagnostic
+wrapper and actual saved-statistics validation remain NEXT work, not completed.
+Production numerical kernels and the rejected actual diagnostic remain intact.
+Archive/schema/independent-validator/HTZ integration and complete252 sample
+validation must follow successful numerical resolution.
+
+SCIENTIFIC FACTS STILL NEEDED
+Recovered code does not establish GivenDose/Rate/CumulDose/Type semantics,
+compatible medication units, native FIO2/VE mappings or artifact conventions.
+Medication windows precede EACH MEASUREMENT and may include post-index treatment;
+FULL cannot be described as baseline-confounder adjustment or a total causal
+transfusion effect. Robust intervals cannot validate inherited clinical fields.
+Source confirmation or an explicitly justified scientific resolution is required
+before scientific freeze. Nonpatient questions are in
+CLINISOFT_DEFINITION_QUESTIONS.txt. No patient examples are requested.
+Diagnosis/hospital/cadence outputs without verified interfaces remain explicitly
+unavailable. No invented mapping, conversion or outcome-driven threshold added.
+
+RESUME ORDER
+1. Read the private exact-resume checkpoint; do not rerun accepted parallel jobs.
+2. Native-test the new v2 diagnostic wrapper, then run a fresh read-only M0012
+   saved-statistics diagnostic. Preserve conditional numerical-proof limitations.
+3. Resolve the precision guard; integrate archived error information, scalar and
+   joint validation and resource bounds without changing the planned mean models.
+4. Run the complete252-fit sample registry andfour reports using the guarded
+   parallel controller. Resolve every unexplained failure; retain valid explicit
+   unavailability without shrinking hypothesis families.
+5. Resolve source scientific questions; verify full-cohort resource/preflight
+   planning; assemble the final portable code, single-input launch interface,
+   methods/decision/schema/validation manifests and reviewed output release.
+6. Lucas initiates the full run. Laptop Astra updates figures, dashboard and
+   manuscript from the validated release, not development/sample results.
+
+EVIDENCE AND PRIVACY
+Private workstation checkpoints identify immutable code snapshots, run/attempt
+IDs, test results and next commands. They and source code/artifacts remain local;
+this portable handoff is not a runnable frozen full-analysis package.
+During this checkpoint, source records, identifiers, patient dates/values, person QR factors,
+residuals/scores, raw actual logs and private numerical tables stayed local.
+Python never loaded original/prepared SAS binaries. Local SAS processed the
+sample; only fixed statuses, predicates and operational metadata were returned.
+Claude assisted through generic/invented reviews. Automatic approval review
+blocked one candidate-source payload; it was not sent, and a source-free generic
+scheduler review was used instead. No underlying records or raw actual logs were included in this checkpoint’s new
+tool outputs or review payloads. Main, the live dashboard and original
+extraction/data files are unchanged.
