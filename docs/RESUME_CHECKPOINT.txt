@@ -1,4 +1,10 @@
 LAPTOP INDEPENDENT REVIEW PREPARATION - 1 NOVEMBER 2026
+Publication split confirmed: read PUBLICATION_REPOSITORY_BOUNDARY.txt. New
+SCANDAT/Transfusion-Dashboard-publication is private/empty with no commits as of
+1 November. Existing repo stays public until replacement is ready (explicit
+author choice), then becomes the private development archive. Final public copy
+excludes harness/monitoring/agent/manuscript material and private paths, but keeps
+all scientific algorithms/helpers. Do not assume the current repo is private.
 Branch: work/laptop-publication-integration-20261101, isolated sparse worktree.
 Read LAPTOP_PUBLICATION_REVIEW_PLAN.txt and laptop_review_register.json first.
 The workstation branch/run was left unchanged. Its revised code and all-result

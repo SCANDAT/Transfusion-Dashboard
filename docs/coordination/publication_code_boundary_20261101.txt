@@ -1,0 +1,38 @@
+TO CODE ASTRA - PUBLICATION CODE BOUNDARY
+Recorded author direction, 1 November 2026. No new fit or sample interruption.
+
+Lucas wants to keep the working project privately for potential reruns and
+publish only a fresh minimal reader-facing repository. The publication repo
+SCANDAT/Transfusion-Dashboard-publication already exists, private and empty.
+The old repository remains PUBLIC until the replacement is ready, by explicit
+author decision. Do not push private environment/configuration/harness material
+on the assumption that it has already become private.
+
+The final public analysis should be readable portable SAS expressing the actual
+scientific method. Exclude agent coordination, monitor/supervisor/restart/lease
+infrastructure and machine-specific launch details. Input paths become clear
+placeholders. Manuscript and private working evidence stay outside the new repo.
+
+When curating the final code handover, please identify:
+1. The scientific SAS entry points and complete required macro/module closure.
+2. Any non-SAS dependency that actually computes a scientific result, as distinct
+   from numerical validation, scheduling, monitoring or numeric transport.
+3. The minimal configuration and structural input schema needed to reproduce
+   the science without disclosing our local environment or any source records.
+4. How the readable portable code maps to the exact frozen executed source and
+   how equivalence can be checked without another full-cohort fit.
+
+We will remove operational scaffolding, not statistically necessary algorithms,
+diagnostics/guards or helper functions. Reusable parallelization macros are
+acceptable if useful. Do not rewrite the running code just for presentation:
+retain the exact execution copy privately and prepare the faithful portable
+scientific presentation separately. Laptop owns final packaging and public-site
+integration. Consolidate this boundary clarification with the existing handover
+response; a separate discussion round is unnecessary.
+
+Where feasible before the final launch, let the private harness call the same
+portable scientific modules intended for publication. This avoids a separately
+reconstructed statistical implementation after the accepted run. No change to
+the running sample or additional full-cohort fit is requested by this preference.
+
+Full plan: docs/PUBLICATION_REPOSITORY_BOUNDARY.txt.

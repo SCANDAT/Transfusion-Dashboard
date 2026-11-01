@@ -1,0 +1,133 @@
+PRIVATE DEVELOPMENT / CLEAN PUBLICATION REPOSITORY
+Author-confirmed direction - 1 November 2026
+
+CURRENT VERIFIED STATE
+SCANDAT/Transfusion-Dashboard: public; GitHub Pages enabled; existing development
+history and work branches. SCANDAT/Transfusion-Dashboard-publication: private,
+empty, no branches/commits and no Pages site. These facts were checked through
+GitHub using the lucasekstrom account on 1 November 2026.
+
+AUTHOR DECISION
+Retain the working project and its execution infrastructure privately for future
+reruns if necessary. Publish a fresh, minimal repository with a new history and
+the reader-facing dashboard, approved full-cohort outputs and complete readable
+scientific analysis code. Do not publish manuscript/agent coordination, monitor
+infrastructure, machine-specific runners or historical development iterations.
+
+TIMING
+Lucas explicitly chose: WAIT UNTIL THE REPLACEMENT IS READY before making the
+existing repository private. Do not change its visibility during current sample
+execution. Do not delete it or rewrite its history as a substitute for the
+agreed clean-copy approach. Confirm the replacement works, update the intended
+reader links, then privatize the development repository and retire its obsolete
+public Pages deployment as part of the reviewed cutover.
+
+Until that cutover, the development repository is PUBLIC. Keep private harness
+configuration, local paths, unscreened operational material and private evidence
+out of tracked/pushed files. Private source datasets remain on authorized storage
+outside Git even after the repository becomes private. Preserve actual rerun
+configuration locally under the appropriate access controls; do not commit
+credentials or secrets to either repository.
+
+PUBLIC CONTENT BOUNDARY
+Include only reviewed files necessary for:
+- Building/running the final dashboard, its assets and focused correctness tests.
+- Supplying approved final full-cohort aggregate/model outputs and their schema,
+  units, definitions, release identity and reproducibility metadata.
+- Expressing the complete scientific analysis in readable, portable SAS:
+  cohort/event definitions, variables/categories, missingness, model fitting,
+  reference profiles, covariance/DF/tests, planned sensitivities and exports.
+- Explaining inputs structurally and how another authorized researcher could
+  run the methods on their own data using placeholder library/directory settings.
+- Documenting software requirements, study-method links, licensing and release.
+
+Exclude manuscript drafts/comments/response matrices; agent prompts/memories/
+handoffs/coordination; session records; development diagnostics and copied logs;
+sample estimates; old result variants; private source data or intermediates;
+local machine names, account paths, drive mappings and institution-specific setup;
+credentials; monitoring dashboards, process supervision, restart/lease machinery
+and workstation scheduling implementations that are not part of the statistics.
+
+SCIENTIFIC COMPLETENESS TAKES PRECEDENCE OVER COSMETIC SIMPLIFICATION
+Separate the scientific computation from the way it was launched and monitored.
+Remove operational scaffolding while retaining every algorithm/helper that
+actually determines cohorts, estimates, covariance, degrees of freedom, tests,
+unavailability or exported scientific values. Relevant analysis checks remain
+understandable and portable; removing the harness must not remove scientific
+error handling. Parallelization macros may be included if useful and portable.
+Prefer the same portable scientific modules for the final execution and the
+publication copy, with the private harness calling them. Separating deployment
+configuration from the method before launch reduces later equivalence work.
+
+The goal is a clear SAS entry point and a small number of logically organized
+scripts/common macros, not an exact three-file quota or one enormous script.
+Consolidation, formatting and naming must preserve the executed methodology.
+Use ordinary comments describing the statistical purpose, not development-chat
+history. Retain required attribution and dependency licensing.
+
+If any Python or other helper performs an essential statistical calculation,
+do not omit it or silently replace its output with an easier calculation. First
+establish whether the final SAS already implements the complete computation.
+If a portable additional scientific helper is necessary, disclose that narrow
+dependency or agree and verify an equivalent SAS implementation. Validators and
+execution orchestration are separate from scientific calculations. Aim for the
+SAS-only methodology requested by Lucas without misrepresenting what produced
+the results or forcing another expensive fit just to reformat source code.
+
+INPUT DESCRIPTION VERSUS CONFIDENTIAL CONTENT
+A structural input schema and precise variable definitions are required for
+reproducibility. They can describe a person key, admission boundaries, unit
+timestamp, outcomes and covariates without exposing actual records/identifiers,
+locations or extraction details about the internal IT environment. Use invented
+synthetic examples only where an example is useful and clearly label them.
+
+BUILD THE FRESH HISTORY
+Use the existing private empty publication repository. Assemble an explicit
+allowlisted release directory without copying any .git directory, branches,
+tags, old commits or operational artifacts. Initialize and review a clean first
+commit; keep the destination private during preparation. This is a curated copy,
+not a fork, mirror, wholesale migration or merge of the development history.
+
+The existing scripts/build_publication_package.py and publication_allowlist.json
+are starting points, not final authorization: the current allowlist references
+legacy SAS filenames/results and must be replaced with the accepted final
+scientific package. Do not include a file merely because it is tracked today.
+The current result-approval mechanism accepts only direct public/data/*.csv
+files. Extend the explicit allowlist for the new reviewed manifest/result layout;
+do not admit an entire operational collection recursively. Replace the generated
+legacy README with documentation of the accepted method and final input contract.
+
+VALIDATION BEFORE PUBLICATION
+Bind the readable scientific source to the exact accepted run with a documented
+comparison. Check syntax/required dependencies and compare meaningful outputs on
+synthetic or authorized already-available validation material. Reformatting or
+portable path substitution must not change populations, model formulas, knobs,
+random effects, reference profiles, inference, category definitions or results.
+Use saved output evidence where appropriate; do not silently rerun or alter the
+full cohort for code presentation alone.
+
+Inspect every staged publication file and the resulting Git objects for source
+datasets, private paths, secrets, operational leftovers and unapproved output
+content. Verify that only the selected full release is bundled, with no sample
+or legacy fallback. Review aggregate/model outputs on their content and approved
+release status, not merely their .csv extension. Test a clean checkout/build,
+all reader-facing tabs/downloads, labels, cache behavior and deployment paths.
+
+Keep the final publication explanation concise and scientific. The manuscript
+and dashboard must describe the method actually run. The public code is a
+faithful portable presentation of that method, not a reconstructed idealized
+method different from the accepted analyses.
+
+CUTOVER AND RETENTION
+Lucas reviews the concrete release and replacement site. Make the new repository
+public and deploy only the accepted release under the agreed publication URL.
+Then make the development repository private, retire the superseded public site,
+and verify access/deployment states separately. GitHub Pages visibility is not
+assumed to follow repository visibility on every account plan.
+
+Retain the development history, frozen code, harness, evidence and run bindings
+privately so the project can be reproduced if necessary. A new empty public
+history does not erase material previously published elsewhere; preserve the
+separate historical audit and address any actual findings explicitly. No old
+repository deletion, force-push or claim of retroactive erasure is authorized
+by this publication plan.
