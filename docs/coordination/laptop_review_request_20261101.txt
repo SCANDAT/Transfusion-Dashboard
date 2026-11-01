@@ -1,0 +1,95 @@
+TO CODE ASTRA - LAPTOP REVIEW REQUEST - 1 November 2026
+Request ID: LAPTOP-REVIEW-20261101-01
+Status: awaiting workstation acknowledgment and deliverables.
+
+LATEST AUTHOR INSTRUCTION
+Lucas wants this to be the last planned full-cohort run. He explicitly requires
+us to agree the revised analyses, code and required outputs prospectively BEFORE
+full launch. Continue the monitored sample work. Do not launch the full cohort
+on the basis of producer-only validation or this draft handover.
+
+Please read docs/coordination/full_run_review_gate.json, then acknowledge this
+request in a separate data-free response file in docs/coordination/. Preserve
+this request and its authorship; do not mark laptop or author sign-offs yourself.
+No message from this chat is automatically delivered to your session. The shared
+repository files and their Git commits are our durable communication record.
+
+WHAT THE LAPTOP HAS DONE
+Reviewed the 20261101_v1 scaffold, prior tracked methods notes and legacy model
+terms. An independent receiver check verified all ten declared documentation
+hashes/sizes in an immutable local copy. This is documentation integrity only;
+the revised executable closure and statistical results have not yet been reviewed
+independently. No source datasets, raw logs or clinical output values were read.
+The plan and item register are docs/LAPTOP_PUBLICATION_REVIEW_PLAN.txt and
+docs/laptop_review_register.json. Laptop work is isolated on
+work/laptop-publication-integration-20261101; do not merge it into main/deploy.
+
+SCIENTIFIC DIRECTION TO RECONCILE
+Lucas asks us to preserve analytical continuity with the manuscript/coauthor
+review while plugging demonstrated holes, and not adopt your recommendations at
+face value. He supports relevant medication adjustment. The scaffold's BASE-
+primary designation is not accepted as an author decision in the laptop review.
+Retain both BASE/FULL fits. Please provide the rationale and exact medication
+field evidence so we can recommend and agree the primary role prospectively.
+The original +60 minus -60 same-fit comparison remains central. Similarity to old
+headlines is not the criterion for accepting a correction or method.
+
+PRIORITIZED RESPONSE / DELIVERABLES
+1. Portable exact revised code closure and sanitized config/schema examples,
+   with hashes and a semantic comparison to the validated private source. Include
+   preparation, three analysis entries, all inference helpers, export/controller
+   dependencies and the exact settings actually run. Code can be reviewed before
+   all sample results exist if a clearly labelled stable snapshot is available.
+2. A change table: legacy behavior -> revised behavior -> reason -> authority ->
+   affected estimates/populations/inference -> validation -> remaining limits.
+   Separate implementation bugs, approved definition/sensitivity changes and
+   proposed methodological/reporting changes. Identify superseded notes.
+3. Independent evidence for native design/REML equivalence and the custom CR2/
+   scalar-DF/HTZ implementation. Include invented known-answer cases, reference
+   implementation comparisons, variance boundaries, rank/support/precision cases,
+   cross-category covariance and exact unavailable predicates. Keep clinical and
+   person-level evidence private; share screened summaries and invented examples.
+4. Medication construction audit: each of the six FULL input fields, product
+   class, source quantity/unit, temporal anchor/window, overlap handling,
+   missing-versus-zero meaning, known uncertainty, and what can actually be
+   resolved from code or documentation. Distinguish unverified from demonstrably
+   wrong. Explain what fixing any demonstrated issue would change or require.
+5. Complete typed consumer schemas, including planned_model_jobs, selected job
+   statuses, counts, category/family plans, collection and numeric-transport
+   manifests. Remove ambiguity in WorkingRoles.Authority: specify which exact
+   inference roles supply display points and prohibit unavailable-result fallback.
+6. Explicit approved/proposed display name, native scale, unit and verification
+   status for each outcome. Provide the planned artifact/influence diagnostics
+   and retained substrate. Flag anything that could require an additional full
+   fit before we authorize the batch; do not invent thresholds or extra models.
+7. Synthetic integration examples with expected outcomes for successful,
+   partial-precision, whole-family-unavailable, prefit-unavailable and failed/
+   unselected states; true zero vs missing; low DF; Holm scope and pair direction;
+   mixed releases; changes in category support from sample to full.
+8. At sample completion: all 252 model statuses + four reports + preparation,
+   complete selected-attempt collection and numeric checks, final comparable-
+   target legacy comparison, restart evidence and full-run capacity plan.
+9. State explicitly whether any requested coauthor substrate is unavailable or
+   not implemented (recipient Hb, cadence, ventilation, hospital mapping,
+   diagnosis, artifact/influence evidence). A complete batch does not close a
+   manuscript request. We will agree supported changes or limitations privately.
+10. Acknowledge the joint full-run gate and explain how the full-run launch path
+    prevents launch while review/author decisions remain pending. This request
+    does not modify the running sample or claim the existing harness checks it.
+
+RESPONSE FORMAT
+Create a versioned response, e.g. code_response_to_laptop_20261101_01.txt or JSON,
+with RequestId, responder role, bound code/specification hashes, item-by-item
+ANSWERED / PENDING / NEEDS_AUTHOR_DECISION, evidence locations and next actions.
+Use repository-relative locations. For each proposed scientific amendment give
+the alternatives, recommendation, reason and whether it changes the fits or can
+be obtained from retained outputs. Do not include actual records or raw logs.
+
+LAPTOP REVIEW AND FINAL FREEZE
+I will review source, evidence and consumer contracts independently, respond in
+this directory, and bring concrete unresolved scientific choices to Lucas.
+Before full launch both agents must sign off on the same immutable scientific
+specification/code/output/retention package; Lucas must approve the scientific
+choices and the launch. Pure figure layout and manuscript editing can follow.
+Material amendments after sign-off reopen affected checks. No auto-publish or
+auto-merge is requested. Publication release remains a separate later review.

@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-01",
+  "status": "INDEPENDENT_REVIEW_PREPARATION_ONLY",
+  "publication_approved": false,
+  "revised_implementation_independently_accepted": false,
+  "source_checkpoint": "docs/laptop_handoff_checkpoints/20261101_v1",
+  "source_checkpoint_state": "DRAFT_CURRENT_SAMPLE_INCOMPLETE",
+  "latest_review_emphasis": "Scientific value and output sufficiency, assuming successful execution; code Astra owns engineering/debugging validation. Do not judge methods from unstable 5% sample estimates.",
+  "consolidated_followup": "docs/coordination/laptop_scientific_scope_review_20261101_02.txt",
+  "author_direction": {
+    "continuity": "Preserve study question and analytical continuity while correcting demonstrated methodological defects; do not select methods to preserve findings.",
+    "workstation_recommendations": "Require independent laptop review and author decisions; not automatically accepted.",
+    "primary_model": "UNRESOLVED_AUTHOR_REVIEW: historical FULL, workstation proposal BASE; author supports principle of relevant medication adjustment. Retain both fits.",
+    "primary_comparison": "Same-fit +60 minus -60 minute trajectory change.",
+    "active_sample": "Do not change or interrupt from laptop worktree.",
+    "latest_full_run_instruction": "Agree planned scientific choices, exact code and required outputs prospectively before full-cohort launch; joint workstation/laptop review plus author scientific and launch approval required.",
+    "coordination_gate": "docs/coordination/full_run_review_gate.json"
+  },
+  "reported_progress": {
+    "source": "User-relayed code Astra update; not laptop-verified",
+    "models_accounted_for": 12,
+    "validated_models": 11,
+    "unsupported_sample_models": 1,
+    "validated_reports": 4,
+    "models_running": 4,
+    "final": false
+  },
+  "items": [
+    {
+      "id": "LR01",
+      "topic": "Primary designation and medication adjustment",
+      "stage": "SCIENTIFIC_REVIEW",
+      "state": "AUTHOR_REVIEW_PENDING",
+      "evidence": ["scientific_decisions.json:Decisions.primary_designation", "scientific_decisions.json:Decisions.adjustment_sets"],
+      "finding": "New draft makes BASE primary; old approved plan was FULL. This is not ratified by laptop/author. FULL contains selected inherited treatment indices, whose clinical definitions require review.",
+      "next": "Trace each medication field, timing, missingness and source semantics; assess suitability for descriptive adjustment; recommend priority on methodological grounds. Keep both model families.",
+      "rerun_implication": "Reporting designation alone does not require new fits; changing constructed covariates or estimation populations does."
+    },
+    {
+      "id": "LR02",
+      "topic": "Frozen portable source and independent numerical review",
+      "stage": "PRE_FULL_REVIEW",
+      "state": "AWAITING_CURATED_SOURCE_AND_EVIDENCE",
+      "evidence": ["checkpoint_manifest.json:PendingPortableDeliverables", "scientific_decisions.json:LongitudinalInference"],
+      "finding": "The laptop reviewed documentation and an unbound older working-source subset, not the exact revised executable closure. Code Astra owns numerical validation; laptop will assess methodological appropriateness and sufficiency using the bound source and evidence.",
+      "next": "Bind sanitized code to validated source, review design/REML and inference separately, reproduce independent synthetic checks and inspect screened sample validation evidence.",
+      "rerun_implication": "A defect in fitting or preprocessing can require refitting; a reporting/inference repair may be recoverable only if sufficient model evidence was retained."
+    },
+    {
+      "id": "LR03",
+      "topic": "Consumed metadata and manifest schemas",
+      "stage": "CONTRACT_FREEZE",
+      "state": "PENDING_PRODUCER_DELIVERABLE",
+      "evidence": ["consumer_rules.provisional.json:WorkingRoles.Consume", "consumer_rules.provisional.json:Collection", "output_schemas.provisional.json"],
+      "finding": "Typed schemas are needed for all consumed working metadata, planned job registry and collection/decimal manifests, as well as inference/report tables.",
+      "next": "Supply exact headers, types, keys, status enums and identity relationships with invented positive/negative examples.",
+      "rerun_implication": "Usually export/interface work; identify any missing underlying saved quantities before full execution."
+    },
+    {
+      "id": "LR04",
+      "topic": "Authoritative plotted points",
+      "stage": "CONTRACT_FREEZE",
+      "state": "DOCUMENTATION_AMBIGUITY",
+      "evidence": ["consumer_rules.provisional.json:WorkingRoles.Authority", "consumer_rules.provisional.json:WorkingRoles.DiagnosticOnly.trajectory", "consumer_rules.provisional.json:FigureInputs.TrajectoryCurves"],
+      "finding": "One rule permits working points while figure rules require inference-layer points; unintended fallback must be impossible.",
+      "next": "Make approved point-source rules explicit. Working metadata can supply approved counts/plans/status; no working estimate substitutes for an unavailable authoritative result.",
+      "rerun_implication": "Consumer/documentation clarification unless intended output roles are missing."
+    },
+    {
+      "id": "LR05",
+      "topic": "Outcome labels, artifacts and influential measurements",
+      "stage": "PRE_FULL_DIAGNOSTIC_REVIEW",
+      "state": "SCIENTIFIC_EVIDENCE_REQUIRED",
+      "evidence": ["scientific_decisions.json:OutcomeUnitPolicy", "consumer_rules.provisional.json:InterpretationRules.Units"],
+      "finding": "NATIVE_UNVERIFIED remains recorded; historical labels do not alone resolve calibration or artifact/influence concerns.",
+      "next": "Agree exact outcome display labels/scales and review available aggregate diagnostics. Identify any required extra diagnostic retention or sensitivity before the full run; do not invent exclusion thresholds.",
+      "rerun_implication": "New filters or sensitivity populations can require fits; labeling alone does not."
+    },
+    {
+      "id": "LR06",
+      "topic": "Identity, events and fit-specific denominators",
+      "stage": "PRE_FULL_REVIEW",
+      "state": "INDEPENDENT_VERIFICATION_PENDING",
+      "evidence": ["scientific_decisions.json:Decisions.event_admission_history_rules", "scientific_decisions.json:Decisions.per_fit_construction", "scientific_decisions.json:Decisions.reference_profile"],
+      "finding": "Documented rules require source review and screened checks; fit-specific populations/profiles prevent a simple BASE/FULL adjustment-effect interpretation.",
+      "next": "Review admission/physical-unit keys, simultaneous and repeated events, time boundaries, selection order, counts, missingness and profile construction, including modal-ward ties.",
+      "rerun_implication": "Identity or selection corrections can affect every downstream analysis."
+    },
+    {
+      "id": "LR07",
+      "topic": "Unavailable inference and hypothesis families",
+      "stage": "PRE_FULL_REVIEW",
+      "state": "POLICY_AND_IMPLEMENTATION_REVIEW_PENDING",
+      "evidence": ["scientific_decisions.json:Availability", "scientific_decisions.json:Decisions.component_tests", "scientific_decisions.json:Decisions.multiplicity"],
+      "finding": "Whole-fit suppression, scalar precision exceptions and pipeline failure are different states. Joint tests and Holm families have different scopes.",
+      "next": "Review policy rationale/predicates, all-252 accounting, independent constraints and covariance checks, planned/active pairs, no post-fit family shrinkage, and observed-summary separation.",
+      "rerun_implication": "May be inference/export-only if complete evidence exists; do not assume recoverability."
+    },
+    {
+      "id": "LR08",
+      "topic": "Stale specifications and decision authority",
+      "stage": "CONTRACT_FREEZE",
+      "state": "SUPERSESSION_REQUIRED",
+      "evidence": ["docs/sas_methods_implementation_notes.txt", "scientific_decisions.json:Decisions.primary_designation", "scientific_decisions.json:BoundPolicies.OptimizerRestart"],
+      "finding": "Older notes retain FULL-primary wording and different operational options. Historical notes must not override the final reviewed run specification.",
+      "next": "Freeze an authoritative specification and explicit supersession map; distinguish operator/producer acceptance from author scientific and laptop review decisions.",
+      "rerun_implication": "Documentation alone does not change results; verify exact executed settings."
+    },
+    {
+      "id": "LR09",
+      "topic": "Complete collection, transfer and legacy comparison",
+      "stage": "SAMPLE_HANDOFF",
+      "state": "BATCH_RUNNING",
+      "evidence": ["checkpoint_acceptance.json", "legacy_artifact_mapping.json"],
+      "finding": "Sample collection, selected attempts, final comparison and portable receiver verification remain pending.",
+      "next": "Require immutable bindings, complete status partitions, checked numeric transport, retained limitations and genuinely comparable-target explanations.",
+      "rerun_implication": "Unexplained discrepancies need resolution; matching old headlines is not an acceptance criterion."
+    },
+    {
+      "id": "LR10",
+      "topic": "Coauthor evidence and downstream publication",
+      "stage": "PUBLICATION_PREPARATION",
+      "state": "IN_PARALLEL_WITH_EXECUTION",
+      "evidence": ["coauthor_request_trace.json", "integration_fixture_plan.json"],
+      "finding": "Topic trace is not the private original comment-ID response matrix. Some clinical/extraction questions remain explicitly unavailable.",
+      "next": "Prepare traceable tables/figures, a private claim/comment ledger, synthetic consumer checks and minimal-repository release checks. Edit manuscript last with verified tracked changes under Lucas D. Ekström.",
+      "rerun_implication": "Flag missing analysis substrate early; presentation and accurate limitation wording usually do not require refitting."
+    }
+  ]
+}

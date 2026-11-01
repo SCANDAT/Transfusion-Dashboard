@@ -1,5 +1,10 @@
 # Publication figure renderer
 
+This renderer currently targets the legacy result format. The revised SAS
+handover is still provisional; do not pass revised files through this renderer
+or treat its FULL-model default as a newly accepted reporting decision. Laptop
+review and migration are tracked in `docs/LAPTOP_PUBLICATION_REVIEW_PLAN.txt`.
+
 `make_publication_figure.py` is the maintained renderer for all seven fully adjusted absolute trajectories. It reads only the seven main `VIZ_*_TRANSFUSION.csv` model prediction grids and the endpoint point estimates in `model_based_summary.csv`. It does not read patient-level data or fit models.
 
 Archived full-cohort outputs establish the trajectory provenance. Scientific methods remain under review, so the figures carry a small draft footer. Matching an archive does not establish model validity.
@@ -48,3 +53,19 @@ The prior figures and renderer are preserved in `manuscript/figures/comparison_b
 Lines are predictions for a reference covariate profile (male, modal ward, other covariates set to their means), not predictions averaged across patients. The exported approximate 95% pointwise bands describe uncertainty in the predicted level under the fitted model. They are not simultaneous bands, individual prediction intervals or confidence intervals for change. Optional delta labels have no change interval or significance claim.
 
 Validation checks the complete ordered -720 to +720 minute grid, finite values, units, metadata, interval ordering, the exported normal-approximation level bounds and agreement of endpoint estimates with the summary. It does not validate model assumptions, patient clustering, covariate definitions or analytical suitability. Resolve the scientific review before submission and before removing the draft notice. Keep private SAS intermediates and manuscript review material out of Git.
+
+## Provisional handover inventory check
+
+`inspect_analysis_handoff.py` reads only the fixed data-free documentation files
+of checkpoint `20261101_v1`. Run it on an immutable copy of that directory:
+
+```text
+python scripts/inspect_analysis_handoff.py <checkpoint-directory>
+python -m unittest discover -s scripts -p test_analysis_handoff.py
+```
+
+Exit 0 means only that the supported draft document inventory, hashes and selected
+metadata are internally consistent. It does not validate the analysis, read
+result files, certify privacy or authorize a full run/publication. Future or
+completed checkpoint formats deliberately require an updated receiver. The
+checker never follows the pending code, evidence or export paths in the documents.

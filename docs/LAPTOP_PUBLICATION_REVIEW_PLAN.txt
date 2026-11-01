@@ -1,0 +1,227 @@
+LAPTOP REVIEW AND PUBLICATION INTEGRATION - 1 November 2026
+
+Status: preparation and independent review only. No revised model accepted by
+the laptop reviewer; no full-cohort run, release or manuscript edit authorized
+by this document. Keep this coordination material out of the minimal final
+publication repository. Workstation execution is owned by code Astra; scientific
+and reporting decisions remain with Lucas and the reviewing team.
+
+REVIEW EMPHASIS UPDATE: Lucas asks us to assume code Astra will make the code run
+and focus laptop effort on scientific value and sufficient outputs. Do not
+duplicate the execution/numerical debugging workload. The latest consolidated
+questions and projected coverage are in
+docs/coordination/laptop_scientific_scope_review_20261101_02.txt and
+docs/laptop_scientific_output_coverage_20261101.json. Wide/unstable estimates or
+unsupported categories in the 5% sample are not themselves methodological defects.
+
+AUTHOR DIRECTION RECORDED IN THIS SESSION
+Maintain the study question and analytical continuity with the coauthor draft
+while correcting demonstrated defects. Do not adopt code Astra's recommendations
+as author decisions. Assess the revised code and actual analyses independently,
+then carry the agreed definitions and results consistently into every output.
+Do not choose methods to preserve a preferred result or a significance label.
+
+The earlier author-approved primary comparison is the model trajectory at +60
+minus -60 minutes. Both BASE and FULL, all seven outcomes, five factors plus
+MAIN, and all three populations remain in the 252-fit scope. Lucas supports the
+principle of medication adjustment. The new scaffold's BASE-primary designation
+is a PROPOSAL FOR LAPTOP/AUTHOR REVIEW, not a decision accepted in this session.
+Do not silently promote that label into figures or manuscript text. Both models
+are being fitted, so deciding their reporting priority need not remove either.
+LATEST AUTHOR INSTRUCTION: agree all planned scientific choices, code and output
+requirements prospectively before launching the full cohort. Reporting priority
+must therefore be settled before that launch, even when both model sets exist.
+See docs/coordination/full_run_review_gate.json and the laptop review request.
+
+The legacy FULL specification adds Crystalloid_1/24, Pressors_1/24 and two
+Sedatives indicators to BASE. That is selected treatment-index adjustment, not
+adjustment for every medication. Establish the meaning, construction, timing,
+missingness and limitations of each field before assigning a clinical label.
+Uncertain metadata alone does not prove the variables are invalid; successful
+execution alone does not establish that they measure the intended constructs.
+Assess descriptive conditional associations separately from causal claims.
+
+CURRENT INPUT AND EVIDENCE BOUNDARY
+Reviewed: documentation in docs/laptop_handoff_checkpoints/20261101_v1 and the
+published legacy SAS model terms. The scaffold is DRAFT_CURRENT_SAMPLE_INCOMPLETE;
+portable revised source, final fixtures and final evidence are still pending.
+The laptop inspected a screened subset of authored working modules, but found
+that this copy predates parts of the running specification. It is not the bound
+executable closure, and no live numerical defect or acceptance is inferred from
+those version differences. No revised result collection was read or accepted.
+
+User-relayed workstation update: 12 of 252 jobs accounted for (11 validated and
+one statistically unsupported), four reports validated, four models running,
+no active alerts or failures. These are reported progress, not independently
+verified completion counts. They will be superseded by the frozen collection.
+
+Root/laptop reads only screened code, metadata, synthetic examples and separately
+reviewed aggregate/model outputs. No input datasets, person-level intermediates,
+raw logs or identifiers. Private manuscript work stays outside tracked files.
+The running sample branch and its uncommitted handover files are not edited by
+the laptop. Laptop work uses work/laptop-publication-integration-20261101 in an
+isolated sparse worktree; result CSVs are not checked out there.
+
+1. INDEPENDENT SCIENTIFIC AND CODE REVIEW
+Create an evidence trail for each change: original specification, diagnosed
+problem, revised source location/hash, scientific rationale, author decision,
+synthetic check, screened sample evidence, downstream consequence, open limits.
+Classify changes as:
+- Required implementation repair: for example prior-unit counts, category gaps
+  and missing donor-Hb handling, already requested by Lucas.
+- Approved definition correction: female-only parity changes the comparison
+  population and must be described explicitly, beyond repairing arithmetic.
+- Inference repair preserving the intended comparison: covariance-aware same-fit
+  changes and differences of changes, correct clustering and uncertainty.
+- Approved additional analyses: both sensitivity populations, component tests
+  and within-family Holm comparisons, without selecting by observed findings.
+- Proposed methodological/reporting change: independently assess CR2 details,
+  primary-model designation and other amendments against the study question.
+- Presentation or operational change: no silent change to estimates/definitions.
+
+Inspect the exact sanitized executable closure, not just comments or summaries.
+Confirm it corresponds to the validated private source by file bindings and a
+documented path-only/semantic comparison. Establish which configuration actually
+ran. Review source changes by scientific purpose rather than implementation size.
+
+Review these areas explicitly:
+a. Unit/person/admission identity; simultaneous units; one containing admission;
+   collision/conflict handling; prior-unit and following-unit boundaries;
+   source coverage; first-event selection before outcome/complete-case filters.
+b. Every covariate and category, actual exclusions and missingness; all source
+   medication indices; natural outcome scales; artifact and influence evidence.
+c. Native GLIMMIX design versus HPMIXED fitting: intercept, CLASS reference,
+   knots and scoring-row exclusion, column order/scaling, REML convergence,
+   random-effect subject, variance boundaries and fixed reference profiles.
+d. The custom person-cluster CR2 implementation: whitening and working target,
+   contrast span/support, joint category covariance, scalar DF, HTZ, precision
+   guards and independently implemented numerical comparisons. Passing the
+   producer's own validator is supporting evidence, not independent proof.
+e. Pointwise level/change intervals versus direct endpoint contrasts; hypotheses
+   for endpoint heterogeneity and whole-trajectory interaction; planned/active
+   category families; Holm scope; no substitution of working-model uncertainty.
+f. Paired observed windows, equal event weighting, person clustering and direct
+   joint covariance; denominators and interpretive separation from fitted changes.
+g. Fit-specific complete-case populations, knots and row-weighted reference
+   profiles; effects on BASE/FULL comparisons; deterministic tie handling.
+h. Legitimate sparse-support/unavailable inference versus implementation failure.
+   Check status predicates against source and numerical evidence, including the
+   whole-fit suppression rule; never infer clinical validity from a green status.
+
+Representative independent tests need invented known-answer cases, native SAS
+comparisons where appropriate, and an independent implementation/reference for
+custom inference. Include zero random-intercept variance, saturation/rank loss,
+near-singularity, repeated persons across categories, unavailable categories,
+partial precision and nonpositive/low degrees of freedom. Retain failed-case
+explanations and tolerances; do not reduce a hypothesis family after fitting.
+
+2. DECISIONS THAT COULD AFFECT THE LAST FULL RUN
+Before a decision becomes costly, distinguish:
+- Changes to required fits, preprocessing or diagnostic retention: flag early to
+  Lucas and code Astra through the agreed handover. Review artifact/influence
+  needs, medication definitions and missing coauthor substrate at this stage.
+- Scientific choices supported by retained outputs (e.g. BASE/FULL priority):
+  resolve prospectively before full launch, without blocking sample execution or
+  silently discarding a fitted model. Pure layout/formatting can continue later.
+- Changes reproducible from saved model-only information: verify that the exact
+  required design/covariance/DF information is retained; do not promise arbitrary
+  later analyses without checking support and privacy restrictions.
+
+Do not require the dashboard or manuscript to be finished before full compute.
+Do not halt/alter the running sample from this worktree. Full launch is on hold
+pending workstation and laptop review of the same frozen code/specification/
+output contract, complete sample evidence, and Lucas's scientific decisions and
+launch approval. Flag unresolved issues with evidence, alternatives and rerun
+implications. No producer-only sign-off or passed batch replaces this joint gate.
+
+3. RECEIVE THE FROZEN HANDOVER
+Require one immutable code/config/specification/collection binding, final job
+registry, 252 model selections plus four reports and preparation provenance.
+All jobs must be accounted for as validated inference or validated expected
+unavailability; failures/unselected attempts mean an incomplete collection.
+Review legacy comparisons only on genuinely comparable targets. Classify changed
+definitions, changed inference, new analyses and unexplained discrepancies.
+Agreement with old numbers is not scientific acceptance of old or new methods.
+
+Require typed schemas for every consumed role: model registry, selected statuses,
+counts/plans/category availability, inference, reports, collection and numeric
+transport manifests. Obtain portable receiver checks and explicit missing/status
+rules. Freeze file hashes only after the final export is stable.
+
+The metadata inspector in scripts/inspect_analysis_handoff.py checks only the
+current draft's document inventory. Its exit status is NOT sample acceptance,
+scientific validation, privacy approval or permission to run/publish. It never
+opens result/evidence targets listed inside the handover.
+
+4. BUILD THE DOWNSTREAM PIPELINE IN PARALLEL
+Use a manifest-driven adapter rather than forcing new files into legacy CSV
+columns. Key every value by release/cohort/population/outcome/factor/model/fit/
+profile/target/category/time. Keep estimates and supplied inferential results
+together. Do not recompute tests or covariance in chart components.
+
+Develop with conspicuously synthetic fixtures. Cover successful inference,
+partial uncertainty, prefit unavailability, whole-family unavailability and
+incomplete pipelines separately. A missing dot is not zero; absent uncertainty
+is not nonsignificance. Preserve pair direction, planned order, raw/adjusted
+p-values, low-DF statuses and unavailable comparison rows.
+
+Reject mixed release/attempt/cohort/schema bindings. Cache by immutable release;
+switch complete approved collections atomically and preserve rollback. Load
+selected outcome/factor/population files on demand. Benchmark real rendering
+shapes using invented grids; check mobile/desktop, keyboard use, errors/retry,
+export fidelity and cache replacement. Remove unsupported narrative claims and
+legacy LOESS dependencies from the new release.
+
+5. FIGURES, TABLES AND TRACEABILITY
+Prepare seven-outcome one-page and two-page layouts using supplied level/change
+trajectories and direct endpoint contrasts. Preserve exported time points;
+interpolate no new science. Aesthetic choices must not clip results, hide missing
+bands or imply equal physical scales without approved unit labels. Reassess old
+fixed axis limits with the accepted full results; keep pressure spans comparable
+where scientifically and visually suitable.
+
+Use vector PDF/SVG and high-resolution PNG. Record renderer/dependency versions,
+source hashes, selected model/population/profile, deterministic category order
+and rounding. Keep captions tied to the actual estimand and pointwise uncertainty.
+Synthetic/sample versions remain unmistakably provisional and out of public data.
+
+Generate tables and an evidence ledger linking each number/claim to its release,
+file role/key, formula if derived, rounding and relevant methods definition.
+Include patient/event/unit/measurement denominators separately. Use the same
+accepted derived values in tables, figures and dashboard. Keep all required
+component contrasts and sensitivities accessible without overloading the main
+paper. Statistical absence, practical magnitude and equivalence are different.
+
+6. MANUSCRIPT AND COAUTHOR COMMENTS
+Prepare the exact comment-ID response matrix privately against the reviewed Word
+version, retaining all comments. Map each to a verified correction, supported
+answer, justified limitation or outstanding author decision. A completed batch
+does not close recipient-Hb, recording-frequency, ventilation-mode, hospital or
+diagnosis questions when the necessary evidence remains unavailable.
+
+Draft methods from accepted executed code and configuration. Final numerical
+results wait for the full release. Revise a COPY last, preserving the original
+and all Johan/Gustaf comments. Track every textual/table/caption edit under
+Lucas D. Ekström and attribute new comment replies to that name. Verify tracked
+revisions and comment authorship, then render the copy;
+if reliable tracking cannot be demonstrated, deliver manual editing instructions.
+
+7. FULL RESULTS AND PUBLICATION REPOSITORY
+Revalidate the full cohort independently of the sample: schemas, selected attempts,
+all-job coverage, support/category changes, counts, numeric bindings and scientific
+diagnostics. No sample estimate or retained legacy file becomes a fallback.
+Only after review replace the entire consumer release and regenerate all outputs.
+
+Build the minimal publication repository from an explicit reviewed allowlist:
+portable executed SAS and required helpers, runtime documentation, reviewed full
+result outputs, dashboard and tests. Exclude manuscript/coordination materials,
+private configs, patient data/intermediates, raw logs and session information.
+Check history for source datasets and sensitive paths separately from screening
+CSV contents. A new clean history does not remove an old repository's history;
+any old-repository withdrawal or deletion needs a concrete owner-reviewed action.
+
+NEXT LAPTOP ACTIONS
+Complete the intake checker and review register; obtain exact revised source and
+independent evidence when curated; review medication terms and custom inference;
+build synthetic receiver/presentation tests once the missing schema roles are
+supplied. Do not mark this independent review passed based on scaffold text.

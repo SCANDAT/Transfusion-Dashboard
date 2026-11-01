@@ -1,0 +1,28 @@
+{
+  "protocol": "LAPTOP_SCIENTIFIC_OUTPUT_COVERAGE_V1",
+  "date": "2026-11-01",
+  "assessment": "The described 252-fit scope appears sufficient for the core planned analyses and displays, conditional on final acceptance. Remaining scientific scope decisions are explicit below.",
+  "basis": "Latest handover specification, original project requirements and private coauthor-review log; limited screened working-source inspection, not bound execution acceptance.",
+  "focus": "Scientific appropriateness and completeness assuming successful execution; not a duplicate implementation/debugging audit and not judgement from sparse sample estimates.",
+  "final_scientific_acceptance": false,
+  "primary_designation": "UNRESOLVED_AUTHOR_LAPTOP_REVIEW",
+  "coverage": [
+    {"need":"Seven main trajectories and publication figure","planned_substrate":"1441 minute-grid levels and changes, both model sets, profile/status identity","assessment":"COVERED_BY_DESCRIBED_SCOPE","remaining":"Approved model priority, units and final result acceptance; layout needs no additional fit."},
+    {"need":"Main -60/+60 numerical comparison with valid uncertainty","planned_substrate":"Authoritative same-fit within contrasts","assessment":"COVERED_BY_DESCRIBED_SCOPE","remaining":"Accepted reporting inference and faithful integration; no shifted-level intervals."},
+    {"need":"Component-category differences of change","planned_substrate":"All pairwise contrasts with covariance and frozen within-fit Holm adjustment","assessment":"COVERED_BY_DESCRIBED_SCOPE","remaining":"Display direction/family scope and available-category denominators."},
+    {"need":"Separate endpoint heterogeneity and time-course interaction","planned_substrate":"Two named joint tests per factor fit","assessment":"COVERED_BY_DESCRIBED_SCOPE","remaining":"Accurate hypothesis names; no substitution or equivalence claim."},
+    {"need":"First-event and no-following-unit sensitivity analyses","planned_substrate":"Both model sets and all outcomes/factors in each approved population","assessment":"COVERED_BY_DESCRIBED_SCOPE","remaining":"Recorded-source follow-up qualifier and actual fit denominators."},
+    {"need":"Observed paired pre/post/change tables","planned_substrate":"Equal paired-event summaries and person-cluster joint covariance","assessment":"COVERED_BY_DESCRIBED_SCOPE","remaining":"Keep secondary observed results separate from model contrasts."},
+    {"need":"Patient and component characteristics","planned_substrate":"First-eligible-event person descriptions, unit categories, SAPS and explicit counts","assessment":"MOSTLY_COVERED","remaining":"Recipient Hb absent; diagnosis/source/site information may require descriptive queries or documentation."},
+    {"need":"Cohort flow and missing-data reporting","planned_substrate":"Preparation flow/exclusion counts, population and outcome/model counts","assessment":"PARTLY_COVERED_SCOPE_NEEDS_LABEL","remaining":"Prepared-extract flow is not original ICU recruitment. Confirm per-stage counting units and required missingness denominators."},
+    {"need":"Medication adjustment with defensible clinical interpretation","planned_substrate":"BASE and inherited-index FULL fits","assessment":"SCIENTIFIC_DECISION_BEFORE_FULL_RUN","remaining":"Establish field meanings and timing; distinguish known defects from unknown metadata; agree primary role prospectively."},
+    {"need":"Artifact and influential-measurement assessment","planned_substrate":"Available QA counts/missingness/quantiles; model-diagnostic retention to confirm","assessment":"SCIENTIFIC_DECISION_BEFORE_FULL_RUN","remaining":"Decide whether diagnostics/limitations suffice or an additional justified sensitivity is essential. Robust SE alone does not resolve influence on means."},
+    {"need":"Recipient-Hb request","planned_substrate":"Not part of core252; feasibility remains unresolved","assessment":"SCIENTIFIC_DECISION_BEFORE_FULL_RUN","remaining":"Choose validated descriptive addition, adjustment sensitivity, or explicit limitation before final scope freeze."},
+    {"need":"Alternative time comparisons","planned_substrate":"Fixed-profile model/inference span and covariance/moment archives","assessment":"REPLAY_CAPABILITY_TO_CONFIRM","remaining":"Demonstrate appropriate-inference recovery of intended extra time contrasts without refitting; otherwise narrow promised sensitivity scope."},
+    {"need":"Ventilation mode, original cadence and hospital/EHR description","planned_substrate":"Explicitly unavailable/unverified elements in current handover","assessment":"SOURCE_OR_REPORTING_DECISION","remaining":"Retrieve source documentation/approved descriptive queries where possible; use accurate limitations where unavailable; do not infer from outcome presence."},
+    {"need":"Reproducible downstream publication package","planned_substrate":"Frozen exact code/config/schema/collection manifest, statuses and reviewed outputs","assessment":"HANDOVER_PENDING","remaining":"One accepted full-cohort release, privacy review and new minimal repository; sample/legacy files excluded from production replacement."}
+  ],
+  "no_new_fit_for": ["Figure layout and legends", "Showing all already-produced category contrasts", "Correct denominator labels", "Accurate method and limitation wording", "Reporting both already-fitted model sets"],
+  "potential_new_fit_for": ["Changed medication input construction or windows", "New artifact-filtered or influential-observation sensitivity", "Recipient-Hb adjustment", "New population/covariate/model not supported by retained fit"],
+  "coordination_followup": "docs/coordination/laptop_scientific_scope_review_20261101_02.txt"
+}

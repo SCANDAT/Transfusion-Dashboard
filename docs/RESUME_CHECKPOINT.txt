@@ -1,3 +1,33 @@
+LAPTOP INDEPENDENT REVIEW PREPARATION - 1 NOVEMBER 2026
+Branch: work/laptop-publication-integration-20261101, isolated sparse worktree.
+Read LAPTOP_PUBLICATION_REVIEW_PLAN.txt and laptop_review_register.json first.
+The workstation branch/run was left unchanged. Its revised code and all-result
+collection are not yet independently accepted by the laptop reviewer.
+The 20261101_v1 handover scaffold is incomplete; laptop_intake_inventory_20261101.json
+records only a successful metadata/document hash check, not analysis acceptance.
+Both BASE and FULL remain planned. The producer's new BASE-primary label is not
+an author decision accepted here. Lucas supports relevant medication adjustment
+and asks for continuity with the prior analytical question while repairing holes.
+Latest author direction: agree code, analyses and required outputs prospectively
+before the last full-cohort run. See docs/coordination/full_run_review_gate.json;
+full launch is pending joint review and explicit author approval. Sample work
+continues. No code-Astra-only acceptance substitutes for laptop scientific review.
+Next: review curated revised source and numerical evidence, resolve the ten
+registered intake/review topics, then implement the consumer against the frozen
+schemas using synthetic fixtures. Flag fit-changing/retention needs early.
+Latest scope refinement: focus on scientific value and sufficient downstream
+outputs, assuming code Astra achieves successful execution. Do not duplicate
+its numerical debugging or redesign methods for sparse sample estimates.
+Consolidated follow-up: docs/coordination/laptop_scientific_scope_review_20261101_02.txt.
+Coverage: docs/laptop_scientific_output_coverage_20261101.json. The core252 appears
+to cover the planned study; medication interpretation, artifact/influence scope,
+recipient Hb and replay/descriptive requirements need prospective decisions.
+An older working-source subset was screened/inspected privately; it is not bound
+to the active sample. Do not report version differences as current code defects.
+Do not read source records or change the running sample. Manuscript edits remain
+last, in a copy, with comments preserved and all changes tracked under Lucas D.
+Ekström. This branch is preparation, not a public analysis/data release.
+
 WORKSTATION HANDOFF UPDATE - 29 OCTOBER 2026
 Read docs/SAS_FINAL_RUN_HANDOFF.txt and docs/sas_final_run_contract.json first.
 They are self-contained for the agent on the authorised SAS machine. The author

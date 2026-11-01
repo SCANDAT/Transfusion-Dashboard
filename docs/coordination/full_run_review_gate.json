@@ -1,0 +1,40 @@
+{
+  "protocol": "RBC_PROSPECTIVE_FULL_RUN_REVIEW_GATE_V1",
+  "created": "2026-11-01",
+  "state": "HOLD_PENDING_JOINT_REVIEW",
+  "full_launch_allowed": false,
+  "development_sample_may_continue": true,
+  "authority": "Lucas explicitly requires laptop and code Astra to agree prospectively before the single planned final full-cohort run.",
+  "scope": "Scientific specification, implemented code, inference, required outputs and diagnostic retention, complete sample validation, comparable-target legacy comparison, capacity and launch procedure.",
+  "not_required_before_full_compute": ["Completed manuscript editing", "Final visual styling", "Published dashboard"],
+  "request": "docs/coordination/laptop_review_request_20261101.txt",
+  "review_register": "docs/laptop_review_register.json",
+  "bindings": {
+    "validated_code_manifest_sha256": null,
+    "scientific_specification_sha256": null,
+    "output_contract_sha256": null,
+    "diagnostic_retention_contract_sha256": null,
+    "sample_collection_manifest_sha256": null,
+    "legacy_comparison_sha256": null,
+    "full_configuration_digest": null,
+    "full_input_binding_digest": null,
+    "capacity_plan_sha256": null
+  },
+  "signoffs": {
+    "workstation_code_execution_review": {"state": "PENDING", "evidence": null},
+    "laptop_independent_scientific_and_consumer_review": {"state": "PENDING", "evidence": null},
+    "author_scientific_decisions": {"state": "PENDING", "evidence": null},
+    "author_full_launch_authorization": {"state": "PENDING", "evidence": null}
+  },
+  "rules": [
+    "A status change requires recorded evidence, exact bindings and the relevant reviewer/author decision; do not infer approval from time, silence, test success or another agent's recommendation.",
+    "BASE-primary versus FULL-primary is unresolved for laptop/author review. Preserve both model families while resolving the primary designation prospectively.",
+    "Each reviewer owns their own sign-off; never write approval on behalf of the other reviewer or the author.",
+    "Any material source, scientific specification, input definition or output-contract change after sign-off requires impact review and renewed affected sign-offs.",
+    "The sample scaffold's RootAccepted flag refers to its producer role and does not represent independent laptop or author scientific approval.",
+    "This file is a coordination gate, not an assertion that the current harness enforces it. The workstation must acknowledge and confirm how the full-run entry point checks launch authority.",
+    "No patient/source records, raw logs, actual identifiers or private paths belong in the shared review record."
+  ],
+  "harness_enforcement": "NOT_YET_ACKNOWLEDGED_OR_VERIFIED",
+  "workstation_acknowledgment": null
+}

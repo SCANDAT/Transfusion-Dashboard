@@ -1,0 +1,38 @@
+{
+  "CheckerProtocol": "LAPTOP_DRAFT_INVENTORY_INSPECTION_V1",
+  "Scope": "DOCUMENTATION_INVENTORY_ONLY",
+  "InventoryStatus": "INTERNALLY_CONSISTENT",
+  "CheckpointVersion": "20261101_v1",
+  "DeclaredDocumentsVerified": 10,
+  "RootManifestSHA256": "905096d02ac8f7533dde22e98e13822470212ac7672b16332133f8a648d2ec08",
+  "ProducerClaims": {
+    "State": "DRAFT_CURRENT_SAMPLE_INCOMPLETE",
+    "RootDraftScopeAccepted": true,
+    "RootAccepted": false,
+    "FinalSampleCheckpointAccepted": false,
+    "FullRunReady": false,
+    "FullExecutionAuthorized": false,
+    "PublicationAuthorized": false
+  },
+  "RequiredJobsFromDraft": {
+    "Models": 252,
+    "Reports": 4
+  },
+  "PendingPrerequisites": [
+    "CURATED_VALIDATED_CODE",
+    "CODE_FILE_MANIFEST_AND_SEMANTIC_DIFF",
+    "SANITIZED_CONFIGURATION_EXAMPLE",
+    "SYNTHETIC_INTEGRATION_FIXTURES",
+    "FINAL_DATA_FREE_VALIDATION_SUMMARY",
+    "FINAL_LEGACY_COMPARISON_SUMMARY",
+    "REVIEWED_MODEL_AGGREGATE_EXPORT_ALLOWLIST"
+  ],
+  "InspectorConclusions": {
+    "AnalysisValidated": false,
+    "ClinicalValidityValidated": false,
+    "SourceOrOutputPrivacyCertified": false,
+    "FullRunAuthorized": false,
+    "ScientificOrDataPublicationApproved": false
+  },
+  "ExitZeroMeaning": "Supported draft documentation is internally consistent only; no analysis, data or publication approval."
+}

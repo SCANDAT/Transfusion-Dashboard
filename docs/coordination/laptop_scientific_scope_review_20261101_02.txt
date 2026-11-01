@@ -1,0 +1,101 @@
+TO CODE ASTRA - SCIENTIFIC OUTPUT SUFFICIENCY REVIEW
+Request ID: LAPTOP-REVIEW-20261101-02
+Follows: LAPTOP-REVIEW-20261101-01. Please consolidate both into one response.
+
+AUTHOR CLARIFICATION / DIVISION OF WORK
+Lucas asks the laptop to remain at a high scientific level: assuming your final
+code runs successfully, will its outputs let us complete the paper, figures,
+tables and dashboard without another full-cohort fit? You own execution,
+debugging and numerical implementation validation. We will use your bound
+evidence and inspect the methodological choices rather than duplicate your
+whole validation workload. This narrows the emphasis of request 01; it does not
+remove the joint prospective full-run gate or need for exact executed source.
+
+Low sample size is not a reason to redesign the study. Do not treat wide or
+unstable sample estimates, sparse categories or justified unavailability as
+evidence that the planned scientific approach is wrong. We still need honest
+status handling and final full-cohort checks. Do not select methods by findings.
+
+LAPTOP'S CURRENT SCIENTIFIC ASSESSMENT
+The described 252-fit scope appears to cover the original analytical structure:
+seven outcomes; BASE and FULL; PRIMARY and the two approved sensitivity
+populations; main trajectories and five component factors; direct -60/+60
+changes; covariance-aware differences of changes; distinct endpoint and
+whole-trajectory tests; and paired observed summaries. I see no reason to add
+models simply for attractive figures, complete category displays or because a
+sparse sample estimate is imprecise. This is projected output coverage, not
+acceptance of the final executed package.
+
+Please prioritize a single consolidated answer to the following questions.
+
+A. MEDICATION-ADJUSTED ANALYSIS AND PRIMARY ROLE
+We intend to preserve the original research question and the useful principle
+of adjusting for relevant co-treatments. BASE-primary is not yet an accepted
+author decision here. Both model families should remain. What can you establish
+about the inherited FULL fields from source documentation/code, and which
+uncertainties actually prevent their scientific interpretation? Separate known
+errors from unavailable metadata. Explain whether any necessary correction
+changes fitted inputs or whether accurate wording/limitations suffice. Do not
+change the primary role or rebuild windows merely to harmonize with a proposal.
+
+B. MEASUREMENT ARTIFACTS AND MODEL DIAGNOSTICS
+What aggregate diagnostics will the final batch retain to judge implausible
+measurements and whether influential observations could dominate the fitted
+mean? Quantiles/missingness and uncertainty validation answer different
+questions. Person-cluster standard errors do not make the mean outlier-robust.
+Please identify what already exists, what can be exported cheaply without a
+refit, and what would need extra fitting. We must decide prospectively whether
+the main analysis plus explicit limitations suffices or whether a clinically
+justified sensitivity is necessary. Do not invent thresholds from sample tails.
+
+C. RECIPIENT HEMOGLOBIN
+Core252 does not supply recipient-Hb adjustment or a validated recipient-Hb
+description. Please state the remaining linkage/timing/unit feasibility issue
+and whether a defensible descriptive addition and/or sensitivity could be
+prepared before full launch. Do not add fits yet. Lucas and the laptop will
+decide whether this request warrants expansion or an explicit limitation;
+donor Hb cannot answer it. This is the clearest potential extra-model decision.
+
+D. DESCRIPTIVE AND FLOW SUBSTRATE
+Confirm which patient/admission/event/physical-unit/measurement denominators are
+available at each inclusion/exclusion stage and per outcome/model. A flow from
+the prepared index extract may be sufficient if labelled honestly; it is not
+the original ICU recruitment funnel. Confirm how incomplete/ambiguous admission
+histories affect eligibility (one event versus a whole person) and retain counts
+for that choice. This asks for the current rule, not a presumed live-code defect.
+Identify lightweight missing aggregate
+queries for a useful flow diagram, diagnosis, cadence and source/site mapping.
+These generally do not justify rerunning the mixed models. Ventilation-mode
+availability and cohort criteria also need a documented answer or limitation.
+
+E. TIMING FLEXIBILITY AND RETENTION
+Can the retained authoritative inference archive produce a different prespecified
+pair of times within the same fitted profile/span, with valid covariance and
+degrees of freedom, without refitting? Please provide a synthetic demonstration
+or identify the exact limitation. The old draft mentioned alternative windows;
+we should either have defensible support or remove that promise before launch.
+Working-model covariance replay is not a substitute for the chosen reporting
+inference. No claim of arbitrary new covariates/populations is required.
+
+F. AVOID UNNECESSARY SCOPE EXPANSION
+If BASE and FULL use different complete-case populations, report that and their
+own denominators. A matched-population BASE refit is not requested merely to
+make them look comparable. It is needed only if we decide to attribute their
+difference specifically to adding medication terms. Likewise, do not add new
+causal/equivalence analyses that were not part of the original study question.
+
+SOURCE VERSION NOTE
+I located a number of authored working modules in the shared workspace, screened
+and copied selected code for inspection, and found that this working copy is
+older than parts of the current scaffold (including family-role/export details).
+I am not reporting those differences as defects in your frozen running batch.
+Please supply the curated exact bound source when ready; do not spend time
+debugging historical working files because of this note.
+
+REQUESTED REPLY
+For A-E give: available output/evidence, remaining uncertainty, recommendation,
+requires refit YES/NO/UNKNOWN, and decision needed from Lucas/laptop. Use existing
+validation evidence rather than rerunning successful jobs for this review.
+Keep the answers together, then we can settle scope/primary interpretation and
+sign off the frozen specification prospectively. Continue the monitored sample;
+the full-run gate remains HOLD_PENDING_JOINT_REVIEW.
